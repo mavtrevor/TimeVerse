@@ -221,13 +221,6 @@ export default function TimersFeature() {
         </div>
       </div>
 
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-semibold">Countdown Timers</h2>
-        <Button onClick={openAddForm}>
-          <PlusCircle className="mr-2 h-4 w-4" /> Add Timer
-        </Button>
-      </div>
-
       <Card className="shadow-md">
         <CardHeader>
           <CardTitle className="text-lg">Set the timer for the specified time</CardTitle>
@@ -245,6 +238,13 @@ export default function TimersFeature() {
           ))}
         </CardContent>
       </Card>
+
+      <div className="flex justify-between items-center pt-4"> {/* Moved this section down */}
+        <h2 className="text-2xl font-semibold">Countdown Timers</h2>
+        <Button onClick={openAddForm}>
+          <PlusCircle className="mr-2 h-4 w-4" /> Add Timer
+        </Button>
+      </div>
 
       <TimerFormDialog
         isOpen={isFormOpen}
@@ -444,7 +444,3 @@ function TimerFormDialog({ isOpen, onOpenChange, onSave, timer }: TimerFormDialo
     </Dialog>
   );
 }
-
-    
-
-    
