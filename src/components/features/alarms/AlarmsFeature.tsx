@@ -6,7 +6,7 @@ import type { Alarm } from '@/types';
 import useLocalStorage from '@/hooks/useLocalStorage';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter, CardDescription } from '@/components/ui/card';
-import { PlusCircle, Edit, Trash2, BellRing, AlarmClock } from 'lucide-react';
+import { PlusCircle, Edit, Trash2, BellRing, AlarmClock, TimerIcon } from 'lucide-react';
 import { useSettings } from '@/hooks/useSettings';
 import { formatTime, parseTimeString } from '@/lib/timeUtils';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from '@/components/ui/dialog';
@@ -24,6 +24,14 @@ const alarmSounds = [
   { id: "digital_beep", name: "Digital Beep" },
   { id: "gentle_wake", name: "Gentle Wake" },
   { id: "birds_alarm", name: "Birds Alarm" },
+];
+
+const alarmShortcuts = [
+  { time: '07:00', label: 'Morning Wake-up' },
+  { time: '08:00', label: 'School/Work Start' },
+  { time: '12:00', label: 'Lunch Break' },
+  { time: '14:00', label: 'Afternoon Meeting' },
+  { time: '18:00', label: 'Evening Workout' },
 ];
 
 const playFallbackBeep = () => {
@@ -93,7 +101,7 @@ const triggerDesktopNotification = (alarm: Alarm) => {
   const notificationBody = alarm.label || "Your alarm is ringing!";
   const notificationOptions = {
     body: notificationBody,
-    icon: "/logo.png",
+    icon: "/logo.png", // Assuming you have a logo.png in your public folder
   };
 
   if (!("Notification" in window)) {
@@ -122,6 +130,7 @@ export default function AlarmsFeature() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [ringingAlarmId, setRingingAlarmId] = useState<string | null>(null);
   const [ringingAlarmModal, setRingingAlarmModal] = useState<Alarm | null>(null);
+  const [shortcutInitialData, setShortcutInitialData] = useState<Partial<Omit<Alarm, 'id' | 'isActive'>> | null>(null);
 
 
   useEffect(() => {
@@ -176,6 +185,7 @@ export default function AlarmsFeature() {
     }
     setEditingAlarm(null);
     setIsFormOpen(false);
+    setShortcutInitialData(null);
   };
 
   const handleDeleteAlarm = (id: string) => {
@@ -221,12 +231,27 @@ export default function AlarmsFeature() {
 
 
   const openEditForm = (alarm: Alarm) => {
+    setShortcutInitialData(null);
     setEditingAlarm(alarm);
     setIsFormOpen(true);
   };
   
   const openAddForm = () => {
+    setShortcutInitialData(null);
     setEditingAlarm(null);
+    setIsFormOpen(true);
+  };
+
+  const handleShortcutClick = (time: string, label: string) => {
+    setEditingAlarm(null); // Ensure it's 'add' mode
+    setShortcutInitialData({ 
+      time, 
+      label, 
+      sound: defaultAlarmSound, 
+      snoozeEnabled: true, 
+      snoozeDuration: 5, 
+      days: [] 
+    });
     setIsFormOpen(true);
   };
 
@@ -255,10 +280,14 @@ export default function AlarmsFeature() {
           isOpen={isFormOpen}
           onOpenChange={(open) => {
             setIsFormOpen(open);
-            if (!open) setEditingAlarm(null); 
+            if (!open) {
+                setEditingAlarm(null); 
+                setShortcutInitialData(null);
+            }
           }}
           onSave={handleSaveAlarm}
           alarm={editingAlarm}
+          initialData={shortcutInitialData}
         />
 
         <RingingAlarmDialog
@@ -340,6 +369,25 @@ export default function AlarmsFeature() {
           </CardContent>
         </Card>
 
+        <Card className="shadow-md mt-4">
+          <CardHeader>
+            <CardTitle className="text-lg">Quick Alarm Presets</CardTitle>
+            <CardDescription>Click a preset to quickly set an alarm.</CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-wrap gap-2">
+            {alarmShortcuts.map(shortcut => (
+              <Button
+                key={shortcut.label}
+                variant="outline"
+                onClick={() => handleShortcutClick(shortcut.time, shortcut.label)}
+              >
+                <TimerIcon className="mr-2 h-4 w-4" /> 
+                {shortcut.label} ({shortcut.time})
+              </Button>
+            ))}
+          </CardContent>
+        </Card>
+
         {/* SEO Content Card */}
         <Card className="shadow-lg mt-4">
           <CardHeader>
@@ -413,9 +461,10 @@ interface AlarmFormDialogProps {
   onOpenChange: (isOpen: boolean) => void;
   onSave: (alarmData: Omit<Alarm, 'id' | 'isActive'>) => void;
   alarm: Alarm | null;
+  initialData?: Partial<Omit<Alarm, 'id' | 'isActive'>> | null; 
 }
 
-function AlarmFormDialog({ isOpen, onOpenChange, onSave, alarm }: AlarmFormDialogProps) {
+function AlarmFormDialog({ isOpen, onOpenChange, onSave, alarm, initialData }: AlarmFormDialogProps) {
   const [time, setTime] = useState('07:00');
   const [label, setLabel] = useState('');
   const [sound, setSound] = useState(defaultAlarmSound);
@@ -425,22 +474,31 @@ function AlarmFormDialog({ isOpen, onOpenChange, onSave, alarm }: AlarmFormDialo
 
 
   useEffect(() => {
-    if (isOpen && alarm) {
-      setTime(alarm.time);
-      setLabel(alarm.label);
-      setSound(alarm.sound);
-      setSnoozeEnabled(alarm.snoozeEnabled);
-      setSnoozeDuration(alarm.snoozeDuration);
-      setDays(alarm.days || []);
-    } else if (isOpen && !alarm) { 
-      setTime('07:00');
-      setLabel('');
-      setSound(defaultAlarmSound);
-      setSnoozeEnabled(true);
-      setSnoozeDuration(5);
-      setDays([]);
+    if (isOpen) {
+      if (alarm) { // Editing existing alarm
+        setTime(alarm.time);
+        setLabel(alarm.label);
+        setSound(alarm.sound);
+        setSnoozeEnabled(alarm.snoozeEnabled);
+        setSnoozeDuration(alarm.snoozeDuration);
+        setDays(alarm.days || []);
+      } else if (initialData) { // New alarm from shortcut
+        setTime(initialData.time || '07:00');
+        setLabel(initialData.label || '');
+        setSound(initialData.sound || defaultAlarmSound);
+        setSnoozeEnabled(initialData.snoozeEnabled !== undefined ? initialData.snoozeEnabled : true);
+        setSnoozeDuration(initialData.snoozeDuration || 5);
+        setDays(initialData.days || []);
+      } else { // New alarm from "Add Alarm" button
+        setTime('07:00');
+        setLabel('');
+        setSound(defaultAlarmSound);
+        setSnoozeEnabled(true);
+        setSnoozeDuration(5);
+        setDays([]);
+      }
     }
-  }, [alarm, isOpen]);
+  }, [alarm, isOpen, initialData]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -463,7 +521,7 @@ function AlarmFormDialog({ isOpen, onOpenChange, onSave, alarm }: AlarmFormDialo
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>{alarm ? 'Edit Alarm' : 'Add Alarm'}</DialogTitle>
+          <DialogTitle>{alarm ? 'Edit Alarm' : (initialData ? 'Add Preset Alarm' : 'Add Alarm')}</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 pt-4">
           <div>
