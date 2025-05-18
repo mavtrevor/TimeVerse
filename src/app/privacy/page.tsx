@@ -10,7 +10,10 @@ export default function PrivacyPage() {
       <header className="sticky top-0 z-40 flex h-16 items-center justify-between border-b bg-background px-4 sm:px-6">
         <Link href="/" className="flex items-center gap-2 font-semibold text-lg text-primary">
             <Logo />
-            <span>TimeVerse – The Ultimate Online Clock Suite</span>
+            <span>
+              TimeVerse
+              <span className="hidden sm:inline"> – The Ultimate Online Clock Suite</span>
+            </span>
         </Link>
         <Button variant="outline" asChild>
           <Link href="/">
@@ -35,3 +38,4 @@ export default function PrivacyPage() {
     </div>
   );
 }
+
