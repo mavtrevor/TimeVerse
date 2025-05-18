@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { useSettings } from '@/hooks/useSettings';
 import { popularCityDetails } from '@/lib/cityData';
 import type { CityDetail } from '@/types';
-import { formatTime, getTimezoneOffset, getSeason, getTimeOfDayInfo, getShortTimezoneName } from '@/lib/timeUtils';
+import { formatTime, getTimeInTimezone, getTimezoneOffset, getSeason, getTimeOfDayInfo, getShortTimezoneName } from '@/lib/timeUtils';
 import { Home, ArrowLeft } from 'lucide-react'; // Import Home icon
 
 export default function CityClockPage() {
@@ -134,3 +134,4 @@ export default function CityClockPage() {
     </div>
   );
 }
+
