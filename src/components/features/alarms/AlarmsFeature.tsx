@@ -5,8 +5,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import type { Alarm } from '@/types';
 import useLocalStorage from '@/hooks/useLocalStorage';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { PlusCircle, Edit, Trash2, BellRing, BellOff } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { PlusCircle, Edit, Trash2 } from 'lucide-react';
 import { useSettings } from '@/hooks/useSettings';
 import { formatTime, parseTimeString } from '@/lib/timeUtils';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from '@/components/ui/dialog';
@@ -25,28 +25,52 @@ const alarmSounds = [
   { id: "birds_alarm", name: "Birds Alarm" },
 ];
 
-// Placeholder for actual audio playback
-const playAlarmSound = (soundId: string) => {
-  console.log(`Playing sound: ${soundId}`);
-  // const audio = new Audio(`/sounds/${soundId}.mp3`); // Example path
-  // audio.play();
-  // For browsers that require user interaction for audio:
+// Fallback beep function if main audio fails or Audio API not present
+const playFallbackBeep = () => {
   try {
+    if (typeof window.AudioContext === "undefined" && typeof (window as any).webkitAudioContext === "undefined") {
+      console.error("AudioContext not available for fallback beep.");
+      return;
+    }
     const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+    if (!audioContext) {
+      console.error("AudioContext could not be initialized for fallback beep.");
+      return;
+    }
     const oscillator = audioContext.createOscillator();
-    oscillator.type = 'sine'; // 'sine', 'square', 'sawtooth', 'triangle'
+    oscillator.type = 'sine';
     oscillator.frequency.setValueAtTime(440, audioContext.currentTime); // A4 note
     const gainNode = audioContext.createGain();
-    gainNode.gain.setValueAtTime(0.5, audioContext.currentTime); // Volume
-    gainNode.gain.exponentialRampToValueAtTime(0.00001, audioContext.currentTime + 1); // Fade out
+    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime); // Lower volume for fallback
+    gainNode.gain.exponentialRampToValueAtTime(0.00001, audioContext.currentTime + 0.5); // Shorter beep
     oscillator.connect(gainNode);
     gainNode.connect(audioContext.destination);
     oscillator.start();
-    oscillator.stop(audioContext.currentTime + 1); // Play for 1 second
+    oscillator.stop(audioContext.currentTime + 0.5);
   } catch (e) {
-    console.error("Audio playback failed", e);
+    console.error("Fallback beep playback failed", e);
   }
 };
+
+const playAlarmSound = (soundId: string) => {
+  console.log(`Attempting to play sound: /sounds/${soundId}.mp3`);
+  if (typeof Audio !== "undefined") {
+    try {
+      const audio = new Audio(`/sounds/${soundId}.mp3`);
+      audio.play().catch(error => {
+        console.error(`Error playing sound ${soundId}.mp3:`, error);
+        playFallbackBeep();
+      });
+    } catch (e) {
+      console.error("Audio object creation failed or other error:", e);
+      playFallbackBeep();
+    }
+  } else {
+    console.warn("Audio API not available. Falling back to beep.");
+    playFallbackBeep();
+  }
+};
+
 
 const INITIAL_ALARMS: Alarm[] = [];
 
@@ -64,24 +88,31 @@ export default function AlarmsFeature() {
   }, []);
 
   const showNotification = useCallback((alarm: Alarm) => {
+    const notificationBody = alarm.label || "Your alarm is ringing!";
+    const notificationOptions = {
+      body: notificationBody,
+      icon: "/logo.png", // Ensure logo.png is in public folder
+    };
+
     if (!("Notification" in window)) {
-      alert("This browser does not support desktop notification");
+      alert("This browser does not support desktop notification. " + notificationBody);
+      playAlarmSound(alarm.sound);
     } else if (Notification.permission === "granted") {
-      new Notification("ChronoZen Alarm", {
-        body: alarm.label || "Your alarm is ringing!",
-        icon: "/logo.png", // replace with actual path to a logo
-      });
+      new Notification("ChronoZen Alarm", notificationOptions);
       playAlarmSound(alarm.sound);
     } else if (Notification.permission !== "denied") {
       Notification.requestPermission().then((permission) => {
         if (permission === "granted") {
-          new Notification("ChronoZen Alarm", {
-            body: alarm.label || "Your alarm is ringing!",
-            icon: "/logo.png",
-          });
+          new Notification("ChronoZen Alarm", notificationOptions);
           playAlarmSound(alarm.sound);
+        } else {
+          alert("Notification permission denied. " + notificationBody);
+          playAlarmSound(alarm.sound); // Play sound even if notification is denied by user
         }
       });
+    } else { // Permission denied
+        alert("Notification permission was denied. " + notificationBody);
+        playAlarmSound(alarm.sound);
     }
   }, []);
   
@@ -104,10 +135,6 @@ export default function AlarmsFeature() {
             title: "Alarm Ringing!",
             description: alarm.label || `Alarm set for ${formatTime(alarmTime, timeFormat)} is now ringing.`,
           });
-          // Optionally, disable alarm after it rings once if not recurring
-          // if (!alarm.days || alarm.days.length === 0) {
-          //   toggleAlarmActive(alarm.id, false);
-          // }
         }
       }
     });
@@ -117,23 +144,26 @@ export default function AlarmsFeature() {
   const handleSaveAlarm = (alarmData: Omit<Alarm, 'id' | 'isActive'>) => {
     if (editingAlarm) {
       setAlarms(alarms.map(a => a.id === editingAlarm.id ? { ...editingAlarm, ...alarmData } : a));
-      toast({ title: "Alarm Updated", description: `Alarm "${alarmData.label}" has been updated.` });
+      toast({ title: "Alarm Updated", description: `Alarm "${alarmData.label || 'Alarm'}" has been updated.` });
     } else {
       const newAlarm: Alarm = { ...alarmData, id: Date.now().toString(), isActive: true };
       setAlarms([...alarms, newAlarm]);
-      toast({ title: "Alarm Added", description: `Alarm "${alarmData.label}" has been set.` });
+      toast({ title: "Alarm Added", description: `Alarm "${alarmData.label || 'Alarm'}" has been set.` });
     }
     setEditingAlarm(null);
     setIsFormOpen(false);
   };
 
   const handleDeleteAlarm = (id: string) => {
+    const alarmLabel = alarms.find(a => a.id === id)?.label || 'Alarm';
     setAlarms(alarms.filter(a => a.id !== id));
-    toast({ title: "Alarm Deleted", variant: "destructive" });
+    toast({ title: "Alarm Deleted", description: `Alarm "${alarmLabel}" deleted.`, variant: "destructive" });
   };
 
   const toggleAlarmActive = (id: string, isActive: boolean) => {
     setAlarms(alarms.map(a => a.id === id ? { ...a, isActive } : a));
+    const alarmLabel = alarms.find(a => a.id === id)?.label || 'Alarm';
+    toast({ title: `Alarm ${isActive ? 'Activated' : 'Deactivated'}`, description: `Alarm "${alarmLabel}" is now ${isActive ? 'active' : 'inactive'}.` });
   };
 
   const openEditForm = (alarm: Alarm) => {
@@ -157,7 +187,10 @@ export default function AlarmsFeature() {
 
       <AlarmFormDialog
         isOpen={isFormOpen}
-        onOpenChange={setIsFormOpen}
+        onOpenChange={(open) => {
+          setIsFormOpen(open);
+          if (!open) setEditingAlarm(null); // Reset editing alarm when dialog closes
+        }}
         onSave={handleSaveAlarm}
         alarm={editingAlarm}
       />
@@ -172,9 +205,9 @@ export default function AlarmsFeature() {
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {alarms.map(alarm => (
-          <Card key={alarm.id} className="shadow-lg flex flex-col">
+          <Card key={alarm.id} className={`shadow-lg flex flex-col ${!alarm.isActive ? 'opacity-60' : ''}`}>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-xl">{alarm.label || "Alarm"}</CardTitle>
+              <CardTitle className="text-xl truncate" title={alarm.label || "Alarm"}>{alarm.label || "Alarm"}</CardTitle>
               <Switch
                 checked={alarm.isActive}
                 onCheckedChange={(checked) => toggleAlarmActive(alarm.id, checked)}
@@ -197,14 +230,14 @@ export default function AlarmsFeature() {
                 </p>
               )}
             </CardContent>
-            <DialogFooter className="p-4 border-t flex justify-end gap-2">
+            <CardFooter className="p-4 border-t flex justify-end gap-2">
                <Button variant="ghost" size="icon" onClick={() => openEditForm(alarm)} aria-label="Edit alarm">
                 <Edit className="h-4 w-4" />
               </Button>
               <Button variant="ghost" size="icon" onClick={() => handleDeleteAlarm(alarm.id)} aria-label="Delete alarm" className="text-destructive hover:text-destructive">
                 <Trash2 className="h-4 w-4" />
               </Button>
-            </DialogFooter>
+            </CardFooter>
           </Card>
         ))}
       </div>
@@ -220,24 +253,24 @@ interface AlarmFormDialogProps {
 }
 
 function AlarmFormDialog({ isOpen, onOpenChange, onSave, alarm }: AlarmFormDialogProps) {
-  const [time, setTime] = useState(alarm ? alarm.time : '07:00');
-  const [label, setLabel] = useState(alarm ? alarm.label : '');
-  const [sound, setSound] = useState(alarm ? alarm.sound : defaultAlarmSound);
-  const [snoozeEnabled, setSnoozeEnabled] = useState(alarm ? alarm.snoozeEnabled : true);
-  const [snoozeDuration, setSnoozeDuration] = useState(alarm ? alarm.snoozeDuration : 5);
-  const [days, setDays] = useState<number[]>(alarm?.days || []);
+  const [time, setTime] = useState('07:00');
+  const [label, setLabel] = useState('');
+  const [sound, setSound] = useState(defaultAlarmSound);
+  const [snoozeEnabled, setSnoozeEnabled] = useState(true);
+  const [snoozeDuration, setSnoozeDuration] = useState(5);
+  const [days, setDays] = useState<number[]>([]);
 
 
   useEffect(() => {
-    if (alarm) {
+    if (isOpen && alarm) {
       setTime(alarm.time);
       setLabel(alarm.label);
       setSound(alarm.sound);
       setSnoozeEnabled(alarm.snoozeEnabled);
       setSnoozeDuration(alarm.snoozeDuration);
       setDays(alarm.days || []);
-    } else {
-      // Reset to defaults for new alarm
+    } else if (isOpen && !alarm) {
+      // Reset to defaults for new alarm when dialog opens
       setTime('07:00');
       setLabel('');
       setSound(defaultAlarmSound);
@@ -250,6 +283,7 @@ function AlarmFormDialog({ isOpen, onOpenChange, onSave, alarm }: AlarmFormDialo
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSave({ time, label, sound, snoozeEnabled, snoozeDuration, days });
+    onOpenChange(false); // Close dialog on save
   };
 
   const toggleDay = (dayIndex: number) => {
@@ -269,19 +303,19 @@ function AlarmFormDialog({ isOpen, onOpenChange, onSave, alarm }: AlarmFormDialo
         <DialogHeader>
           <DialogTitle>{alarm ? 'Edit Alarm' : 'Add Alarm'}</DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4 pt-4">
           <div>
             <Label htmlFor="time">Time</Label>
-            <Input id="time" type="time" value={time} onChange={e => setTime(e.target.value)} required />
+            <Input id="time" type="time" value={time} onChange={e => setTime(e.target.value)} required className="mt-1"/>
           </div>
           <div>
             <Label htmlFor="label">Label (Optional)</Label>
-            <Input id="label" value={label} onChange={e => setLabel(e.target.value)} placeholder="e.g., Wake up" />
+            <Input id="label" value={label} onChange={e => setLabel(e.target.value)} placeholder="e.g., Wake up" className="mt-1"/>
           </div>
           <div>
             <Label htmlFor="sound">Sound</Label>
             <Select value={sound} onValueChange={setSound}>
-              <SelectTrigger id="sound">
+              <SelectTrigger id="sound" className="mt-1">
                 <SelectValue placeholder="Select sound" />
               </SelectTrigger>
               <SelectContent>
@@ -311,17 +345,17 @@ function AlarmFormDialog({ isOpen, onOpenChange, onSave, alarm }: AlarmFormDialo
             </p>
           </div>
 
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-2 pt-2">
             <Switch id="snoozeEnabled" checked={snoozeEnabled} onCheckedChange={setSnoozeEnabled} />
-            <Label htmlFor="snoozeEnabled">Enable Snooze</Label>
+            <Label htmlFor="snoozeEnabled" className="cursor-pointer">Enable Snooze</Label>
           </div>
           {snoozeEnabled && (
             <div>
               <Label htmlFor="snoozeDuration">Snooze Duration (minutes)</Label>
-              <Input id="snoozeDuration" type="number" value={snoozeDuration} onChange={e => setSnoozeDuration(parseInt(e.target.value, 10))} min="1" />
+              <Input id="snoozeDuration" type="number" value={snoozeDuration} onChange={e => setSnoozeDuration(Math.max(1, parseInt(e.target.value, 10)))} min="1" className="mt-1"/>
             </div>
           )}
-          <DialogFooter>
+          <DialogFooter className="pt-4">
             <DialogClose asChild>
               <Button type="button" variant="outline">Cancel</Button>
             </DialogClose>
