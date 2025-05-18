@@ -11,7 +11,7 @@ import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from '@/components/ui/dialog';
 import { PlusCircle, Play, Pause, RotateCcw, Edit, Trash2, Maximize, Minimize, TimerIcon as TimerIconLucide } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
-import { formatDuration, secondsToHMS } from '@/lib/timeUtils'; 
+import { formatDuration, secondsToHMS } from '@/lib/timeUtils';
 import { useToast } from '@/hooks/use-toast';
 
 // Placeholder for actual audio playback for timers
@@ -52,14 +52,14 @@ export default function TimersFeature() {
   const [editingTimer, setEditingTimer] = useState<Timer | null>(null);
   const [fullscreenTimerId, setFullscreenTimerId] = useState<string | null>(null);
   const { toast } = useToast();
-  const [elapsedTime, setElapsedTime] = useState(0); 
+  const [elapsedTime, setElapsedTime] = useState(0);
 
   useEffect(() => {
     setElapsedTime(0); // Reset elapsed time on mount or if component re-initializes
     const intervalId = setInterval(() => {
       setElapsedTime(prevTime => prevTime + 1);
     }, 1000);
-    return () => clearInterval(intervalId); 
+    return () => clearInterval(intervalId);
   }, []);
 
 
@@ -112,7 +112,7 @@ export default function TimersFeature() {
     setEditingTimer(null);
     setIsFormOpen(false);
   };
-  
+
   const handleAddTimerFromShortcut = (durationInSeconds: number, baseLabel: string) => {
     const timerName = `${baseLabel.replace(" Mins", " Minute").replace(" Min", " Minute")} Timer`;
     const newTimer: Timer = {
@@ -120,7 +120,7 @@ export default function TimersFeature() {
       name: timerName,
       duration: durationInSeconds,
       remainingTime: durationInSeconds,
-      isRunning: true, 
+      isRunning: true,
       isPaused: false,
       createdAt: Date.now(),
     };
@@ -136,21 +136,21 @@ export default function TimersFeature() {
   const toggleTimer = (id: string) => {
     setTimers(timers.map(t => {
       if (t.id === id) {
-        if (t.remainingTime === 0) { 
+        if (t.remainingTime === 0) {
              return { ...t, isRunning: true, isPaused: false, remainingTime: t.duration };
         }
-        if (t.isRunning && !t.isPaused) { 
+        if (t.isRunning && !t.isPaused) {
           return { ...t, isPaused: true };
-        } else if (t.isRunning && t.isPaused) { 
+        } else if (t.isRunning && t.isPaused) {
              return { ...t, isPaused: false };
-        } else { 
+        } else {
           return { ...t, isRunning: true, isPaused: false };
         }
       }
       return t;
     }));
   };
-  
+
   const resetTimer = (id: string) => {
     setTimers(timers.map(t => t.id === id ? { ...t, remainingTime: t.duration, isRunning: false, isPaused: false } : t));
   };
@@ -221,7 +221,7 @@ export default function TimersFeature() {
           Elapsed Time
         </div>
       </div>
-      
+
       <div className="flex justify-between items-center pt-4">
         <h2 className="text-2xl font-semibold">Countdown Timers</h2>
         <Button onClick={openAddForm}>
@@ -229,11 +229,19 @@ export default function TimersFeature() {
         </Button>
       </div>
 
+      {timers.length === 0 && (
+        <Card className="shadow-lg mt-4">
+          <CardContent className="pt-6 text-center text-muted-foreground">
+            You have no timers set. Click "Add Timer" or a shortcut to create one.
+          </CardContent>
+        </Card>
+      )}
+
       <TimerFormDialog
         isOpen={isFormOpen}
         onOpenChange={(open) => {
             setIsFormOpen(open);
-            if (!open) setEditingTimer(null); 
+            if (!open) setEditingTimer(null);
         }}
         onSave={handleSaveTimer}
         timer={editingTimer}
@@ -257,7 +265,6 @@ export default function TimersFeature() {
         </CardContent>
       </Card>
 
-
       <Card className="shadow-lg mt-4">
         <CardHeader>
           <CardTitle className="text-xl">⏳ Online Timer</CardTitle>
@@ -267,7 +274,7 @@ export default function TimersFeature() {
           <p>
             Need a countdown for studying, cooking, or productivity? Use our online timer with no login or download required.
           </p>
-          
+
           <div className="space-y-2">
             <h3 className="font-semibold text-md">✅ How to Use the Online Timer</h3>
             <ul className="list-disc list-inside pl-4 space-y-1">
@@ -289,7 +296,7 @@ export default function TimersFeature() {
               <li>Timer auto-pauses if the tab is refreshed or closed</li>
             </ul>
           </div>
-          
+
           <div className="space-y-2">
             <h3 className="font-semibold text-md">❓FAQs</h3>
             <div>
@@ -307,14 +314,6 @@ export default function TimersFeature() {
           </div>
         </CardContent>
       </Card>
-      
-      {timers.length === 0 && (
-        <Card className="shadow-lg mt-4">
-          <CardContent className="pt-6 text-center text-muted-foreground">
-            You have no timers set. Click "Add Timer" or a shortcut to create one.
-          </CardContent>
-        </Card>
-      )}
 
       {timers.length > 0 && (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 mt-4">
@@ -379,17 +378,17 @@ function TimerFormDialog({ isOpen, onOpenChange, onSave, timer }: TimerFormDialo
   const { toast } = useToast(); // Added useToast here
 
   useEffect(() => {
-    if (isOpen) { 
-        if (timer) { 
+    if (isOpen) {
+        if (timer) {
           setName(timer.name);
           const { h, m, s } = secondsToHMS(timer.duration);
           setHours(h);
           setMinutes(m);
           setSeconds(s);
-        } else { 
+        } else {
           setName('');
           setHours(0);
-          setMinutes(5); 
+          setMinutes(5);
           setSeconds(0);
         }
     }
@@ -407,7 +406,7 @@ function TimerFormDialog({ isOpen, onOpenChange, onSave, timer }: TimerFormDialo
       return;
     }
     onSave({ name: name || "My Timer", duration: totalSeconds });
-    onOpenChange(false); 
+    onOpenChange(false);
   };
 
   return (
