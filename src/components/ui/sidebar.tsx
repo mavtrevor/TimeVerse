@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Separator } from "@/components/ui/separator"
-import { Sheet, SheetContent, SheetTrigger as ShadcnSheetTrigger } from "@/components/ui/sheet" // Renamed to avoid conflict
+import { Sheet, SheetContent, SheetTrigger as ShadcnSheetTrigger, SheetTitle } from "@/components/ui/sheet" // Renamed to avoid conflict
 import { Skeleton } from "@/components/ui/skeleton"
 import {
   Tooltip,
@@ -212,6 +212,7 @@ const Sidebar = React.forwardRef<
             }
             side={side}
           >
+            <SheetTitle className="sr-only">Main Menu</SheetTitle>
             <div className="flex h-full w-full flex-col">{children}</div>
           </SheetContent>
         </Sheet>
