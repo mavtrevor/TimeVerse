@@ -1,5 +1,5 @@
 
-// src/app/world-clock/[cityId]/page.tsx
+// src/app/(app)/world-clock/[cityId]/page.tsx
 "use client";
 
 import React, { useState, useEffect, useMemo } from 'react';
@@ -11,7 +11,7 @@ import { useSettings } from '@/hooks/useSettings';
 import { popularCityDetails } from '@/lib/cityData';
 import type { CityDetail } from '@/types';
 import { formatTime, getTimeInTimezone, getTimezoneOffset, getSeason, getTimeOfDayInfo, getShortTimezoneName } from '@/lib/timeUtils';
-import { Home, ArrowLeft } from 'lucide-react'; // Import Home icon
+import { Home, ArrowLeft } from 'lucide-react';
 
 export default function CityClockPage() {
   const params = useParams();
@@ -24,16 +24,14 @@ export default function CityClockPage() {
   const cityDetails: CityDetail | undefined = useMemo(() => {
     if (!cityIdParam) return undefined;
     const decodedCityIana = decodeURIComponent(cityIdParam as string);
-    // Try finding in popular cities first
     let detail = popularCityDetails.find(c => c.iana === decodedCityIana);
-    // If not in popular, check if it's the local timezone (special handling)
     if (!detail && typeof window !== 'undefined' && decodedCityIana === Intl.DateTimeFormat().resolvedOptions().timeZone) {
         const localName = popularCityDetails.find(c => c.iana === decodedCityIana)?.name || 'Local Time';
         detail = {
             iana: decodedCityIana,
             name: localName,
             description: "This is your current local time zone.",
-            hemisphere: 'Northern', // Default, can be refined
+            hemisphere: 'Northern', 
         };
     }
     return detail;
@@ -46,17 +44,10 @@ export default function CityClockPage() {
   }, []);
 
   if (!cityDetails || !clientNow) {
-    // Show loading state or handle not found more gracefully
-    // For now, if cityDetails are not found after decoding, trigger Next.js notFound
     if (!cityDetails && cityIdParam) {
-        console.warn(`City details not found for IANA: ${decodeURIComponent(cityIdParam as string)}`)
-        // If cityDetails is still undefined after checks and clientNow might be loading
-        // We only call notFound() if cityDetails is definitively not locatable.
-        // A brief delay or a loading state might be better if clientNow is the only thing pending.
-        // However, if cityDetails can't be resolved, it's a 404.
-        // To prevent calling notFound during SSR if cityIdParam is not yet available.
+        console.warn(\`City details not found for IANA: \${decodeURIComponent(cityIdParam as string)}\`)
         if (typeof window !== 'undefined' && !cityDetails) {
-             notFound(); // Call notFound on client if city cannot be resolved
+             notFound(); 
         }
         return <div className="p-4 md:p-6 text-center">Loading city details or city not found...</div>;
     }
@@ -77,12 +68,11 @@ export default function CityClockPage() {
   const timeOfDayMessages = getTimeOfDayInfo(clientNow, cityName, season, language);
   const shortTzName = getShortTimezoneName(cityDetails.iana, clientNow);
 
-
   return (
     <div className="p-4 md:p-6 space-y-8">
       <div className="flex items-center justify-between">
         <Button variant="outline" asChild>
-          <Link href="/#worldclock"> {/* Assuming your main world clock is part of homepage hash */}
+          <Link href="/world-clock"> 
             <ArrowLeft className="mr-2 h-4 w-4" /> Back to World Clocks
           </Link>
         </Button>
@@ -134,4 +124,3 @@ export default function CityClockPage() {
     </div>
   );
 }
-

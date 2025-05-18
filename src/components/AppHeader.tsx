@@ -2,6 +2,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Menu, Settings, Sun, Moon } from 'lucide-react';
@@ -10,7 +11,7 @@ import { useSidebar } from '@/components/ui/sidebar';
 
 interface AppHeaderProps {
   currentFeatureName: string;
-  onNavigate: (featureKey: string) => void; 
+  onNavigate: (featureKey: string) => void; // Kept for potential future use or specific header actions
 }
 
 export default function AppHeader({ currentFeatureName, onNavigate }: AppHeaderProps) {
@@ -27,7 +28,7 @@ export default function AppHeader({ currentFeatureName, onNavigate }: AppHeaderP
     if (theme === 'system' && typeof window !== 'undefined') {
         currentEffectiveTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
     } else if (theme === 'system') {
-        currentEffectiveTheme = 'light'; // Fallback for SSR or pre-mount
+        currentEffectiveTheme = 'light'; 
     }
 
     if (currentEffectiveTheme === 'dark') {
@@ -41,10 +42,8 @@ export default function AppHeader({ currentFeatureName, onNavigate }: AppHeaderP
   if (mounted && theme === 'system') {
     displayTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
   } else if (!mounted && theme === 'system') {
-    displayTheme = 'light'; // Consistent SSR default for system theme
+    displayTheme = 'light'; 
   }
-  // If theme is 'light' or 'dark', displayTheme is already correct.
-
 
   return (
     <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6 sm:py-4">
@@ -56,20 +55,21 @@ export default function AppHeader({ currentFeatureName, onNavigate }: AppHeaderP
       )}
       <h1 className="text-xl font-semibold grow">{currentFeatureName}</h1>
       <div className="flex items-center gap-2">
-        {mounted ? ( // Only render theme toggle button once mounted to ensure correct icon
+        {mounted ? (
             <Button variant="ghost" size="icon" onClick={toggleTheme} aria-label="Toggle theme">
                 {displayTheme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
             </Button>
         ) : (
             <Button variant="ghost" size="icon" aria-label="Toggle theme" disabled>
-                <Moon className="h-5 w-5" /> {/* Default placeholder icon */}
+                <Moon className="h-5 w-5" />
             </Button>
         )}
-        <Button variant="ghost" size="icon" onClick={() => onNavigate('settings')} aria-label="Open settings">
-           <Settings className="h-5 w-5" />
-        </Button>
+        <Link href="/settings" passHref legacyBehavior>
+          <Button variant="ghost" size="icon" aria-label="Open settings" as="a">
+             <Settings className="h-5 w-5" />
+          </Button>
+        </Link>
       </div>
     </header>
   );
 }
-

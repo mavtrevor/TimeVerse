@@ -50,5 +50,6 @@ export interface NavItem {
   id: FeatureKey;
   label: string;
   icon: React.ElementType;
-  component: React.ElementType;
+  component?: React.ElementType; // Made optional
 }
+
