@@ -300,7 +300,7 @@ export default function TimersFeature() {
           {timerShortcuts.map(shortcut => (
             <Button
               key={shortcut.label}
-              variant="outline"
+              variant="default" // Changed to default for primary color background
               onClick={() => handleAddTimerFromShortcut(shortcut.duration, shortcut.label)}
             >
               <TimerIconLucide className="mr-2 h-4 w-4" />
