@@ -67,7 +67,7 @@ export default function WorldClockFeature() {
     } else {
       const newCity: WorldClockCity = {
         id: Date.now().toString(),
-        name: title, // Use the custom title
+        name: title, 
         timezone: timezoneIana,
       };
       setUserAddedCities([...userAddedCities, newCity]);
@@ -110,7 +110,7 @@ export default function WorldClockFeature() {
               <Trash2 className="h-4 w-4" />
             </Button>
           )}
-          {(!isUserAdded && !isLocal) && ( // Don't show arrow for local popular city
+          {(!isUserAdded && !isLocal) && ( 
              <Link href={linkHref} passHref legacyBehavior>
                 <Button variant="ghost" size="icon" aria-label={`Details for ${name}`} className="text-muted-foreground hover:text-primary -mt-1 -mr-2">
                     <ArrowRight className="h-4 w-4" />
@@ -190,11 +190,6 @@ export default function WorldClockFeature() {
               </DialogHeader>
               <AddCityForm 
                 onAddCity={handleAddCity} 
-                existingTimezones={[
-                    localTimezone,
-                    ...popularCityDetails.map(c => c.iana), 
-                    ...userAddedCities.map(c => c.timezone)
-                ]} 
                 onClose={() => setIsAddCityDialogOpen(false)}
               />
             </DialogContent>
@@ -257,18 +252,23 @@ export default function WorldClockFeature() {
 
 interface AddCityFormProps {
   onAddCity: (timezoneIana: string, title: string) => void;
-  existingTimezones: string[];
   onClose: () => void;
 }
 
-function AddCityForm({ onAddCity, existingTimezones, onClose }: AddCityFormProps) {
+function AddCityForm({ onAddCity, onClose }: AddCityFormProps) {
   const [selectedCountryCode, setSelectedCountryCode] = useState<string>('');
   const [selectedTimezoneIana, setSelectedTimezoneIana] = useState<string>('');
   const [customTitle, setCustomTitle] = useState<string>('');
+  const [clientNow, setClientNow] = useState<Date | null>(null);
+
+  useEffect(() => {
+    setClientNow(new Date()); // For calculating current offsets in dropdown
+  }, []);
+
 
   const handleCountryChange = (countryCode: string) => {
     setSelectedCountryCode(countryCode);
-    setSelectedTimezoneIana(''); // Reset timezone when country changes
+    setSelectedTimezoneIana(''); 
     setCustomTitle('');
   };
 
@@ -286,7 +286,7 @@ function AddCityForm({ onAddCity, existingTimezones, onClose }: AddCityFormProps
   };
 
   const timezonesForSelectedCountry = selectedCountryCode
-    ? extendedCommonTimezones.filter(tz => tz.countryCode === selectedCountryCode && !existingTimezones.includes(tz.timezone))
+    ? extendedCommonTimezones.filter(tz => tz.countryCode === selectedCountryCode)
     : [];
 
   return (
@@ -317,13 +317,13 @@ function AddCityForm({ onAddCity, existingTimezones, onClose }: AddCityFormProps
             disabled={!selectedCountryCode || timezonesForSelectedCountry.length === 0}
         >
           <SelectTrigger id="timezone" className="w-full mt-1">
-            <SelectValue placeholder={!selectedCountryCode ? "Select country first" : (timezonesForSelectedCountry.length === 0 ? "No timezones available" : "Select a timezone")} />
+            <SelectValue placeholder={!selectedCountryCode ? "Select country first" : (timezonesForSelectedCountry.length === 0 ? "No timezones available for this country" : "Select a timezone")} />
           </SelectTrigger>
           <SelectContent>
             <SelectGroup>
               {timezonesForSelectedCountry.map(tz => (
                 <SelectItem key={tz.timezone} value={tz.timezone}>
-                  {`(${getTimezoneOffset(tz.timezone, new Date())}) ${tz.name}`}
+                  {`(${getTimezoneOffset(tz.timezone, clientNow)}) ${tz.name}`}
                 </SelectItem>
               ))}
             </SelectGroup>
@@ -357,3 +357,4 @@ function AddCityForm({ onAddCity, existingTimezones, onClose }: AddCityFormProps
   );
 }
 
+    
