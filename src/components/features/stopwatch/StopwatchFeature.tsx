@@ -166,8 +166,8 @@ export default function StopwatchFeature() {
               </Button>
             </div>
           </CardFooter>
-          {laps.length > 0 && !isFullscreen && ( // Hide laps in fullscreen mode to maximize clock
-            <ScrollArea className="px-4 pb-4 max-h-48 mt-2">
+          {laps.length > 0 && !isFullscreen && ( 
+            <ScrollArea className={`px-4 pb-4 mt-2 ${laps.length > 10 ? 'max-h-96' : ''}`}>
               <Table>
                 <TableHeader>
                   <TableRow>
