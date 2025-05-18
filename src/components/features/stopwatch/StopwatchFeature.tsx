@@ -90,13 +90,11 @@ export default function StopwatchFeature() {
   };
   
   const toggleFullscreen = () => {
-    const elem = document.getElementById("stopwatch-card"); // The card itself is what goes fullscreen
+    const elem = document.getElementById("stopwatch-card"); 
     if (!elem) return;
 
     if (!document.fullscreenElement) {
       elem.requestFullscreen().then(() => setIsFullscreen(true)).catch(err => {
-        // It's good to inform the user if fullscreen failed, though alert might be intrusive.
-        // Consider a toast notification for a smoother UX.
         console.error(`Error attempting to enable full-screen mode: ${err.message} (${err.name})`);
         toast({ title: "Fullscreen Error", description: "Could not enter fullscreen mode.", variant: "destructive"});
       });
@@ -110,9 +108,9 @@ export default function StopwatchFeature() {
       setIsFullscreen(!!document.fullscreenElement);
     };
     document.addEventListener('fullscreenchange', handleFullscreenChange);
-    document.addEventListener('webkitfullscreenchange', handleFullscreenChange); // Safari
-    document.addEventListener('mozfullscreenchange', handleFullscreenChange); // Firefox
-    document.addEventListener('MSFullscreenChange', handleFullscreenChange); // IE/Edge
+    document.addEventListener('webkitfullscreenchange', handleFullscreenChange); 
+    document.addEventListener('mozfullscreenchange', handleFullscreenChange); 
+    document.addEventListener('MSFullscreenChange', handleFullscreenChange); 
     return () => {
       document.removeEventListener('fullscreenchange', handleFullscreenChange);
       document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
@@ -123,11 +121,38 @@ export default function StopwatchFeature() {
 
 
   const displayTime = formatDuration(time / 1000);
-  const milliseconds = String(time % 1000).padStart(3, '0').slice(0,2); // Display hundredths of a second
+  const milliseconds = String(time % 1000).padStart(3, '0').slice(0,2); 
+
+  const renderLapsTable = () => (
+    <Table>
+      <TableHeader>
+        <TableRow>
+          <TableHead className="w-[80px]">Lap</TableHead>
+          <TableHead>Lap Time</TableHead>
+          <TableHead className="text-right">Total Time</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {laps.slice().reverse().map((lapTime, index) => {
+          const lapNumber = laps.length - index;
+          let cumulativeTime = 0;
+          for(let i = 0; i < lapNumber; i++) {
+            cumulativeTime += laps[i];
+          }
+          return (
+            <TableRow key={lapNumber}>
+              <TableCell>{lapNumber}</TableCell>
+              <TableCell>{formatDuration(lapTime / 1000)}.{String(lapTime % 1000).padStart(3, '0').slice(0,2)}</TableCell>
+              <TableCell className="text-right">{formatDuration(cumulativeTime / 1000)}.{String(cumulativeTime % 1000).padStart(3, '0').slice(0,2)}</TableCell>
+            </TableRow>
+          );
+        })}
+      </TableBody>
+    </Table>
+  );
 
   return (
     <div className="p-4 md:p-6 flex flex-col items-center space-y-8">
-      {/* Wrapper for the stopwatch card, handles fullscreen positioning context */}
       <div 
         id="stopwatch-wrapper" 
         className={`${isFullscreen ? 'fixed inset-0 bg-background z-50 flex items-center justify-center w-screen h-screen p-0' : 'w-full max-w-2xl'}`}
@@ -161,39 +186,21 @@ export default function StopwatchFeature() {
                <Button onClick={recordLap} variant="secondary" size="lg" disabled={!isRunning && time === 0} className={`w-full sm:w-32 ${isFullscreen ? 'py-3 text-lg' : ''}`}>
                 <Flag className="mr-2 h-5 w-5" /> Lap
               </Button>
-               <Button onClick={exportLaps} variant="ghost" size="lg" disabled={laps.length === 0} className={`${isFullscreen ? 'py-3 text-lg' : ''} hidden sm:flex`}> {/* Hide export on small screens in fullscreen for simplicity */}
+               <Button onClick={exportLaps} variant="ghost" size="lg" disabled={laps.length === 0} className={`${isFullscreen ? 'py-3 text-lg' : ''} hidden sm:flex`}>
                 <Download className="mr-2 h-5 w-5" /> Export
               </Button>
             </div>
           </CardFooter>
-          {laps.length > 0 && !isFullscreen && ( 
-            <ScrollArea className={`px-4 pb-4 mt-2 ${laps.length > 10 ? 'max-h-96' : ''}`}>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-[80px]">Lap</TableHead>
-                    <TableHead>Lap Time</TableHead>
-                    <TableHead className="text-right">Total Time</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {laps.slice().reverse().map((lapTime, index) => {
-                    const lapNumber = laps.length - index;
-                    let cumulativeTime = 0;
-                    for(let i = 0; i < lapNumber; i++) {
-                      cumulativeTime += laps[i];
-                    }
-                    return (
-                      <TableRow key={lapNumber}>
-                        <TableCell>{lapNumber}</TableCell>
-                        <TableCell>{formatDuration(lapTime / 1000)}.{String(lapTime % 1000).padStart(3, '0').slice(0,2)}</TableCell>
-                        <TableCell className="text-right">{formatDuration(cumulativeTime / 1000)}.{String(cumulativeTime % 1000).padStart(3, '0').slice(0,2)}</TableCell>
-                      </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
-            </ScrollArea>
+          {laps.length > 0 && !isFullscreen && (
+            laps.length <= 10 ? (
+              <div className="px-4 pb-4 mt-2">
+                {renderLapsTable()}
+              </div>
+            ) : (
+              <ScrollArea className="px-4 pb-4 mt-2 max-h-96">
+                {renderLapsTable()}
+              </ScrollArea>
+            )
           )}
         </Card>
       </div>
@@ -252,5 +259,4 @@ export default function StopwatchFeature() {
     </div>
   );
 }
-
     
