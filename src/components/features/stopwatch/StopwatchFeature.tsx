@@ -170,7 +170,7 @@ export default function StopwatchFeature() {
           </CardHeader>
           <CardContent className="flex flex-col items-center justify-center py-8">
             <div className={`font-mono font-bold text-primary select-none ${isFullscreen ? 'text-8xl sm:text-9xl md:text-[10rem] lg:text-[12rem]' : 'text-7xl sm:text-8xl'}`}>
-              {displayTime}<span className={` ${isFullscreen ? 'text-5xl sm:text-6xl md:text-7xl lg:text-8xl' : 'text-4xl sm:text-5xl'} opacity-70`}>.{milliseconds}</span>
+              {displayTime}<span className={` ${isFullscreen ? 'text-5xl sm:text-6xl md:text-7xl lg:text-8xl' : 'text-4xl sm:text-5xl'}`}>.{milliseconds}</span>
             </div>
           </CardContent>
           <CardFooter className={`border-t p-4 flex flex-col sm:flex-row justify-between items-center gap-4 ${isFullscreen ? 'sm:pb-8' : ''}`}>
