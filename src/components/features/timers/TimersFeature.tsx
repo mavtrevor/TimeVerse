@@ -53,8 +53,10 @@ export default function TimersFeature() {
   const [fullscreenTimerId, setFullscreenTimerId] = useState<string | null>(null);
   const { toast } = useToast();
   const [elapsedTime, setElapsedTime] = useState(0);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     setElapsedTime(0); // Reset elapsed time on mount or if component re-initializes
     const intervalId = setInterval(() => {
       setElapsedTime(prevTime => prevTime + 1);
@@ -64,6 +66,7 @@ export default function TimersFeature() {
 
 
   useEffect(() => {
+    if (!mounted) return;
     const interval = setInterval(() => {
       setTimers(prevTimers =>
         prevTimers.map(timer => {
@@ -90,7 +93,7 @@ export default function TimersFeature() {
       );
     }, 1000);
     return () => clearInterval(interval);
-  }, [setTimers, toast]);
+  }, [setTimers, toast, mounted]);
 
   const handleSaveTimer = (timerData: { name: string; duration: number }) => {
     if (editingTimer) {
@@ -239,11 +242,11 @@ export default function TimersFeature() {
         timer={editingTimer}
       />
 
-      <Card className="shadow-lg mt-4">
+      <Card className="shadow-lg mt-0"> {/* Removed mt-4 */}
         <CardContent className="pt-6">
-          {timers.length === 0 ? (
+          {(!mounted || timers.length === 0) ? (
             <p className="text-center text-muted-foreground">
-              You have no timers set. Click "Add Timer" or a shortcut to create one.
+              {!mounted ? "Loading timers..." : "You have no timers set. Click \"Add Timer\" or a shortcut to create one."}
             </p>
           ) : (
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -300,7 +303,7 @@ export default function TimersFeature() {
           {timerShortcuts.map(shortcut => (
             <Button
               key={shortcut.label}
-              variant="default" // Changed to default for primary color background
+              variant="default" 
               onClick={() => handleAddTimerFromShortcut(shortcut.duration, shortcut.label)}
             >
               <TimerIconLucide className="mr-2 h-4 w-4" />
@@ -447,3 +450,4 @@ function TimerFormDialog({ isOpen, onOpenChange, onSave, timer }: TimerFormDialo
   );
 }
 
+    

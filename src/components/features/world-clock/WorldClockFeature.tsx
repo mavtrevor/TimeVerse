@@ -27,8 +27,10 @@ export default function WorldClockFeature() {
   const [clientNow, setClientNow] = useState<Date | null>(null);
   const [localTimezone, setLocalTimezone] = useState<string>('');
   const [localCityName, setLocalCityName] = useState<string>('Local Time');
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     setClientNow(new Date()); // Set initial time on client after mount
     const timerId = setInterval(() => setClientNow(new Date()), 1000); // Update every second
     
@@ -189,16 +191,17 @@ export default function WorldClockFeature() {
           </Dialog>
         </div>
 
-        {userAddedCities.length === 0 && (
+        {(!mounted || userAddedCities.length === 0) ? (
           <Card className="shadow-sm border-dashed">
             <CardContent className="pt-6 text-center text-muted-foreground">
-              You haven't added any custom city clocks.
+              {!mounted ? "Loading custom clocks..." : "You haven't added any custom city clocks."}
             </CardContent>
           </Card>
+        ) : (
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {userAddedCities.map(city => renderCityCard(city, true))}
+          </div>
         )}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {userAddedCities.map(city => renderCityCard(city, true))}
-        </div>
       </div>
 
     </div>
@@ -251,3 +254,5 @@ function AddCityForm({ onAddCity, existingTimezones }: AddCityFormProps) {
     </form>
   );
 }
+
+    

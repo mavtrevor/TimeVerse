@@ -134,19 +134,21 @@ export default function AlarmsFeature() {
   const [ringingAlarmId, setRingingAlarmId] = useState<string | null>(null);
   const [ringingAlarmModal, setRingingAlarmModal] = useState<Alarm | null>(null);
   const [shortcutInitialData, setShortcutInitialData] = useState<Partial<Omit<Alarm, 'id' | 'isActive'>> | null>(null);
+  const [mounted, setMounted] = useState(false);
 
 
   useEffect(() => {
-    setCurrentTime(new Date()); 
+    setMounted(true);
+    setCurrentTime(new Date());
     const timerId = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => {
       clearInterval(timerId);
-      stopAlarmSound(audioRef); 
+      stopAlarmSound(audioRef);
     };
   }, []);
   
   useEffect(() => {
-    if (!currentTime) return;
+    if (!currentTime || !mounted) return;
 
     alarms.forEach(alarm => {
       if (alarm.isActive && ringingAlarmId !== alarm.id) { 
@@ -174,7 +176,7 @@ export default function AlarmsFeature() {
       }
     });
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentTime, alarms, timeFormat, toast, ringingAlarmId]);
+  }, [currentTime, alarms, timeFormat, toast, ringingAlarmId, mounted]);
 
 
   const handleSaveAlarm = (alarmData: Omit<Alarm, 'id' | 'isActive'>) => {
@@ -301,9 +303,9 @@ export default function AlarmsFeature() {
         
         <Card className="shadow-lg mt-4">
           <CardContent className="pt-6">
-            {alarms.length === 0 ? (
+            {(!mounted || alarms.length === 0) ? (
               <p className="text-center text-muted-foreground">
-                You have no alarms set. Click "Add Alarm" to create one.
+                { !mounted ? "Loading alarms..." : "You have no alarms set. Click \"Add Alarm\" to create one."}
               </p>
             ) : (
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -642,7 +644,5 @@ function RingingAlarmDialog({ alarm, onDismiss, timeFormat }: RingingAlarmDialog
     </Dialog>
   );
 }
-
-    
 
     
