@@ -78,7 +78,7 @@ export default function AlarmsFeature() {
   const [alarms, setAlarms] = useLocalStorage<Alarm[]>('chronozen-alarms', INITIAL_ALARMS);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingAlarm, setEditingAlarm] = useState<Alarm | null>(null);
-  const { timeFormat } = useSettings();
+  const { timeFormat, language } = useSettings();
   const { toast } = useToast();
   const [currentTime, setCurrentTime] = useState(new Date());
 
@@ -91,7 +91,7 @@ export default function AlarmsFeature() {
     const notificationBody = alarm.label || "Your alarm is ringing!";
     const notificationOptions = {
       body: notificationBody,
-      icon: "/logo.png", // Ensure logo.png is in public folder
+      icon: "/logo.png", 
     };
 
     if (!("Notification" in window)) {
@@ -107,10 +107,10 @@ export default function AlarmsFeature() {
           playAlarmSound(alarm.sound);
         } else {
           alert("Notification permission denied. " + notificationBody);
-          playAlarmSound(alarm.sound); // Play sound even if notification is denied by user
+          playAlarmSound(alarm.sound);
         }
       });
-    } else { // Permission denied
+    } else { 
         alert("Notification permission was denied. " + notificationBody);
         playAlarmSound(alarm.sound);
     }
@@ -128,7 +128,7 @@ export default function AlarmsFeature() {
           alarmIsToday &&
           alarmTime.getHours() === now.getHours() &&
           alarmTime.getMinutes() === now.getMinutes() &&
-          now.getSeconds() === 0 // Trigger on the exact minute
+          now.getSeconds() === 0 
         ) {
           showNotification(alarm);
           toast({
@@ -177,69 +177,82 @@ export default function AlarmsFeature() {
   };
 
   return (
-    <div className="space-y-6 p-4 md:p-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-semibold">Alarms</h2>
-        <Button onClick={openAddForm}>
-          <PlusCircle className="mr-2 h-4 w-4" /> Add Alarm
-        </Button>
+    <div className="flex flex-col flex-1 p-4 md:p-6 space-y-8"> {/* Adjusted for full height and spacing */}
+      {/* Digital Clock Display */}
+      <div className="flex-grow flex flex-col items-center justify-center text-center py-4">
+        <div className="font-mono text-7xl md:text-8xl lg:text-9xl font-bold text-primary select-none">
+          {formatTime(currentTime, timeFormat)}
+        </div>
+        <div className="text-lg md:text-xl lg:text-2xl text-muted-foreground select-none mt-2">
+          {currentTime.toLocaleDateString(language, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+        </div>
       </div>
 
-      <AlarmFormDialog
-        isOpen={isFormOpen}
-        onOpenChange={(open) => {
-          setIsFormOpen(open);
-          if (!open) setEditingAlarm(null); // Reset editing alarm when dialog closes
-        }}
-        onSave={handleSaveAlarm}
-        alarm={editingAlarm}
-      />
+      {/* Alarms Management Section */}
+      <div className="mt-auto"> {/* Pushes content below to bottom if clock takes up space */}
+        <div className="flex justify-between items-center">
+          <h2 className="text-2xl font-semibold">Alarms</h2>
+          <Button onClick={openAddForm}>
+            <PlusCircle className="mr-2 h-4 w-4" /> Add Alarm
+          </Button>
+        </div>
 
-      {alarms.length === 0 && (
-        <Card className="shadow-lg">
-          <CardContent className="pt-6 text-center text-muted-foreground">
-            You have no alarms set. Click "Add Alarm" to create one.
-          </CardContent>
-        </Card>
-      )}
+        <AlarmFormDialog
+          isOpen={isFormOpen}
+          onOpenChange={(open) => {
+            setIsFormOpen(open);
+            if (!open) setEditingAlarm(null); 
+          }}
+          onSave={handleSaveAlarm}
+          alarm={editingAlarm}
+        />
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {alarms.map(alarm => (
-          <Card key={alarm.id} className={`shadow-lg flex flex-col ${!alarm.isActive ? 'opacity-60' : ''}`}>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-xl truncate" title={alarm.label || "Alarm"}>{alarm.label || "Alarm"}</CardTitle>
-              <Switch
-                checked={alarm.isActive}
-                onCheckedChange={(checked) => toggleAlarmActive(alarm.id, checked)}
-                aria-label={alarm.isActive ? "Deactivate alarm" : "Activate alarm"}
-              />
-            </CardHeader>
-            <CardContent className="flex-grow">
-              <p className="text-4xl font-bold text-primary">
-                {formatTime(parseTimeString(alarm.time), timeFormat)}
-              </p>
-              <p className="text-sm text-muted-foreground">
-                Sound: {alarmSounds.find(s => s.id === alarm.sound)?.name || 'Default'}
-              </p>
-              <p className="text-sm text-muted-foreground">
-                Snooze: {alarm.snoozeEnabled ? `${alarm.snoozeDuration} min` : 'Off'}
-              </p>
-              {alarm.days && alarm.days.length > 0 && (
-                <p className="text-xs text-muted-foreground mt-1">
-                  Repeats: {alarm.days.map(d => ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][d]).join(', ')}
-                </p>
-              )}
+        {alarms.length === 0 && (
+          <Card className="shadow-lg mt-4">
+            <CardContent className="pt-6 text-center text-muted-foreground">
+              You have no alarms set. Click "Add Alarm" to create one.
             </CardContent>
-            <CardFooter className="p-4 border-t flex justify-end gap-2">
-               <Button variant="ghost" size="icon" onClick={() => openEditForm(alarm)} aria-label="Edit alarm">
-                <Edit className="h-4 w-4" />
-              </Button>
-              <Button variant="ghost" size="icon" onClick={() => handleDeleteAlarm(alarm.id)} aria-label="Delete alarm" className="text-destructive hover:text-destructive">
-                <Trash2 className="h-4 w-4" />
-              </Button>
-            </CardFooter>
           </Card>
-        ))}
+        )}
+
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 mt-4">
+          {alarms.map(alarm => (
+            <Card key={alarm.id} className={`shadow-lg flex flex-col ${!alarm.isActive ? 'opacity-60' : ''}`}>
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-xl truncate" title={alarm.label || "Alarm"}>{alarm.label || "Alarm"}</CardTitle>
+                <Switch
+                  checked={alarm.isActive}
+                  onCheckedChange={(checked) => toggleAlarmActive(alarm.id, checked)}
+                  aria-label={alarm.isActive ? "Deactivate alarm" : "Activate alarm"}
+                />
+              </CardHeader>
+              <CardContent className="flex-grow">
+                <p className="text-4xl font-bold text-primary">
+                  {formatTime(parseTimeString(alarm.time), timeFormat)}
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  Sound: {alarmSounds.find(s => s.id === alarm.sound)?.name || 'Default'}
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  Snooze: {alarm.snoozeEnabled ? `${alarm.snoozeDuration} min` : 'Off'}
+                </p>
+                {alarm.days && alarm.days.length > 0 && (
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Repeats: {alarm.days.map(d => ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][d]).join(', ')}
+                  </p>
+                )}
+              </CardContent>
+              <CardFooter className="p-4 border-t flex justify-end gap-2">
+                 <Button variant="ghost" size="icon" onClick={() => openEditForm(alarm)} aria-label="Edit alarm">
+                  <Edit className="h-4 w-4" />
+                </Button>
+                <Button variant="ghost" size="icon" onClick={() => handleDeleteAlarm(alarm.id)} aria-label="Delete alarm" className="text-destructive hover:text-destructive">
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </CardFooter>
+            </Card>
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -270,7 +283,6 @@ function AlarmFormDialog({ isOpen, onOpenChange, onSave, alarm }: AlarmFormDialo
       setSnoozeDuration(alarm.snoozeDuration);
       setDays(alarm.days || []);
     } else if (isOpen && !alarm) {
-      // Reset to defaults for new alarm when dialog opens
       setTime('07:00');
       setLabel('');
       setSound(defaultAlarmSound);
@@ -283,7 +295,7 @@ function AlarmFormDialog({ isOpen, onOpenChange, onSave, alarm }: AlarmFormDialo
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSave({ time, label, sound, snoozeEnabled, snoozeDuration, days });
-    onOpenChange(false); // Close dialog on save
+    onOpenChange(false); 
   };
 
   const toggleDay = (dayIndex: number) => {
