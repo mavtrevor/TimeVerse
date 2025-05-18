@@ -45,7 +45,7 @@ export default function CityClockPage() {
 
   if (!cityDetails || !clientNow) {
     if (!cityDetails && cityIdParam) {
-        console.warn(\`City details not found for IANA: \${decodeURIComponent(cityIdParam as string)}\`)
+        console.warn(`City details not found for IANA: ${decodeURIComponent(cityIdParam as string)}`);
         if (typeof window !== 'undefined' && !cityDetails) {
              notFound(); 
         }
