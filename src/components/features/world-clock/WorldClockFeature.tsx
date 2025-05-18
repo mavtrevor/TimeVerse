@@ -11,7 +11,10 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { PlusCircle, Trash2, ArrowRight } from 'lucide-react';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from '@/components/ui/dialog';
-import { commonTimezones, getTimeInTimezone, getTimezoneOffset, formatTime } from '@/lib/timeUtils';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { extendedCommonTimezones, dialogCountries, getTimeInTimezone, getTimezoneOffset, formatTime } from '@/lib/timeUtils';
+import type { CommonTimezoneInfo } from '@/lib/timeUtils';
 import { popularCityDetails } from '@/lib/cityData';
 import { useToast } from '@/hooks/use-toast';
 import { Separator } from '@/components/ui/separator';
@@ -31,42 +34,44 @@ export default function WorldClockFeature() {
 
   useEffect(() => {
     setMounted(true);
-    setClientNow(new Date()); // Set initial time on client after mount
-    const timerId = setInterval(() => setClientNow(new Date()), 1000); // Update every second
+    setClientNow(new Date()); 
+    const timerId = setInterval(() => setClientNow(new Date()), 1000); 
     
     const detectedTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
     setLocalTimezone(detectedTimezone);
-    const foundLocal = popularCityDetails.find(c => c.iana === detectedTimezone) || commonTimezones.find(c => c.timezone === detectedTimezone);
-    setLocalCityName(foundLocal?.name || 'Local Time');
+
+    const foundLocalInPopular = popularCityDetails.find(c => c.iana === detectedTimezone);
+    if (foundLocalInPopular) {
+        setLocalCityName(foundLocalInPopular.displayName || foundLocalInPopular.name);
+    } else {
+        const foundLocalInExtended = extendedCommonTimezones.find(c => c.timezone === detectedTimezone);
+        setLocalCityName(foundLocalInExtended?.city || 'Local Time');
+    }
+    
 
     return () => clearInterval(timerId);
   }, []);
 
-  const handleAddCity = (timezoneId: string) => {
-    const selectedTzData = commonTimezones.find(tz => tz.timezone === timezoneId);
-    if (!selectedTzData) {
-      toast({ title: "Error", description: "Selected timezone data not found.", variant: "destructive" });
-      return;
-    }
-
-    const isAlreadyPopular = popularCityDetails.some(pc => pc.iana === timezoneId);
-    const isAlreadyAddedByUser = userAddedCities.some(uac => uac.timezone === timezoneId);
-    const isLocal = timezoneId === localTimezone;
+  const handleAddCity = (timezoneIana: string, title: string) => {
+    const isAlreadyPopular = popularCityDetails.some(pc => pc.iana === timezoneIana);
+    const isAlreadyAddedByUser = userAddedCities.some(uac => uac.timezone === timezoneIana);
+    const isLocal = timezoneIana === localTimezone;
 
     if (isLocal) {
       toast({ title: "Info", description: "Local time is already displayed." });
     } else if (isAlreadyPopular) {
-      toast({ title: "Info", description: `${selectedTzData.name} is already shown in the popular cities list.` });
+       const popularCity = popularCityDetails.find(pc => pc.iana === timezoneIana);
+      toast({ title: "Info", description: `${popularCity?.name || 'This city'} is already shown in the popular cities list.` });
     } else if (isAlreadyAddedByUser) {
-      toast({ title: "Already Added", description: `${selectedTzData.name} is already in your custom list.` });
+      toast({ title: "Already Added", description: `${title} is already in your custom list.` });
     } else {
       const newCity: WorldClockCity = {
         id: Date.now().toString(),
-        name: selectedTzData.name,
-        timezone: selectedTzData.timezone,
+        name: title, // Use the custom title
+        timezone: timezoneIana,
       };
       setUserAddedCities([...userAddedCities, newCity]);
-      toast({ title: "City Added", description: `${selectedTzData.name} added to your custom list.` });
+      toast({ title: "City Added", description: `${title} added to your custom list.` });
     }
     setIsAddCityDialogOpen(false);
   };
@@ -80,10 +85,10 @@ export default function WorldClockFeature() {
   };
 
   const renderCityCard = (city: CityDetail | WorldClockCity, isUserAdded: boolean = false, isLocal: boolean = false) => {
-    const cityData = city as CityDetail; // For popular cities
-    const userCityData = city as WorldClockCity; // For user-added cities
+    const cityData = city as CityDetail; 
+    const userCityData = city as WorldClockCity; 
     
-    const name = cityData.displayName || city.name;
+    const name = isUserAdded ? userCityData.name : (cityData.displayName || cityData.name);
     const timezone = isUserAdded ? userCityData.timezone : cityData.iana;
     const linkHref = `/world-clock/${encodeURIComponent(timezone)}`;
 
@@ -103,7 +108,7 @@ export default function WorldClockFeature() {
               <Trash2 className="h-4 w-4" />
             </Button>
           )}
-          {!isUserAdded && !isLocal && (
+          {(!isUserAdded && !isLocal) && ( // Don't show arrow for local popular city
              <Link href={linkHref} passHref legacyBehavior>
                 <Button variant="ghost" size="icon" aria-label={`Details for ${name}`} className="text-muted-foreground hover:text-primary -mt-1 -mr-2">
                     <ArrowRight className="h-4 w-4" />
@@ -126,7 +131,6 @@ export default function WorldClockFeature() {
 
   return (
     <div className="space-y-8 p-4 md:p-6">
-      {/* Local Time Display */}
       {localTimezone && clientNow && (
         <Card className="shadow-xl border-primary ring-1 ring-primary/50">
           <CardHeader>
@@ -175,9 +179,9 @@ export default function WorldClockFeature() {
                 <PlusCircle className="mr-2 h-4 w-4" /> Add Custom City
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px]">
+            <DialogContent className="sm:max-w-md">
               <DialogHeader>
-                <DialogTitle>Add Custom City to World Clock</DialogTitle>
+                <DialogTitle className="font-bold text-xl">Add</DialogTitle>
               </DialogHeader>
               <AddCityForm 
                 onAddCity={handleAddCity} 
@@ -186,6 +190,7 @@ export default function WorldClockFeature() {
                     ...popularCityDetails.map(c => c.iana), 
                     ...userAddedCities.map(c => c.timezone)
                 ]} 
+                onClose={() => setIsAddCityDialogOpen(false)}
               />
             </DialogContent>
           </Dialog>
@@ -246,49 +251,103 @@ export default function WorldClockFeature() {
 
 
 interface AddCityFormProps {
-  onAddCity: (timezone: string) => void;
-  existingTimezones: string[]; // Full list of timezones already displayed (local, popular, user-added)
+  onAddCity: (timezoneIana: string, title: string) => void;
+  existingTimezones: string[];
+  onClose: () => void;
 }
 
-function AddCityForm({ onAddCity, existingTimezones }: AddCityFormProps) {
-  const [selectedTimezone, setSelectedTimezone] = useState<string>('');
+function AddCityForm({ onAddCity, existingTimezones, onClose }: AddCityFormProps) {
+  const [selectedCountryCode, setSelectedCountryCode] = useState<string>('');
+  const [selectedTimezoneIana, setSelectedTimezoneIana] = useState<string>('');
+  const [customTitle, setCustomTitle] = useState<string>('');
+
+  const handleCountryChange = (countryCode: string) => {
+    setSelectedCountryCode(countryCode);
+    setSelectedTimezoneIana(''); // Reset timezone when country changes
+    setCustomTitle('');
+  };
+
+  const handleTimezoneChange = (iana: string) => {
+    setSelectedTimezoneIana(iana);
+    const tzData = extendedCommonTimezones.find(tz => tz.timezone === iana);
+    setCustomTitle(tzData?.city || '');
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (selectedTimezone) {
-      onAddCity(selectedTimezone);
-      setSelectedTimezone(''); 
+    if (selectedTimezoneIana) {
+      onAddCity(selectedTimezoneIana, customTitle || 'Custom City');
     }
   };
 
-  // Filter commonTimezones to exclude those already displayed (local, popular, or user-added)
-  const availableTimezones = commonTimezones.filter(tz => !existingTimezones.includes(tz.timezone));
+  const timezonesForSelectedCountry = selectedCountryCode
+    ? extendedCommonTimezones.filter(tz => tz.countryCode === selectedCountryCode && !existingTimezones.includes(tz.timezone))
+    : [];
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4 py-4">
-      <Select onValueChange={setSelectedTimezone} value={selectedTimezone}>
-        <SelectTrigger className="w-full">
-          <SelectValue placeholder="Select a city/timezone" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectGroup>
-            <SelectLabel>Available Timezones</SelectLabel>
-            {availableTimezones.length > 0 ? availableTimezones.map(tz => (
-              <SelectItem key={tz.timezone} value={tz.timezone}>
-                {tz.name} ({getTimezoneOffset(tz.timezone)})
-              </SelectItem>
-            )) : <SelectItem value="none" disabled>No more unique timezones to add from this list.</SelectItem>}
-          </SelectGroup>
-        </SelectContent>
-      </Select>
-      <DialogFooter>
-        <DialogClose asChild>
-           <Button type="button" variant="outline">Cancel</Button>
-        </DialogClose>
-        <Button type="submit" disabled={!selectedTimezone || selectedTimezone === "none"}>Add City</Button>
+      <div>
+        <Label htmlFor="country">Country</Label>
+        <Select onValueChange={handleCountryChange} value={selectedCountryCode}>
+          <SelectTrigger id="country" className="w-full mt-1">
+            <SelectValue placeholder="Select a country" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectGroup>
+              {dialogCountries.map(country => (
+                <SelectItem key={country.code} value={country.code}>
+                  {country.name}
+                </SelectItem>
+              ))}
+            </SelectGroup>
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div>
+        <Label htmlFor="timezone">Time zone</Label>
+        <Select 
+            onValueChange={handleTimezoneChange} 
+            value={selectedTimezoneIana} 
+            disabled={!selectedCountryCode || timezonesForSelectedCountry.length === 0}
+        >
+          <SelectTrigger id="timezone" className="w-full mt-1">
+            <SelectValue placeholder={!selectedCountryCode ? "Select country first" : (timezonesForSelectedCountry.length === 0 ? "No timezones available" : "Select a timezone")} />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectGroup>
+              {timezonesForSelectedCountry.map(tz => (
+                <SelectItem key={tz.timezone} value={tz.timezone}>
+                  {`(${getTimezoneOffset(tz.timezone)}) ${tz.name}`}
+                </SelectItem>
+              ))}
+            </SelectGroup>
+          </SelectContent>
+        </Select>
+      </div>
+      
+      <div>
+        <Label htmlFor="title">Title</Label>
+        <Input 
+            id="title" 
+            className="mt-1" 
+            value={customTitle} 
+            onChange={(e) => setCustomTitle(e.target.value)} 
+            placeholder="Enter custom title"
+            disabled={!selectedTimezoneIana}
+        />
+      </div>
+
+      <DialogFooter className="pt-2">
+        <Button type="button" variant="outline" onClick={onClose}>Cancel</Button>
+        <Button 
+            type="submit" 
+            disabled={!selectedTimezoneIana || !customTitle.trim()} 
+            className="bg-accent text-accent-foreground hover:bg-accent/90"
+        >
+            OK
+        </Button>
       </DialogFooter>
     </form>
   );
 }
-
-    
