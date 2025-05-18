@@ -162,7 +162,7 @@ export default function AlarmsFeature() {
       }
     });
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentTime, alarms, timeFormat, toast, ringingAlarmId]); // Removed `language` and `setAlarms` as they are not direct dependencies for this effect's logic
+  }, [currentTime, alarms, timeFormat, toast, ringingAlarmId]);
 
 
   const handleSaveAlarm = (alarmData: Omit<Alarm, 'id' | 'isActive'>) => {
@@ -267,6 +267,14 @@ export default function AlarmsFeature() {
           onDismiss={handleDismissModalAndDeactivateIfNotRecurring}
           timeFormat={timeFormat}
         />
+        
+        {alarms.length === 0 && (
+          <Card className="shadow-lg mt-4">
+            <CardContent className="pt-6 text-center text-muted-foreground">
+              You have no alarms set. Click "Add Alarm" to create one.
+            </CardContent>
+          </Card>
+        )}
 
         {/* SEO Content Card */}
         <Card className="shadow-lg mt-4">
@@ -331,77 +339,70 @@ export default function AlarmsFeature() {
           </CardContent>
         </Card>
 
+        {alarms.length > 0 && (
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 mt-4">
+            {alarms.map(alarm => {
+                const isRinging = ringingAlarmId === alarm.id && !ringingAlarmModal; // Card shows ringing only if modal is NOT active for this alarm
+                const isEffectivelyInactive = !alarm.isActive && !(ringingAlarmId === alarm.id);
 
-        {alarms.length === 0 && (
-          <Card className="shadow-lg mt-4">
-            <CardContent className="pt-6 text-center text-muted-foreground">
-              You have no alarms set. Click "Add Alarm" to create one.
-            </CardContent>
-          </Card>
-        )}
-
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 mt-4">
-          {alarms.map(alarm => {
-            const isRinging = ringingAlarmId === alarm.id && !ringingAlarmModal; // Card shows ringing only if modal is NOT active for this alarm
-            const isEffectivelyInactive = !alarm.isActive && !(ringingAlarmId === alarm.id);
-
-            return (
-            <Card key={alarm.id} className={`shadow-lg flex flex-col ${isEffectivelyInactive ? 'opacity-60' : ''} ${isRinging ? 'border-destructive ring-2 ring-destructive' : ''}`}>
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-xl truncate" title={alarm.label || "Alarm"}>{alarm.label || "Alarm"}</CardTitle>
-                {!isRinging && ( // Don't show switch if card is in "ringing" state
-                  <Switch
-                    checked={alarm.isActive}
-                    onCheckedChange={(checked) => toggleAlarmActive(alarm.id, checked)}
-                    aria-label={alarm.isActive ? "Deactivate alarm" : "Activate alarm"}
-                    disabled={ringingAlarmId === alarm.id} // Disable switch if this specific alarm is the one currently being handled by modal
-                  />
-                )}
-              </CardHeader>
-              <CardContent className="flex-grow">
-                {isRinging ? ( // This state now only for the card, modal has its own display
-                  <div className="text-center py-4">
-                    <BellRing className="h-12 w-12 text-destructive mx-auto mb-2 animate-pulse" />
-                    <p className="text-2xl font-bold text-destructive">RINGING!</p>
-                  </div>
-                ) : (
-                  <>
-                    <p className="text-4xl font-bold text-primary">
-                      {formatTime(parseTimeString(alarm.time), timeFormat)}
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      Sound: {alarmSounds.find(s => s.id === alarm.sound)?.name || 'Default'}
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      Snooze: {alarm.snoozeEnabled ? `${alarm.snoozeDuration} min` : 'Off'}
-                    </p>
-                    {alarm.days && alarm.days.length > 0 && (
-                      <p className="text-xs text-muted-foreground mt-1">
-                        Repeats: {alarm.days.map(d => ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][d]).join(', ')}
-                      </p>
+                return (
+                <Card key={alarm.id} className={`shadow-lg flex flex-col ${isEffectivelyInactive ? 'opacity-60' : ''} ${isRinging ? 'border-destructive ring-2 ring-destructive' : ''}`}>
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                    <CardTitle className="text-xl truncate" title={alarm.label || "Alarm"}>{alarm.label || "Alarm"}</CardTitle>
+                    {!isRinging && ( // Don't show switch if card is in "ringing" state
+                    <Switch
+                        checked={alarm.isActive}
+                        onCheckedChange={(checked) => toggleAlarmActive(alarm.id, checked)}
+                        aria-label={alarm.isActive ? "Deactivate alarm" : "Activate alarm"}
+                        disabled={ringingAlarmId === alarm.id} // Disable switch if this specific alarm is the one currently being handled by modal
+                    />
                     )}
-                  </>
-                )}
-              </CardContent>
-              <CardFooter className="p-4 border-t flex justify-end gap-2">
-                {isRinging ? ( // This state now only for the card
-                  <Button variant="destructive" onClick={() => handleDismissModalAndDeactivateIfNotRecurring(alarm)} className="w-full">
-                    Dismiss
-                  </Button>
-                ) : (
-                  <>
-                    <Button variant="ghost" size="icon" onClick={() => openEditForm(alarm)} aria-label="Edit alarm" disabled={ringingAlarmId === alarm.id}>
-                      <Edit className="h-4 w-4" />
+                </CardHeader>
+                <CardContent className="flex-grow">
+                    {isRinging ? ( // This state now only for the card, modal has its own display
+                    <div className="text-center py-4">
+                        <BellRing className="h-12 w-12 text-destructive mx-auto mb-2 animate-pulse" />
+                        <p className="text-2xl font-bold text-destructive">RINGING!</p>
+                    </div>
+                    ) : (
+                    <>
+                        <p className="text-4xl font-bold text-primary">
+                        {formatTime(parseTimeString(alarm.time), timeFormat)}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                        Sound: {alarmSounds.find(s => s.id === alarm.sound)?.name || 'Default'}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                        Snooze: {alarm.snoozeEnabled ? `${alarm.snoozeDuration} min` : 'Off'}
+                        </p>
+                        {alarm.days && alarm.days.length > 0 && (
+                        <p className="text-xs text-muted-foreground mt-1">
+                            Repeats: {alarm.days.map(d => ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][d]).join(', ')}
+                        </p>
+                        )}
+                    </>
+                    )}
+                </CardContent>
+                <CardFooter className="p-4 border-t flex justify-end gap-2">
+                    {isRinging ? ( // This state now only for the card
+                    <Button variant="destructive" onClick={() => handleDismissModalAndDeactivateIfNotRecurring(alarm)} className="w-full">
+                        Dismiss
                     </Button>
-                    <Button variant="ghost" size="icon" onClick={() => handleDeleteAlarm(alarm.id)} aria-label="Delete alarm" className="text-destructive hover:text-destructive" disabled={ringingAlarmId === alarm.id}>
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </>
-                )}
-              </CardFooter>
-            </Card>
-          )})}
-        </div>
+                    ) : (
+                    <>
+                        <Button variant="ghost" size="icon" onClick={() => openEditForm(alarm)} aria-label="Edit alarm" disabled={ringingAlarmId === alarm.id}>
+                        <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon" onClick={() => handleDeleteAlarm(alarm.id)} aria-label="Delete alarm" className="text-destructive hover:text-destructive" disabled={ringingAlarmId === alarm.id}>
+                        <Trash2 className="h-4 w-4" />
+                        </Button>
+                    </>
+                    )}
+                </CardFooter>
+                </Card>
+            )})}
+            </div>
+        )}
       </div>
     </div>
   );
