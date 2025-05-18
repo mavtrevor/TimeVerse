@@ -48,7 +48,7 @@ export default function AppHeader({ currentFeatureName, onNavigate }: AppHeaderP
   return (
     <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6 sm:py-4">
       {isMobile && (
-        <Button size="icon" variant="outline" className="sm:hidden" onClick={toggleSidebar}>
+        <Button size="icon" variant="outline" className="md:hidden" onClick={toggleSidebar}>
           <Menu className="h-5 w-5" />
           <span className="sr-only">Toggle Menu</span>
         </Button>
@@ -73,3 +73,4 @@ export default function AppHeader({ currentFeatureName, onNavigate }: AppHeaderP
     </header>
   );
 }
+
