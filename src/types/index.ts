@@ -50,6 +50,7 @@ export interface NavItem {
   id: FeatureKey;
   label: string;
   icon: React.ElementType;
-  component?: React.ElementType; // Made optional
+  component: React.ElementType; // Made mandatory again
+  href: string; // Keep href for Link components
 }
 

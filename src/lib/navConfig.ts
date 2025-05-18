@@ -1,22 +1,47 @@
 
 import type { NavItem, FeatureKey } from '@/types';
-import { AlarmClock, TimerIcon, Watch, Globe, SlidersHorizontal, CalendarDays, Settings } from 'lucide-react';
+import { AlarmClock, TimerIcon, Watch, Globe, SlidersHorizontal, CalendarDays, Settings as SettingsIcon } from 'lucide-react';
 
-// NavItem type from src/types will have component as optional
-// For the purpose of navigation in the layout, we don't need the component prop here.
+// Import feature components
+import AlarmsFeature from '@/components/features/alarms/AlarmsFeature';
+import TimersFeature from '@/components/features/timers/TimersFeature';
+import StopwatchFeature from '@/components/features/stopwatch/StopwatchFeature';
+import WorldClockFeature from '@/components/features/world-clock/WorldClockFeature';
+import UtilitiesFeature from '@/components/features/utilities/UtilitiesFeature';
+import CalendarFeature from '@/components/features/calendar/CalendarFeature';
+import SettingsFeature from '@/components/features/settings/SettingsFeature';
 
-interface NavDefinition extends Omit<NavItem, 'component'> {
-  id: FeatureKey; // Ensure id is strictly FeatureKey
-  href: string;
-}
 
-export const navItemsList: NavDefinition[] = [
-  { id: 'alarms', label: 'Alarms', icon: AlarmClock, href: '/' }, // Alarms will be the root page
-  { id: 'timers', label: 'Timers', icon: TimerIcon, href: '/timers' },
-  { id: 'stopwatch', label: 'Stopwatch', icon: Watch, href: '/stopwatch' },
-  { id: 'worldclock', label: 'World Clock', icon: Globe, href: '/world-clock' },
-  { id: 'utilities', label: 'Utilities', icon: SlidersHorizontal, href: '/utilities' },
-  { id: 'calendar', label: 'Calendar', icon: CalendarDays, href: '/calendar' },
+export const navItemsList: NavItem[] = [
+  { id: 'alarms', label: 'Alarms', icon: AlarmClock, href: '/', component: AlarmsFeature },
+  { id: 'timers', label: 'Timers', icon: TimerIcon, href: '/timers', component: TimersFeature },
+  { id: 'stopwatch', label: 'Stopwatch', icon: Watch, href: '/stopwatch', component: StopwatchFeature },
+  { id: 'worldclock', label: 'World Clock', icon: Globe, href: '/world-clock', component: WorldClockFeature },
+  { id: 'utilities', label: 'Utilities', icon: SlidersHorizontal, href: '/utilities', component: UtilitiesFeature },
+  { id: 'calendar', label: 'Calendar', icon: CalendarDays, href: '/calendar', component: CalendarFeature },
 ];
 
-export const settingsItem: NavDefinition = { id: 'settings', label: 'Settings', icon: Settings, href: '/settings' };
+export const settingsItem: NavItem = { id: 'settings', label: 'Settings', icon: SettingsIcon, href: '/settings', component: SettingsFeature };
+
+// Helper to get feature component based on key for AppLayout
+export const getFeatureComponent = (key: FeatureKey | null): React.ElementType => {
+  if (!key) return AlarmsFeature; // Default
+  const allItems = [...navItemsList, settingsItem];
+  const item = allItems.find(i => i.id === key);
+  return item ? item.component : AlarmsFeature; // Default to AlarmsFeature if not found
+};
+
+export const getFeatureLabel = (key: FeatureKey | null): string => {
+  if (!key) return "ChronoZen";
+  const allItems = [...navItemsList, settingsItem];
+  const item = allItems.find(i => i.id === key);
+  return item ? item.label : "ChronoZen";
+}
+
+export const getActiveFeatureKeyFromPathname = (pathname: string): FeatureKey => {
+  if (pathname === '/') return 'alarms';
+  const mainSegment = pathname.split('/')[1] as FeatureKey;
+  if (navItemsList.some(item => item.id === mainSegment)) return mainSegment;
+  if (mainSegment === 'settings') return 'settings';
+  return 'alarms'; // Default or handle as needed
+};
