@@ -9,16 +9,18 @@ import { Card, CardContent, CardHeader, CardTitle, CardFooter, CardDescription }
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from '@/components/ui/dialog';
-import { PlusCircle, Play, Pause, RotateCcw, Edit, Trash2, Maximize, Minimize } from 'lucide-react';
+import { PlusCircle, Play, Pause, RotateCcw, Edit, Trash2, Maximize, Minimize, TimerIcon as TimerIconLucide } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
-import { formatDuration, secondsToHMS } from '@/lib/timeUtils';
+import { formatDuration, secondsToHMS, formatTime } from '@/lib/timeUtils';
 import { useToast } from '@/hooks/use-toast';
+import { useSettings } from '@/hooks/useSettings'; // Import useSettings
 
 // Placeholder for actual audio playback for timers
 const playTimerSound = () => {
   console.log("Playing timer completion sound");
   try {
     const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+    if (!audioContext) return;
     const oscillator = audioContext.createOscillator();
     oscillator.type = 'triangle';
     oscillator.frequency.setValueAtTime(660, audioContext.currentTime); // E5 note
@@ -36,13 +38,32 @@ const playTimerSound = () => {
 
 const INITIAL_TIMERS: Timer[] = [];
 
+const timerShortcuts = [
+  { label: "1 Min", duration: 60 },
+  { label: "5 Mins", duration: 300 },
+  { label: "10 Mins", duration: 600 },
+  { label: "15 Mins", duration: 900 },
+  { label: "30 Mins", duration: 1800 },
+  { label: "1 Hour", duration: 3600 },
+];
+
 export default function TimersFeature() {
   const [timers, setTimers] = useLocalStorage<Timer[]>('timeverse-timers', INITIAL_TIMERS);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingTimer, setEditingTimer] = useState<Timer | null>(null);
   const [fullscreenTimerId, setFullscreenTimerId] = useState<string | null>(null);
   const { toast } = useToast();
+  const { timeFormat, language } = useSettings(); // Get settings
+  const [currentTime, setCurrentTime] = useState<Date | null>(null); // State for current time display
 
+  // Effect for the main current time display
+  useEffect(() => {
+    setCurrentTime(new Date()); // Set initial time on client after mount
+    const timerId = setInterval(() => setCurrentTime(new Date()), 1000);
+    return () => clearInterval(timerId);
+  }, []);
+
+  // Effect for managing countdown timers
   useEffect(() => {
     const interval = setInterval(() => {
       setTimers(prevTimers =>
@@ -75,7 +96,7 @@ export default function TimersFeature() {
 
   const handleSaveTimer = (timerData: { name: string; duration: number }) => {
     if (editingTimer) {
-      setTimers(timers.map(t => t.id === editingTimer.id ? { ...editingTimer, ...timerData, remainingTime: timerData.duration } : t));
+      setTimers(timers.map(t => t.id === editingTimer.id ? { ...editingTimer, ...timerData, remainingTime: timerData.duration, isRunning: false, isPaused: false } : t));
       toast({ title: "Timer Updated", description: `Timer "${timerData.name}" updated.` });
     } else {
       const newTimer: Timer = {
@@ -93,6 +114,21 @@ export default function TimersFeature() {
     setEditingTimer(null);
     setIsFormOpen(false);
   };
+  
+  const handleAddTimerFromShortcut = (durationInSeconds: number, baseLabel: string) => {
+    const timerName = `${baseLabel.replace(" Mins", " Minute").replace(" Min", " Minute")} Timer`;
+    const newTimer: Timer = {
+      id: Date.now().toString(),
+      name: timerName,
+      duration: durationInSeconds,
+      remainingTime: durationInSeconds,
+      isRunning: true, // Start immediately
+      isPaused: false,
+      createdAt: Date.now(),
+    };
+    setTimers(prevTimers => [...prevTimers, newTimer]);
+    toast({ title: "Timer Started", description: `${timerName} has started.` });
+  };
 
   const handleDeleteTimer = (id: string) => {
     setTimers(timers.filter(t => t.id !== id));
@@ -102,10 +138,15 @@ export default function TimersFeature() {
   const toggleTimer = (id: string) => {
     setTimers(timers.map(t => {
       if (t.id === id) {
-        if (t.isRunning) { // If running, pause it
-          return { ...t, isPaused: !t.isPaused };
-        } else { // If not running (either fresh or finished), start/restart it
-          return { ...t, isRunning: true, isPaused: false, remainingTime: t.remainingTime === 0 ? t.duration : t.remainingTime };
+        if (t.remainingTime === 0) { // If finished, restart it
+             return { ...t, isRunning: true, isPaused: false, remainingTime: t.duration };
+        }
+        if (t.isRunning && !t.isPaused) { // If running, pause it
+          return { ...t, isPaused: true };
+        } else if (t.isRunning && t.isPaused) { // If paused, resume it
+             return { ...t, isPaused: false };
+        } else { // If not running (fresh), start it
+          return { ...t, isRunning: true, isPaused: false };
         }
       }
       return t;
@@ -155,7 +196,7 @@ export default function TimersFeature() {
       <div className="flex space-x-4">
         <Button onClick={() => toggleTimer(timer.id)} size="lg">
           {timer.isRunning && !timer.isPaused ? <Pause className="mr-2"/> : <Play className="mr-2"/>}
-          {timer.isRunning && !timer.isPaused ? 'Pause' : 'Start'}
+          {timer.isRunning && !timer.isPaused ? 'Pause' : (timer.isPaused || timer.remainingTime === 0 ? 'Resume' : 'Start')}
         </Button>
         <Button onClick={() => resetTimer(timer.id)} variant="outline" size="lg">
           <RotateCcw className="mr-2"/> Reset
@@ -174,6 +215,16 @@ export default function TimersFeature() {
 
   return (
     <div className="space-y-6 p-4 md:p-6">
+      {/* Current Time Display */}
+      <div className="flex flex-col items-center justify-center text-center py-4">
+        <div className="font-mono text-7xl md:text-8xl lg:text-9xl font-bold text-primary select-none">
+          {currentTime ? formatTime(currentTime, timeFormat) : "00:00:00"}
+        </div>
+        <div className="text-lg md:text-xl lg:text-2xl text-muted-foreground select-none mt-2">
+          {currentTime ? currentTime.toLocaleDateString(language, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) : "Loading date..."}
+        </div>
+      </div>
+
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-semibold">Countdown Timers</h2>
         <Button onClick={openAddForm}>
@@ -181,9 +232,31 @@ export default function TimersFeature() {
         </Button>
       </div>
 
+      {/* Timer Shortcuts Section */}
+      <Card className="shadow-md">
+        <CardHeader>
+          <CardTitle className="text-lg">Set the timer for the specified time</CardTitle>
+        </CardHeader>
+        <CardContent className="flex flex-wrap gap-2">
+          {timerShortcuts.map(shortcut => (
+            <Button
+              key={shortcut.label}
+              variant="outline"
+              onClick={() => handleAddTimerFromShortcut(shortcut.duration, shortcut.label)}
+            >
+              <TimerIconLucide className="mr-2 h-4 w-4" />
+              {shortcut.label}
+            </Button>
+          ))}
+        </CardContent>
+      </Card>
+
       <TimerFormDialog
         isOpen={isFormOpen}
-        onOpenChange={setIsFormOpen}
+        onOpenChange={(open) => {
+            setIsFormOpen(open);
+            if (!open) setEditingTimer(null); // Reset editingTimer when dialog closes
+        }}
         onSave={handleSaveTimer}
         timer={editingTimer}
       />
@@ -191,7 +264,7 @@ export default function TimersFeature() {
       {timers.length === 0 && (
         <Card className="shadow-lg mt-4">
           <CardContent className="pt-6 text-center text-muted-foreground">
-            You have no timers set. Click "Add Timer" to create one.
+            You have no timers set. Click "Add Timer" or a shortcut to create one.
           </CardContent>
         </Card>
       )}
@@ -252,8 +325,8 @@ export default function TimersFeature() {
             <Card key={timer.id} id={`timer-card-${timer.id}`} className="shadow-lg flex flex-col">
               <CardHeader className="pb-2">
                 <CardTitle className="text-xl flex justify-between items-center">
-                  {timer.name}
-                  <Button variant="ghost" size="icon" onClick={() => toggleFullscreen(timer.id)} className="text-muted-foreground hover:text-primary">
+                  <span className="truncate" title={timer.name}>{timer.name}</span>
+                  <Button variant="ghost" size="icon" onClick={() => toggleFullscreen(timer.id)} className="text-muted-foreground hover:text-primary -mr-2">
                     <Maximize className="h-4 w-4" />
                   </Button>
                 </CardTitle>
@@ -268,15 +341,17 @@ export default function TimersFeature() {
                 <div className="flex gap-2">
                   <Button onClick={() => toggleTimer(timer.id)} size="sm" variant={timer.isRunning && !timer.isPaused ? "outline" : "default"}>
                     {timer.isRunning && !timer.isPaused ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
-                    <span className="ml-1 sr-only sm:not-sr-only">{timer.isRunning && !timer.isPaused ? 'Pause' : (timer.isPaused ? 'Resume' : 'Start')}</span>
+                     <span className="ml-1 sr-only sm:not-sr-only">
+                        {timer.remainingTime === 0 ? 'Restart' : (timer.isRunning && !timer.isPaused ? 'Pause' : (timer.isPaused ? 'Resume' : 'Start'))}
+                    </span>
                   </Button>
-                  <Button onClick={() => resetTimer(timer.id)} variant="outline" size="sm">
+                  <Button onClick={() => resetTimer(timer.id)} variant="outline" size="sm" disabled={timer.remainingTime === timer.duration && !timer.isRunning}>
                     <RotateCcw className="h-4 w-4" />
                     <span className="ml-1 sr-only sm:not-sr-only">Reset</span>
                   </Button>
                 </div>
                 <div className="flex gap-1">
-                  <Button variant="ghost" size="icon" onClick={() => openEditForm(timer)} aria-label="Edit timer">
+                  <Button variant="ghost" size="icon" onClick={() => openEditForm(timer)} aria-label="Edit timer" disabled={timer.isRunning && !timer.isPaused}>
                     <Edit className="h-4 w-4" />
                   </Button>
                   <Button variant="ghost" size="icon" onClick={() => handleDeleteTimer(timer.id)} aria-label="Delete timer" className="text-destructive hover:text-destructive">
@@ -306,17 +381,19 @@ function TimerFormDialog({ isOpen, onOpenChange, onSave, timer }: TimerFormDialo
   const [seconds, setSeconds] = useState(0);
 
   useEffect(() => {
-    if (timer) {
-      setName(timer.name);
-      const { h, m, s } = secondsToHMS(timer.duration);
-      setHours(h);
-      setMinutes(m);
-      setSeconds(s);
-    } else {
-      setName('');
-      setHours(0);
-      setMinutes(5);
-      setSeconds(0);
+    if (isOpen) { // Only update form when dialog is opened
+        if (timer) { // Editing existing timer
+          setName(timer.name);
+          const { h, m, s } = secondsToHMS(timer.duration);
+          setHours(h);
+          setMinutes(m);
+          setSeconds(s);
+        } else { // Adding new timer / reset form
+          setName('');
+          setHours(0);
+          setMinutes(5); // Default to 5 minutes for new timers
+          setSeconds(0);
+        }
     }
   }, [timer, isOpen]);
 
@@ -324,10 +401,16 @@ function TimerFormDialog({ isOpen, onOpenChange, onSave, timer }: TimerFormDialo
     e.preventDefault();
     const totalSeconds = hours * 3600 + minutes * 60 + seconds;
     if (totalSeconds <= 0) {
-      alert("Timer duration must be greater than 0 seconds.");
+      // Using toast for validation feedback
+      toast({
+        title: "Invalid Duration",
+        description: "Timer duration must be greater than 0 seconds.",
+        variant: "destructive",
+      });
       return;
     }
     onSave({ name: name || "My Timer", duration: totalSeconds });
+    onOpenChange(false); // Close dialog on successful save
   };
 
   return (
@@ -336,7 +419,7 @@ function TimerFormDialog({ isOpen, onOpenChange, onSave, timer }: TimerFormDialo
         <DialogHeader>
           <DialogTitle>{timer ? 'Edit Timer' : 'Add Timer'}</DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4 pt-4">
           <div>
             <Label htmlFor="timerName">Name (Optional)</Label>
             <Input id="timerName" value={name} onChange={e => setName(e.target.value)} placeholder="e.g., Pomodoro Break" />
@@ -355,7 +438,7 @@ function TimerFormDialog({ isOpen, onOpenChange, onSave, timer }: TimerFormDialo
               <Input id="seconds" type="number" value={seconds} onChange={e => setSeconds(Math.max(0, parseInt(e.target.value)))} min="0" max="59" />
             </div>
           </div>
-          <DialogFooter>
+          <DialogFooter className="pt-2">
              <DialogClose asChild>
                 <Button type="button" variant="outline">Cancel</Button>
             </DialogClose>
@@ -367,3 +450,4 @@ function TimerFormDialog({ isOpen, onOpenChange, onSave, timer }: TimerFormDialo
   );
 }
 
+    
