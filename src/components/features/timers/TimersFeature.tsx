@@ -55,6 +55,7 @@ export default function TimersFeature() {
   const [elapsedTime, setElapsedTime] = useState(0); 
 
   useEffect(() => {
+    setElapsedTime(0); // Reset elapsed time on mount or if component re-initializes
     const intervalId = setInterval(() => {
       setElapsedTime(prevTime => prevTime + 1);
     }, 1000);
@@ -220,6 +221,23 @@ export default function TimersFeature() {
           Elapsed Time
         </div>
       </div>
+      
+      <div className="flex justify-between items-center pt-4">
+        <h2 className="text-2xl font-semibold">Countdown Timers</h2>
+        <Button onClick={openAddForm}>
+          <PlusCircle className="mr-2 h-4 w-4" /> Add Timer
+        </Button>
+      </div>
+
+      <TimerFormDialog
+        isOpen={isFormOpen}
+        onOpenChange={(open) => {
+            setIsFormOpen(open);
+            if (!open) setEditingTimer(null); 
+        }}
+        onSave={handleSaveTimer}
+        timer={editingTimer}
+      />
 
       <Card className="shadow-md">
         <CardHeader>
@@ -239,22 +257,6 @@ export default function TimersFeature() {
         </CardContent>
       </Card>
 
-      <div className="flex justify-between items-center pt-4"> {/* Moved this section down */}
-        <h2 className="text-2xl font-semibold">Countdown Timers</h2>
-        <Button onClick={openAddForm}>
-          <PlusCircle className="mr-2 h-4 w-4" /> Add Timer
-        </Button>
-      </div>
-
-      <TimerFormDialog
-        isOpen={isFormOpen}
-        onOpenChange={(open) => {
-            setIsFormOpen(open);
-            if (!open) setEditingTimer(null); 
-        }}
-        onSave={handleSaveTimer}
-        timer={editingTimer}
-      />
 
       <Card className="shadow-lg mt-4">
         <CardHeader>
@@ -444,3 +446,4 @@ function TimerFormDialog({ isOpen, onOpenChange, onSave, timer }: TimerFormDialo
     </Dialog>
   );
 }
+
