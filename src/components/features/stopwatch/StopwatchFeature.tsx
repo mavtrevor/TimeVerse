@@ -9,6 +9,7 @@ import { formatDuration } from '@/lib/timeUtils';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useToast } from '@/hooks/use-toast';
+import { cn } from '@/lib/utils';
 
 export default function StopwatchFeature() {
   const [time, setTime] = useState(0); // time in milliseconds
@@ -167,7 +168,8 @@ export default function StopwatchFeature() {
               {isFullscreen ? <Minimize className="h-5 w-5" /> : <Maximize className="h-5 w-5" />}
             </Button>
           </CardHeader>
-          <CardContent className="flex-grow flex flex-col items-center justify-center py-8">
+          {/* Removed flex-grow from CardContent */}
+          <CardContent className="flex flex-col items-center justify-center py-8">
             <div className={`font-mono text-primary select-none ${isFullscreen ? 'text-8xl sm:text-9xl md:text-[10rem] lg:text-[12rem]' : 'text-7xl sm:text-8xl'}`}>
               {displayTime}<span className={` ${isFullscreen ? 'text-5xl sm:text-6xl md:text-7xl lg:text-8xl' : 'text-4xl sm:text-5xl'} opacity-70`}>.{milliseconds}</span>
             </div>
@@ -192,15 +194,14 @@ export default function StopwatchFeature() {
             </div>
           </CardFooter>
           {laps.length > 0 && !isFullscreen && (
-            laps.length <= 10 ? (
-              <div className="px-4 pb-4 mt-2">
-                {renderLapsTable()}
-              </div>
-            ) : (
-              <ScrollArea className="px-4 pb-4 mt-2 max-h-96">
-                {renderLapsTable()}
-              </ScrollArea>
-            )
+            <ScrollArea 
+              className={cn(
+                "px-4 pb-4 mt-2 w-full", // Ensure ScrollArea takes full width
+                laps.length > 10 && "max-h-96" // Apply max-height only if more than 10 laps
+              )}
+            >
+              {renderLapsTable()}
+            </ScrollArea>
           )}
         </Card>
       </div>
