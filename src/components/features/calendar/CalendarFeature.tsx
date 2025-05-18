@@ -35,7 +35,7 @@ const allSampleHolidays: Holiday[] = [
   { date: '2025-06-19', name: "Juneteenth National Independence Day", type: 'public', countryCode: 'US', description: "Commemorates the end of slavery in the U.S." },
   { date: '2025-07-04', name: "Independence Day", type: 'public', countryCode: 'US', description: "Celebrates the Declaration of Independence." },
   { date: '2025-09-01', name: "Labor Day", type: 'public', countryCode: 'US', description: "Celebrates the American labor movement." },
-  { date: '2025-10-13', name: "Columbus Day", type: 'observance', countryCode: 'US', description: "Commemorates Christopher Columbus's arrival in the Americas." },
+  { date: '2025-10-13', name: "Columbus Day", type: 'public', countryCode: 'US', description: "Commemorates Christopher Columbus's arrival in the Americas. (Varies by state, some observe Indigenous Peoples' Day instead or as well)" }, // Changed to public as per image, added note
   { date: '2025-11-11', name: "Veterans Day", type: 'public', countryCode: 'US', description: "Honors military veterans." },
   { date: '2025-11-27', name: "Thanksgiving Day", type: 'public', countryCode: 'US', description: "A day of giving thanks for the harvest and preceding year." },
   { date: '2025-12-25', name: "Christmas Day", type: 'public', countryCode: 'US', description: "Celebrates the birth of Jesus Christ." },
@@ -49,57 +49,75 @@ const allSampleHolidays: Holiday[] = [
   { date: '2025-08-25', name: "Summer Bank Holiday", type: 'public', countryCode: 'GB', description: "Public holiday, typically the last Monday in August." },
   { date: '2025-12-25', name: "Christmas Day", type: 'public', countryCode: 'GB', description: "Celebrates the birth of Jesus Christ." },
   { date: '2025-12-26', name: "Boxing Day", type: 'public', countryCode: 'GB', description: "Public holiday celebrated the day after Christmas Day." },
+  // Adding St. Patrick's Day for NI (Observance for GB for simplicity here)
+  { date: '2025-03-17', name: "St. Patrick's Day", type: 'observance', countryCode: 'GB', description: "Cultural and religious celebration. Public holiday in Northern Ireland." },
+
 
   // Australia (AU) - 2025 (National Public Holidays)
   { date: '2025-01-01', name: "New Year's Day", type: 'public', countryCode: 'AU', description: "Celebrates the first day of the year." },
   { date: '2025-01-27', name: "Australia Day (Observed)", type: 'public', countryCode: 'AU', description: "Official National Day of Australia. Observed as Jan 26 is a Sunday." },
   { date: '2025-04-18', name: "Good Friday", type: 'public', countryCode: 'AU', description: "Christian holiday observing the crucifixion of Jesus." },
   { date: '2025-04-19', name: "Easter Saturday", type: 'public', countryCode: 'AU', description: "The Saturday following Good Friday, public holiday in some states." },
+  { date: '2025-04-20', name: "Easter Sunday", type: 'observance', countryCode: 'AU', description: "Christian holiday celebrating the resurrection of Jesus." },
   { date: '2025-04-21', name: "Easter Monday", type: 'public', countryCode: 'AU', description: "Christian holiday, the day after Easter Sunday." },
   { date: '2025-04-25', name: "Anzac Day", type: 'public', countryCode: 'AU', description: "National day of remembrance in Australia and New Zealand." },
-  { date: '2025-06-09', name: "King's Birthday", type: 'public', countryCode: 'AU', description: "Celebrates the monarch's birthday. Date varies by state, this is a common one (second Monday in June)." },
+  { date: '2025-06-09', name: "King's Birthday", type: 'public', countryCode: 'AU', description: "Celebrates the monarch's birthday. Date varies by state/territory, this is a common one (second Monday in June for most)." },
   { date: '2025-12-25', name: "Christmas Day", type: 'public', countryCode: 'AU', description: "Celebrates the birth of Jesus Christ." },
   { date: '2025-12-26', name: "Boxing Day", type: 'public', countryCode: 'AU', description: "Public holiday celebrated the day after Christmas Day." },
 
+
   // Canada (CA) - 2025 (National Statutory Holidays)
   { date: '2025-01-01', name: "New Year's Day", type: 'public', countryCode: 'CA', description: "Celebrates the first day of the year." },
+  { date: '2025-02-17', name: "Family Day / Islander Day / Louis Riel Day", type: 'public', countryCode: 'CA', description: "Provincial holiday in some provinces on the third Monday of February." },
   { date: '2025-04-18', name: "Good Friday", type: 'public', countryCode: 'CA', description: "Christian holiday observing the crucifixion of Jesus." },
-  { date: '2025-05-19', name: "Victoria Day", type: 'public', countryCode: 'CA', description: "Celebrates Queen Victoria's birthday; also known as National Patriots' Day in Quebec." },
+  { date: '2025-05-19', name: "Victoria Day / National Patriots' Day", type: 'public', countryCode: 'CA', description: "Celebrates Queen Victoria's birthday; also known as National Patriots' Day in Quebec. Monday preceding May 25." },
   { date: '2025-07-01', name: "Canada Day", type: 'public', countryCode: 'CA', description: "National day of Canada, commemorating the Canadian Confederation." },
-  { date: '2025-09-01', name: "Labour Day", type: 'public', countryCode: 'CA', description: "Celebrates workers and the labour movement." },
+  { date: '2025-08-04', name: "Civic Holiday", type: 'public', countryCode: 'CA', description: "Provincial holiday in some provinces on the first Monday of August." },
+  { date: '2025-09-01', name: "Labour Day", type: 'public', countryCode: 'CA', description: "Celebrates workers and the labour movement. First Monday in September." },
+  { date: '2025-09-30', name: "National Day for Truth and Reconciliation", type: 'public', countryCode: 'CA', description: "A day to honour the lost children and survivors of residential schools, their families, and communities." },
   { date: '2025-10-13', name: "Thanksgiving Day", type: 'public', countryCode: 'CA', description: "Annual Canadian holiday, held on the second Monday in October, celebrating the harvest and other blessings." },
   { date: '2025-11-11', name: "Remembrance Day", type: 'public', countryCode: 'CA', description: "Memorial day observed by Commonwealth member states to remember armed forces members who died in the line of duty." },
   { date: '2025-12-25', name: "Christmas Day", type: 'public', countryCode: 'CA', description: "Celebrates the birth of Jesus Christ." },
-  { date: '2025-12-26', name: "Boxing Day", type: 'public', countryCode: 'CA', description: "Holiday celebrated the day after Christmas Day; not a national stat holiday but common in many provinces." },
+  { date: '2025-12-26', name: "Boxing Day", type: 'public', countryCode: 'CA', description: "Holiday celebrated the day after Christmas Day; statutory in Ontario, common elsewhere." },
 
-  // India (IN) - 2025 (Major Public Holidays)
+  // India (IN) - 2025 (Major Gazetted Holidays)
   { date: '2025-01-26', name: "Republic Day", type: 'public', countryCode: 'IN', description: "Honors the date on which the Constitution of India came into effect." },
-  { date: '2025-03-14', name: "Holi", type: 'public', countryCode: 'IN', description: "Hindu spring festival, also known as the festival of colours. Date may vary." },
-  { date: '2025-03-31', name: "Eid al-Fitr (Ramzan Id)", type: 'public', countryCode: 'IN', description: "Marks the end of Ramadan, the Islamic holy month of fasting. Date subject to moon sighting." },
+  { date: '2025-03-14', name: "Holi (Second Day)", type: 'public', countryCode: 'IN', description: "Hindu spring festival, also known as the festival of colours. Date may vary by region." },
+  { date: '2025-03-31', name: "Id-ul-Fitr (Ramzan Id)", type: 'public', countryCode: 'IN', description: "Marks the end of Ramadan, the Islamic holy month of fasting. Date subject to moon sighting." },
+  { date: '2025-04-14', name: "Mahavir Jayanti / Vaisakhi", type: 'public', countryCode: 'IN', description: "Mahavir Jayanti is an important Jain festival. Vaisakhi is a Sikh festival." },
   { date: '2025-04-18', name: "Good Friday", type: 'public', countryCode: 'IN', description: "Christian holiday observing the crucifixion of Jesus." },
-  { date: '2025-05-01', name: "May Day (Labour Day)", type: 'public', countryCode: 'IN', description: "International Workers' Day, celebrates laborers and the working classes." },
+  { date: '2025-05-01', name: "May Day (Labour Day)", type: 'public', countryCode: 'IN', description: "International Workers' Day, celebrates laborers and the working classes. Not a national holiday but observed in many states." },
+  { date: '2025-05-14', name: "Buddha Purnima", type: 'public', countryCode: 'IN', description: "Marks the birth, enlightenment, and passing of Gautama Buddha." },
+  { date: '2025-06-07', name: "Id-ul-Zuha (Bakrid)", type: 'public', countryCode: 'IN', description: "Islamic festival to commemorate the willingness of Ibrahim (Abraham) to follow Allah's command to sacrifice his son. Date subject to moon sighting." },
   { date: '2025-08-15', name: "Independence Day", type: 'public', countryCode: 'IN', description: "Commemorates India's independence from the United Kingdom." },
-  { date: '2025-10-02', name: "Gandhi Jayanti", type: 'public', countryCode: 'IN', description: "Celebrates the birthday of Mahatma Gandhi." },
+  { date: '2025-08-29', name: "Janmashtami", type: 'public', countryCode: 'IN', description: "Hindu festival celebrating the birth of Lord Krishna." },
+  { date: '2025-10-02', name: "Mahatma Gandhi Jayanti", type: 'public', countryCode: 'IN', description: "Celebrates the birthday of Mahatma Gandhi." },
+  { date: '2025-10-03', name: "Dussehra (Vijayadashami)", type: 'public', countryCode: 'IN', description: "Hindu festival that celebrates the victory of good over evil." },
   { date: '2025-10-21', name: "Diwali (Deepavali)", type: 'public', countryCode: 'IN', description: "Hindu festival of lights. Main day, dates can vary." },
+  { date: '2025-11-05', name: "Guru Nanak Jayanti", type: 'public', countryCode: 'IN', description: "Celebrates the birth of the first Sikh Guru, Guru Nanak." },
   { date: '2025-12-25', name: "Christmas Day", type: 'public', countryCode: 'IN', description: "Celebrates the birth of Jesus Christ." },
 
   // Philippines (PH) - 2025 (Regular Holidays and some common Special Non-Working Days)
   { date: '2025-01-01', name: "New Year's Day", type: 'public', countryCode: 'PH', description: "Celebrates the first day of the year." },
-  { date: '2025-01-29', name: "Chinese New Year", type: 'observance', countryCode: 'PH', description: "Marks the beginning of the new year on the traditional Chinese calendar. Often a special non-working day." },
-  { date: '2025-02-25', name: "EDSA People Power Revolution Anniversary", type: 'observance', countryCode: 'PH', description: "Commemorates the 1986 People Power Revolution. Often a special non-working day." },
+  { date: '2025-01-29', name: "Chinese New Year", type: 'public', countryCode: 'PH', description: "Marks the beginning of the new year on the traditional Chinese calendar. Often a special non-working day, declared public for 2025." }, // Updated type
+  { date: '2025-02-25', name: "EDSA People Power Revolution Anniversary", type: 'public', countryCode: 'PH', description: "Commemorates the 1986 People Power Revolution. Often a special non-working day, declared public for 2025." }, // Updated type
   { date: '2025-04-09', name: "Araw ng Kagitingan (Day of Valor)", type: 'public', countryCode: 'PH', description: "National observance in the Philippines which commemorates the fall of Bataan during World War II." },
   { date: '2025-04-17', name: "Maundy Thursday", type: 'public', countryCode: 'PH', description: "Christian holy day falling on the Thursday before Easter." },
   { date: '2025-04-18', name: "Good Friday", type: 'public', countryCode: 'PH', description: "Christian holiday observing the crucifixion of Jesus." },
+  { date: '2025-04-19', name: "Black Saturday", type: 'public', countryCode: 'PH', description: "Day between Good Friday and Easter Sunday. Declared public for 2025." },
   { date: '2025-05-01', name: "Labor Day", type: 'public', countryCode: 'PH', description: "Celebrates workers and the labour movement." },
   { date: '2025-03-31', name: "Eid al-Fitr", type: 'public', countryCode: 'PH', description: "Marks the end of Ramadan. Date is approximate and subject to proclamation." },
   { date: '2025-06-07', name: "Eid al-Adha", type: 'public', countryCode: 'PH', description: "Feast of the Sacrifice. Date is approximate and subject to proclamation." },
   { date: '2025-06-12', name: "Independence Day", type: 'public', countryCode: 'PH', description: "Commemorates the Philippine Declaration of Independence from Spain." },
   { date: '2025-08-25', name: "National Heroes Day", type: 'public', countryCode: 'PH', description: "Honors the heroes of the Philippine Revolution. Held on the last Monday of August." },
-  { date: '2025-11-01', name: "All Saints' Day", type: 'public', countryCode: 'PH', description: "Christian festival celebrated in honor of all the saints. Often a special non-working day." },
+  { date: '2025-11-01', name: "All Saints' Day", type: 'public', countryCode: 'PH', description: "Christian festival celebrated in honor of all the saints. Declared public for 2025." },
   { date: '2025-11-30', name: "Bonifacio Day", type: 'public', countryCode: 'PH', description: "Commemorates the birth of Andrés Bonifacio." },
-  { date: '2025-12-08', name: "Feast of the Immaculate Conception of Mary", type: 'public', countryCode: 'PH', description: "Celebrates the sinless lifespan and Immaculate Conception of the Virgin Mary. Often a special non-working day." },
+  { date: '2025-12-08', name: "Feast of the Immaculate Conception of Mary", type: 'public', countryCode: 'PH', description: "Celebrates the sinless lifespan and Immaculate Conception of the Virgin Mary. Declared public for 2025." },
+  { date: '2025-12-24', name: "Christmas Eve", type: 'public', countryCode: 'PH', description: "Day before Christmas. Declared special non-working for 2025." },
   { date: '2025-12-25', name: "Christmas Day", type: 'public', countryCode: 'PH', description: "Celebrates the birth of Jesus Christ." },
   { date: '2025-12-30', name: "Rizal Day", type: 'public', countryCode: 'PH', description: "Commemorates the life and works of José Rizal." },
+  { date: '2025-12-31', name: "Last Day of the Year", type: 'public', countryCode: 'PH', description: "New Year's Eve. Declared special non-working for 2025." },
+
 
   // South Africa (ZA) - 2025
   { date: '2025-01-01', name: "New Year's Day", type: 'public', countryCode: 'ZA', description: "First day of the new year." },
@@ -107,14 +125,14 @@ const allSampleHolidays: Holiday[] = [
   { date: '2025-04-18', name: "Good Friday", type: 'public', countryCode: 'ZA', description: "Christian holiday observing the crucifixion of Jesus." },
   { date: '2025-04-21', name: "Family Day", type: 'public', countryCode: 'ZA', description: "Public holiday following Easter Sunday." },
   { date: '2025-04-27', name: "Freedom Day", type: 'public', countryCode: 'ZA', description: "Celebrates first post-apartheid elections (falls on Sunday)." },
-  { date: '2025-04-28', name: "Freedom Day (Observed)", type: 'public', countryCode: 'ZA', description: "Public holiday observed as Freedom Day falls on Sunday." },
+  { date: '2025-04-28', name: "Public Holiday (Freedom Day Observed)", type: 'public', countryCode: 'ZA', description: "Public holiday observed as Freedom Day falls on Sunday." }, // Clarified name
   { date: '2025-05-01', name: "Workers' Day", type: 'public', countryCode: 'ZA', description: "International Workers' Day." },
   { date: '2025-06-16', name: "Youth Day", type: 'public', countryCode: 'ZA', description: "Commemorates the Soweto Uprising." },
-  { date: '2025-08-09', name: "National Women's Day", type: 'public', countryCode: 'ZA', description: "Commemorates the 1956 women's march (falls on Saturday)." },
-  { date: '2025-09-24', name: "Heritage Day", type: 'public', countryCode: 'ZA', description: "Celebrates South Africa's diverse cultures." },
+  { date: '2025-08-09', name: "National Women's Day", type: 'public', countryCode: 'ZA', description: "Commemorates the 1956 women's march to the Union Buildings (falls on Saturday)." },
+  { date: '2025-09-24', name: "Heritage Day", type: 'public', countryCode: 'ZA', description: "Celebrates South Africa's diverse cultures, also known as 'Braai Day'." },
   { date: '2025-12-16', name: "Day of Reconciliation", type: 'public', countryCode: 'ZA', description: "Promotes national unity and reconciliation." },
   { date: '2025-12-25', name: "Christmas Day", type: 'public', countryCode: 'ZA', description: "Celebrates the birth of Jesus Christ." },
-  { date: '2025-12-26', name: "Day of Goodwill", type: 'public', countryCode: 'ZA', description: "Public holiday after Christmas." },
+  { date: '2025-12-26', name: "Day of Goodwill", type: 'public', countryCode: 'ZA', description: "Public holiday after Christmas, formerly Boxing Day." },
 ];
 
 // Simulated fetch for the interactive calendar (fetches for the specific month)
@@ -159,7 +177,7 @@ const tableYears = [2025, 2026, 2027, 2028, 2029];
 
 export default function CalendarFeature() {
   const defaultInitialYear = 2025;
-  const defaultInitialMonth = 0; // January (0-indexed to match image)
+  const defaultInitialMonth = 0; 
 
   const [currentDisplayMonth, setCurrentDisplayMonth] = useState(new Date(defaultInitialYear, defaultInitialMonth, 1));
   const [selectedCountry, setSelectedCountry] = useState<string>(supportedCountries[0].code);
@@ -212,10 +230,7 @@ export default function CalendarFeature() {
 
   const handleCountryChange = (countryCode: string) => {
     setSelectedCountry(countryCode);
-    // Reset currentDisplayMonth to January of the current calendarViewYear when country changes
     setCurrentDisplayMonth(new Date(calendarViewYear, 0, 1));
-    // Optionally, reset selectedTableYear or let it persist
-    // setSelectedTableYear(2025); // Example: reset table year
   };
 
   const handlePrevMonth = () => {
@@ -228,7 +243,6 @@ export default function CalendarFeature() {
 
   const handleDayClick = (day: Date) => {
     const clickedDateStr = format(day, 'yyyy-MM-dd');
-    // Check against all sample holidays, not just monthly ones, for consistent detail display
     const holidayOnClickedDay = allSampleHolidays.find(h => h.date === clickedDateStr && h.countryCode === selectedCountry);
 
     if (holidayOnClickedDay) {
@@ -270,7 +284,7 @@ export default function CalendarFeature() {
 
 
   return (
-    <div className="p-4 md:p-6 space-y-8"> {/* Increased overall spacing */}
+    <div className="p-4 md:p-6 space-y-8">
       <h1 className="text-3xl font-bold text-center md:text-left">
         Calendar {calendarViewYear}
       </h1>
@@ -299,7 +313,7 @@ export default function CalendarFeature() {
               onDayClick={handleDayClick}
               modifiers={modifiers}
               modifiersClassNames={modifiersClassNames}
-              className="p-0 w-full max-w-xl mx-auto"
+              className="p-0 w-full max-w-2xl mx-auto"
               classNames={{
                 caption_label: "text-xl font-semibold",
                 nav_button: cn(
@@ -318,7 +332,7 @@ export default function CalendarFeature() {
                 ),
                 day_selected: selectedHolidayDetail?.type !== 'public' && selectedHolidayDetail?.type !== 'observance' 
                               ? 'ring-2 ring-primary !bg-transparent text-foreground rounded-sm' 
-                              : 'rounded-sm', // Holidays retain their bg when selected
+                              : 'rounded-sm', 
                 day_today: "bg-accent text-accent-foreground rounded-sm",
                 day_outside: "text-muted-foreground opacity-50 aria-selected:text-muted-foreground aria-selected:bg-accent/30",
               }}
@@ -397,7 +411,7 @@ export default function CalendarFeature() {
                       <TableCell>{index + 1}.</TableCell>
                       <TableCell className="font-medium">{holiday.name}</TableCell>
                       <TableCell>{holidayDate ? format(holidayDate, "MMMM d, yyyy") : 'Invalid Date'}</TableCell>
-                      <TableCell className="text-right">{holidayDate ? format(holidayDate, "EEE") : '-'}</TableCell> {/* Changed to EEE for 3-letter day */}
+                      <TableCell className="text-right">{holidayDate ? format(holidayDate, "EEE") : '-'}</TableCell>
                     </TableRow>
                   );
                 })}
@@ -446,6 +460,3 @@ export default function CalendarFeature() {
     </div>
   );
 }
-
-
-    
