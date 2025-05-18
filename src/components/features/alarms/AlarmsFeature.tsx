@@ -16,12 +16,13 @@ import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 
-const defaultAlarmSound = "default_bell";
+const defaultAlarmSound = "default_alarm";
 const alarmSounds = [
-  { id: "default_bell", name: "Bell" },
-  { id: "buzzer", name: "Buzzer" },
-  { id: "gentle_chime", name: "Gentle Chime" },
-  // Add more sounds with actual audio sources later
+  { id: "default_alarm", name: "Default Alarm" },
+  { id: "classic_bell", name: "Classic Bell" },
+  { id: "digital_beep", name: "Digital Beep" },
+  { id: "gentle_wake", name: "Gentle Wake" },
+  { id: "birds_alarm", name: "Birds Alarm" },
 ];
 
 // Placeholder for actual audio playback
