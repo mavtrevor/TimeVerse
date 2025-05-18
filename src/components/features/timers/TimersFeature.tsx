@@ -5,7 +5,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import type { Timer } from '@/types';
 import useLocalStorage from '@/hooks/useLocalStorage';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardFooter, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from '@/components/ui/dialog';
@@ -189,53 +189,105 @@ export default function TimersFeature() {
       />
 
       {timers.length === 0 && (
-        <Card className="shadow-lg">
+        <Card className="shadow-lg mt-4">
           <CardContent className="pt-6 text-center text-muted-foreground">
             You have no timers set. Click "Add Timer" to create one.
           </CardContent>
         </Card>
       )}
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {timers.map(timer => (
-          <Card key={timer.id} id={`timer-card-${timer.id}`} className="shadow-lg flex flex-col">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-xl flex justify-between items-center">
-                {timer.name}
-                <Button variant="ghost" size="icon" onClick={() => toggleFullscreen(timer.id)} className="text-muted-foreground hover:text-primary">
-                  <Maximize className="h-4 w-4" />
-                </Button>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="flex-grow flex flex-col items-center justify-center">
-              <p className="text-5xl font-mono font-bold text-primary">
-                {formatDuration(timer.remainingTime)}
-              </p>
-              <Progress value={(timer.duration - timer.remainingTime) / timer.duration * 100} className="w-full h-3 mt-2" />
-            </CardContent>
-            <CardFooter className="border-t p-4 flex justify-between items-center">
-              <div className="flex gap-2">
-                <Button onClick={() => toggleTimer(timer.id)} size="sm" variant={timer.isRunning && !timer.isPaused ? "outline" : "default"}>
-                  {timer.isRunning && !timer.isPaused ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
-                  <span className="ml-1 sr-only sm:not-sr-only">{timer.isRunning && !timer.isPaused ? 'Pause' : (timer.isPaused ? 'Resume' : 'Start')}</span>
-                </Button>
-                <Button onClick={() => resetTimer(timer.id)} variant="outline" size="sm">
-                  <RotateCcw className="h-4 w-4" />
-                  <span className="ml-1 sr-only sm:not-sr-only">Reset</span>
-                </Button>
-              </div>
-              <div className="flex gap-1">
-                <Button variant="ghost" size="icon" onClick={() => openEditForm(timer)} aria-label="Edit timer">
-                  <Edit className="h-4 w-4" />
-                </Button>
-                <Button variant="ghost" size="icon" onClick={() => handleDeleteTimer(timer.id)} aria-label="Delete timer" className="text-destructive hover:text-destructive">
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </div>
-            </CardFooter>
-          </Card>
-        ))}
-      </div>
+      <Card className="shadow-lg mt-4">
+        <CardHeader>
+          <CardTitle className="text-xl">⏳ Online Timer</CardTitle>
+          <CardDescription>Free Countdown Timer for Any Task</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4 text-sm">
+          <p>
+            Need a countdown for studying, cooking, or productivity? Use our online timer with no login or download required.
+          </p>
+          
+          <div className="space-y-2">
+            <h3 className="font-semibold text-md">✅ How to Use the Online Timer</h3>
+            <ul className="list-disc list-inside pl-4 space-y-1">
+              <li>Enter your countdown duration (in minutes and seconds).</li>
+              <li>Add an optional label or title (e.g., “Egg Timer”).</li>
+              <li>Click Start Timer.</li>
+              <li>When the timer ends, a sound will play and a message will display.</li>
+            </ul>
+          </div>
+
+          <div className="space-y-2">
+            <h3 className="font-semibold text-md">⏱ Features</h3>
+            <ul className="list-disc list-inside pl-4 space-y-1">
+              <li>Clean, intuitive interface</li>
+              <li>Optional countdown label</li>
+              <li>Works in background tabs</li>
+              <li>Built-in alarm sounds</li>
+              <li>Responsive on all devices</li>
+              <li>Timer auto-pauses if the tab is refreshed or closed</li>
+            </ul>
+          </div>
+          
+          <div className="space-y-2">
+            <h3 className="font-semibold text-md">❓FAQs</h3>
+            <div>
+              <p className="font-medium">Can I run multiple timers?</p>
+              <p className="pl-4">Yes—open multiple tabs and set a different timer in each.</p>
+            </div>
+            <div>
+              <p className="font-medium">What happens when the time is up?</p>
+              <p className="pl-4">A sound plays and a message shows on screen.</p>
+            </div>
+            <div>
+              <p className="font-medium">Does the timer work offline?</p>
+              <p className="pl-4">Yes, if the page is already loaded.</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {timers.length > 0 && (
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 mt-4">
+          {timers.map(timer => (
+            <Card key={timer.id} id={`timer-card-${timer.id}`} className="shadow-lg flex flex-col">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-xl flex justify-between items-center">
+                  {timer.name}
+                  <Button variant="ghost" size="icon" onClick={() => toggleFullscreen(timer.id)} className="text-muted-foreground hover:text-primary">
+                    <Maximize className="h-4 w-4" />
+                  </Button>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="flex-grow flex flex-col items-center justify-center">
+                <p className="text-5xl font-mono font-bold text-primary">
+                  {formatDuration(timer.remainingTime)}
+                </p>
+                <Progress value={(timer.duration - timer.remainingTime) / timer.duration * 100} className="w-full h-3 mt-2" />
+              </CardContent>
+              <CardFooter className="border-t p-4 flex justify-between items-center">
+                <div className="flex gap-2">
+                  <Button onClick={() => toggleTimer(timer.id)} size="sm" variant={timer.isRunning && !timer.isPaused ? "outline" : "default"}>
+                    {timer.isRunning && !timer.isPaused ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+                    <span className="ml-1 sr-only sm:not-sr-only">{timer.isRunning && !timer.isPaused ? 'Pause' : (timer.isPaused ? 'Resume' : 'Start')}</span>
+                  </Button>
+                  <Button onClick={() => resetTimer(timer.id)} variant="outline" size="sm">
+                    <RotateCcw className="h-4 w-4" />
+                    <span className="ml-1 sr-only sm:not-sr-only">Reset</span>
+                  </Button>
+                </div>
+                <div className="flex gap-1">
+                  <Button variant="ghost" size="icon" onClick={() => openEditForm(timer)} aria-label="Edit timer">
+                    <Edit className="h-4 w-4" />
+                  </Button>
+                  <Button variant="ghost" size="icon" onClick={() => handleDeleteTimer(timer.id)} aria-label="Delete timer" className="text-destructive hover:text-destructive">
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              </CardFooter>
+            </Card>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
