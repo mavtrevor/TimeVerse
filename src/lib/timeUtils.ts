@@ -82,39 +82,58 @@ export const getTimeInTimezone = (timezone: string, settings: AppSettings, baseD
   }
 };
 
-export const getTimezoneOffset = (timezone: string): string => {
+export const getTimezoneOffset = (timezone: string, dateForOffset?: Date): string => {
   try {
-    const now = new Date();
-    const formatter = new Intl.DateTimeFormat('en-US', {
+    const now = dateForOffset instanceof Date && !isNaN(dateForOffset.getTime()) ? dateForOffset : new Date();
+    // Intl.DateTimeFormat can directly give offset parts in some environments/versions,
+    // but a more universal way for full offset string like "UTC+HH:mm" is by comparing with UTC.
+    
+    // Get the date and time in the target timezone
+    const targetFormatter = new Intl.DateTimeFormat('en-US', {
       timeZone: timezone,
       year: 'numeric', month: 'numeric', day: 'numeric',
       hour: 'numeric', minute: 'numeric', second: 'numeric',
-      hour12: false, 
+      hour12: false, // Use 24-hour format for easier calculation
     });
-    const parts = formatter.formatToParts(now);
+    const parts = targetFormatter.formatToParts(now);
     
     let year = 0, month = 0, day = 0, hour = 0, minute = 0;
-
     parts.forEach(part => {
         switch (part.type) {
             case 'year': year = parseInt(part.value); break;
-            case 'month': month = parseInt(part.value) - 1; break; 
+            case 'month': month = parseInt(part.value) - 1; break; // Month is 0-indexed in JS Date
             case 'day': day = parseInt(part.value); break;
-            case 'hour': hour = parseInt(part.value); break;
+            case 'hour': hour = parseInt(part.value) % 24; break; // Handle 24 -> 0 for midnight
             case 'minute': minute = parseInt(part.value); break;
         }
     });
     
-    const tzDate = new Date(Date.UTC(year, month, day, hour, minute));
-    const utcDate = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), now.getUTCHours(), now.getUTCMinutes()));
+    // Create a Date object representing the local time in the target timezone, but in UTC representation
+    const dateInTargetTzAsUtc = Date.UTC(year, month, day, hour, minute, now.getUTCSeconds(), now.getUTCMilliseconds());
     
-    const offsetInMinutes = (tzDate.getTime() - utcDate.getTime()) / (1000 * 60);
+    // Get the same moment in time, but strictly as UTC
+    const dateInStrictUtc = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), now.getUTCHours(), now.getUTCMinutes(), now.getUTCSeconds(), now.getUTCMilliseconds());
     
-    const sign = offsetInMinutes >= 0 ? '+' : '-';
-    const absOffsetHours = Math.floor(Math.abs(offsetInMinutes) / 60);
-    const absOffsetMinutes = Math.abs(offsetInMinutes) % 60;
+    // The difference in milliseconds gives the offset
+    const offsetInMilliseconds = dateInTargetTzAsUtc - dateInStrictUtc;
+    const offsetInMinutesTotal = offsetInMilliseconds / (1000 * 60);
+
+    // Check if the offset is what we expect (some timezones might have complex rules not captured by simple date math alone)
+    // A more direct way to get offset with modern Intl.DateTimeFormat
+    const offsetFormatter = new Intl.DateTimeFormat('en', { timeZoneName: 'longOffset', timeZone: timezone });
+    const formattedParts = offsetFormatter.formatToParts(now);
+    const offsetStringPart = formattedParts.find(p => p.type === 'timeZoneName');
     
-    return `UTC${sign}${absOffsetHours.toString().padStart(2, '0')}:${absOffsetMinutes.toString().padStart(2, '0')}`;
+    if (offsetStringPart && offsetStringPart.value.startsWith('GMT')) { // e.g. GMT+5:30 or GMT-7
+        return offsetStringPart.value.replace('GMT', 'UTC');
+    }
+    
+    // Fallback to calculated offset if direct Intl name isn't 'GMT...'
+    const sign = offsetInMinutesTotal < 0 ? '-' : '+'; // Note: The sign for UTC offset is opposite to JS Date.getTimezoneOffset()
+    const absOffsetHours = Math.floor(Math.abs(offsetInMinutesTotal) / 60);
+    const absOffsetMinutes = Math.abs(offsetInMinutesTotal) % 60;
+    
+    return `UTC${sign}${String(absOffsetHours).padStart(2, '0')}:${String(absOffsetMinutes).padStart(2, '0')}`;
 
   } catch (error) {
     console.error(`Error getting offset for ${timezone}:`, error);
@@ -296,6 +315,9 @@ export function getShortTimezoneName(timezone: string, date: Date = new Date()):
     const tzName = parts.find(part => part.type === 'timeZoneName');
     return tzName ? tzName.value : timezone; 
   } catch (e) {
+    // Fallback for environments that don't fully support timeZoneName or specific timezones
+    console.warn(`Could not get short timezone name for ${timezone}. Falling back to IANA name.`);
     return timezone; 
   }
 }
+

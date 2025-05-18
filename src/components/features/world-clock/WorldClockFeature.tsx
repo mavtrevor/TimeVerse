@@ -101,7 +101,9 @@ export default function WorldClockFeature() {
                 {name}
               </Link>
             </CardTitle>
-            <p className="text-xs text-muted-foreground">{getTimezoneOffset(timezone)}</p>
+            <p className="text-xs text-muted-foreground">
+              {clientNow ? getTimezoneOffset(timezone, clientNow) : 'N/A'}
+            </p>
           </div>
           {isUserAdded && ( 
              <Button variant="ghost" size="icon" onClick={() => handleDeleteUserAddedCity(userCityData.id)} className="text-muted-foreground hover:text-destructive -mt-1 -mr-2">
@@ -139,7 +141,7 @@ export default function WorldClockFeature() {
                     {localCityName} (Your Local Time)
                 </Link>
             </CardTitle>
-            <CardDescription>{getTimezoneOffset(localTimezone)}</CardDescription>
+            <CardDescription>{clientNow ? getTimezoneOffset(localTimezone, clientNow) : 'N/A'}</CardDescription>
           </CardHeader>
           <CardContent className="text-center">
             <div className="font-mono text-5xl md:text-7xl font-bold text-primary select-none">
@@ -156,16 +158,19 @@ export default function WorldClockFeature() {
 
       <div>
         <h2 className="text-2xl font-semibold mb-4">Popular Cities</h2>
-        {popularCityDetails.length === 0 && (
+        {!mounted ? (
+           <Card className="shadow-lg"><CardContent className="pt-6 text-center text-muted-foreground">Loading popular cities...</CardContent></Card>
+        ) : popularCityDetails.length === 0 ? (
           <Card className="shadow-lg">
             <CardContent className="pt-6 text-center text-muted-foreground">
               No popular cities configured.
             </CardContent>
           </Card>
+        ) : (
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {popularCityDetails.filter(city => city.iana !== localTimezone).map(city => renderCityCard(city, false))}
+          </div>
         )}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {popularCityDetails.filter(city => city.iana !== localTimezone).map(city => renderCityCard(city, false))}
-        </div>
       </div>
 
       <Separator />
@@ -208,7 +213,7 @@ export default function WorldClockFeature() {
           </div>
         )}
       </div>
-
+      
       <Card className="shadow-lg mt-8">
         <CardHeader>
           <CardTitle className="text-xl">🕒 How to Use the World Clock on Our Website</CardTitle>
@@ -318,7 +323,7 @@ function AddCityForm({ onAddCity, existingTimezones, onClose }: AddCityFormProps
             <SelectGroup>
               {timezonesForSelectedCountry.map(tz => (
                 <SelectItem key={tz.timezone} value={tz.timezone}>
-                  {`(${getTimezoneOffset(tz.timezone)}) ${tz.name}`}
+                  {`(${getTimezoneOffset(tz.timezone, new Date())}) ${tz.name}`}
                 </SelectItem>
               ))}
             </SelectGroup>
@@ -351,3 +356,4 @@ function AddCityForm({ onAddCity, existingTimezones, onClose }: AddCityFormProps
     </form>
   );
 }
+

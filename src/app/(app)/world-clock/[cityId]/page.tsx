@@ -67,6 +67,8 @@ export default function CityClockPage() {
   const season = getSeason(clientNow, cityDetails.hemisphere);
   const timeOfDayMessages = getTimeOfDayInfo(clientNow, cityName, season, language);
   const shortTzName = getShortTimezoneName(cityDetails.iana, clientNow);
+  const offsetDisplay = getTimezoneOffset(cityDetails.iana, clientNow);
+
 
   return (
     <div className="p-4 md:p-6 space-y-8">
@@ -95,7 +97,7 @@ export default function CityClockPage() {
             {currentCityTime}
           </div>
            <div className="text-md md:text-lg text-muted-foreground select-none mt-2">
-            Timezone: {shortTzName} ({getTimezoneOffset(cityDetails.iana)})
+            Timezone: {shortTzName} ({offsetDisplay})
           </div>
         </CardContent>
       </Card>
@@ -106,7 +108,7 @@ export default function CityClockPage() {
         </CardHeader>
         <CardContent className="space-y-2">
           <p className="text-muted-foreground">
-            The current time in {cityName} is {currentCityTime} ({shortTzName}, {getTimezoneOffset(cityDetails.iana)}).
+            The current time in {cityName} is {currentCityTime} ({shortTzName}, {offsetDisplay}).
           </p>
           <p>{cityDetails.description}</p>
         </CardContent>
@@ -124,3 +126,4 @@ export default function CityClockPage() {
     </div>
   );
 }
+
