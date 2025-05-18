@@ -5,7 +5,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import type { Alarm } from '@/types';
 import useLocalStorage from '@/hooks/useLocalStorage';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardFooter, CardDescription } from '@/components/ui/card';
 import { PlusCircle, Edit, Trash2, BellRing, AlarmClock } from 'lucide-react';
 import { useSettings } from '@/hooks/useSettings';
 import { formatTime, parseTimeString } from '@/lib/timeUtils';
@@ -93,7 +93,7 @@ const triggerDesktopNotification = (alarm: Alarm) => {
   const notificationBody = alarm.label || "Your alarm is ringing!";
   const notificationOptions = {
     body: notificationBody,
-    icon: "/logo.png",
+    icon: "/logo.png", // Ensure you have a logo.png in your public folder
   };
 
   if (!("Notification" in window)) {
@@ -125,7 +125,7 @@ export default function AlarmsFeature() {
 
 
   useEffect(() => {
-    setCurrentTime(new Date());
+    setCurrentTime(new Date()); // Set initial time on client after mount
     const timerId = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => {
       clearInterval(timerId);
@@ -157,11 +157,12 @@ export default function AlarmsFeature() {
             duration: 10000, // Keep toast longer
           });
           setRingingAlarmId(alarm.id);
-          setRingingAlarmModal(alarm);
+          setRingingAlarmModal(alarm); // Set this to open the modal
         }
       }
     });
-  }, [currentTime, alarms, timeFormat, toast, ringingAlarmId]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentTime, alarms, timeFormat, toast, ringingAlarmId]); // Removed `language` and `setAlarms` as they are not direct dependencies for this effect's logic
 
 
   const handleSaveAlarm = (alarmData: Omit<Alarm, 'id' | 'isActive'>) => {
@@ -180,10 +181,10 @@ export default function AlarmsFeature() {
   const handleDeleteAlarm = (id: string) => {
     const alarmToDelete = alarms.find(a => a.id === id);
     if (alarmToDelete) {
-      if (ringingAlarmId === id) {
+      if (ringingAlarmId === id) { // If deleting a ringing alarm
         stopAlarmSound(audioRef);
         setRingingAlarmId(null);
-        setRingingAlarmModal(null);
+        setRingingAlarmModal(null); // Close modal if this alarm was ringing
       }
       toast({ title: "Alarm Deleted", description: `Alarm "${alarmToDelete.label || 'Alarm'}" deleted.`, variant: "destructive" });
     }
@@ -196,7 +197,7 @@ export default function AlarmsFeature() {
       if (!isActive && ringingAlarmId === id) { // If deactivating a ringing alarm
         stopAlarmSound(audioRef);
         setRingingAlarmId(null);
-        setRingingAlarmModal(null);
+        setRingingAlarmModal(null); // Close modal if this alarm was ringing and is now deactivated
       }
       setAlarms(alarms.map(a => a.id === id ? { ...a, isActive } : a));
       toast({ title: `Alarm ${isActive ? 'Activated' : 'Deactivated'}`, description: `Alarm "${alarmToToggle.label || 'Alarm'}" is now ${isActive ? 'active' : 'inactive'}.` });
@@ -232,6 +233,7 @@ export default function AlarmsFeature() {
 
   return (
     <div className="flex flex-col flex-1 p-4 md:p-6 space-y-8">
+      {/* Digital Clock Display */}
       <div className="flex-grow flex flex-col items-center justify-center text-center py-4">
         <div className="font-mono text-7xl md:text-8xl lg:text-9xl font-bold text-primary select-none">
           {currentTime ? formatTime(currentTime, timeFormat) : "00:00:00"}
@@ -241,6 +243,7 @@ export default function AlarmsFeature() {
         </div>
       </div>
 
+      {/* Alarm Management Section */}
       <div className="mt-auto">
         <div className="flex justify-between items-center">
           <h2 className="text-2xl font-semibold">Alarms</h2>
@@ -265,6 +268,70 @@ export default function AlarmsFeature() {
           timeFormat={timeFormat}
         />
 
+        {/* SEO Content Card */}
+        <Card className="shadow-lg mt-4">
+          <CardHeader>
+            <CardTitle className="text-xl">🔔 Online Alarm Clock</CardTitle>
+            <CardDescription>Free | Reliable | No Download Needed</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4 text-sm">
+            <p>
+              Need a simple and reliable online alarm clock? Our web-based alarm clock helps you wake up on time, stay focused, or set reminders—all without downloading anything.
+            </p>
+            
+            <div className="space-y-2">
+              <h3 className="font-semibold text-md">✅ How to Set an Online Alarm</h3>
+              <ul className="list-disc list-inside pl-4 space-y-1">
+                <li>Select the hour and minute you want the alarm to go off.</li>
+                <li>Choose from a variety of alarm sounds—loud, soft, or ambient.</li>
+                <li>Optionally, add a label (e.g., “Meeting” or “Time to Stretch”).</li>
+                <li>Set a snooze duration (optional).</li>
+                <li>Click Set Alarm to activate it.</li>
+              </ul>
+              <p>When your alarm goes off, a message will appear and your selected sound will play.</p>
+            </div>
+
+            <div className="space-y-2">
+              <h3 className="font-semibold text-md">🔊 Features</h3>
+              <ul className="list-disc list-inside pl-4 space-y-1">
+                <li>Multiple alarm sounds</li>
+                <li>Optional alarm labels</li>
+                <li>Snooze option</li>
+                <li>Test alarm before setting</li>
+                <li>Auto-save of previous settings</li>
+                <li>Works in background tabs</li>
+                <li>Responsive on mobile & desktop</li>
+              </ul>
+            </div>
+
+            <div className="space-y-2">
+              <h3 className="font-semibold text-md">⚠️ Important Notes</h3>
+              <ul className="list-disc list-inside pl-4 space-y-1">
+                <li>Alarm won’t ring if you close your browser or shut down your device.</li>
+                <li>Make sure your volume is on.</li>
+                <li>The alarm will work even if you switch tabs or apps.</li>
+              </ul>
+            </div>
+            
+            <div className="space-y-2">
+              <h3 className="font-semibold text-md">❓FAQs</h3>
+              <div>
+                <p className="font-medium">Can I set multiple alarms?</p>
+                <p className="pl-4">Yes—just open multiple tabs and set separate alarms on each.</p>
+              </div>
+              <div>
+                <p className="font-medium">Does it work offline?</p>
+                <p className="pl-4">Yes, once loaded, it works offline in most browsers.</p>
+              </div>
+              <div>
+                <p className="font-medium">Will it work if the screen is off?</p>
+                <p className="pl-4">Yes, but not in sleep mode or if the device is powered off.</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+
         {alarms.length === 0 && (
           <Card className="shadow-lg mt-4">
             <CardContent className="pt-6 text-center text-muted-foreground">
@@ -275,21 +342,24 @@ export default function AlarmsFeature() {
 
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 mt-4">
           {alarms.map(alarm => {
-            const isRinging = ringingAlarmId === alarm.id;
+            const isRinging = ringingAlarmId === alarm.id && !ringingAlarmModal; // Card shows ringing only if modal is NOT active for this alarm
+            const isEffectivelyInactive = !alarm.isActive && !(ringingAlarmId === alarm.id);
+
             return (
-            <Card key={alarm.id} className={`shadow-lg flex flex-col ${!alarm.isActive && !isRinging ? 'opacity-60' : ''} ${isRinging ? 'border-destructive ring-2 ring-destructive' : ''}`}>
+            <Card key={alarm.id} className={`shadow-lg flex flex-col ${isEffectivelyInactive ? 'opacity-60' : ''} ${isRinging ? 'border-destructive ring-2 ring-destructive' : ''}`}>
               <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-xl truncate" title={alarm.label || "Alarm"}>{alarm.label || "Alarm"}</CardTitle>
-                {!isRinging && (
+                {!isRinging && ( // Don't show switch if card is in "ringing" state
                   <Switch
                     checked={alarm.isActive}
                     onCheckedChange={(checked) => toggleAlarmActive(alarm.id, checked)}
                     aria-label={alarm.isActive ? "Deactivate alarm" : "Activate alarm"}
+                    disabled={ringingAlarmId === alarm.id} // Disable switch if this specific alarm is the one currently being handled by modal
                   />
                 )}
               </CardHeader>
               <CardContent className="flex-grow">
-                {isRinging ? (
+                {isRinging ? ( // This state now only for the card, modal has its own display
                   <div className="text-center py-4">
                     <BellRing className="h-12 w-12 text-destructive mx-auto mb-2 animate-pulse" />
                     <p className="text-2xl font-bold text-destructive">RINGING!</p>
@@ -314,16 +384,16 @@ export default function AlarmsFeature() {
                 )}
               </CardContent>
               <CardFooter className="p-4 border-t flex justify-end gap-2">
-                {isRinging ? (
+                {isRinging ? ( // This state now only for the card
                   <Button variant="destructive" onClick={() => handleDismissModalAndDeactivateIfNotRecurring(alarm)} className="w-full">
                     Dismiss
                   </Button>
                 ) : (
                   <>
-                    <Button variant="ghost" size="icon" onClick={() => openEditForm(alarm)} aria-label="Edit alarm">
+                    <Button variant="ghost" size="icon" onClick={() => openEditForm(alarm)} aria-label="Edit alarm" disabled={ringingAlarmId === alarm.id}>
                       <Edit className="h-4 w-4" />
                     </Button>
-                    <Button variant="ghost" size="icon" onClick={() => handleDeleteAlarm(alarm.id)} aria-label="Delete alarm" className="text-destructive hover:text-destructive">
+                    <Button variant="ghost" size="icon" onClick={() => handleDeleteAlarm(alarm.id)} aria-label="Delete alarm" className="text-destructive hover:text-destructive" disabled={ringingAlarmId === alarm.id}>
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </>
@@ -361,7 +431,7 @@ function AlarmFormDialog({ isOpen, onOpenChange, onSave, alarm }: AlarmFormDialo
       setSnoozeEnabled(alarm.snoozeEnabled);
       setSnoozeDuration(alarm.snoozeDuration);
       setDays(alarm.days || []);
-    } else if (isOpen && !alarm) {
+    } else if (isOpen && !alarm) { // Reset form when opening for a new alarm
       setTime('07:00');
       setLabel('');
       setSound(defaultAlarmSound);
@@ -475,13 +545,14 @@ function RingingAlarmDialog({ alarm, onDismiss, timeFormat }: RingingAlarmDialog
     if (alarm) {
       onDismiss(alarm);
     }
-    // The isOpen state will be updated by the useEffect when `alarm` becomes null
+    // The isOpen state will be updated by the useEffect when `alarm` becomes null by the parent
   };
   
   const handleOpenChange = (open: boolean) => {
+    // This function is called by Radix when the dialog attempts to close (e.g. Esc, overlay click)
     setIsOpen(open);
-    if (!open && alarm) { // If dialog is closed by 'x' or 'Esc'
-      onDismiss(alarm);
+    if (!open && alarm) { // If dialog is closed by 'x' or 'Esc' or overlay click
+      onDismiss(alarm); // Ensure parent knows to clear the ringing alarm state
     }
   };
 
@@ -489,7 +560,11 @@ function RingingAlarmDialog({ alarm, onDismiss, timeFormat }: RingingAlarmDialog
 
   return (
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-md p-0" onInteractOutside={(e) => e.preventDefault()} onEscapeKeyDown={(e) => e.preventDefault()}>
+      <DialogContent 
+        className="sm:max-w-md p-0" 
+        onInteractOutside={(e) => e.preventDefault()} // Prevent closing by clicking outside
+        onEscapeKeyDown={(e) => e.preventDefault()} // Prevent closing by Esc key
+      >
         <DialogHeader className="bg-destructive text-destructive-foreground p-4 rounded-t-md flex flex-row justify-between items-center">
           <DialogTitle>
             Alarm
@@ -511,4 +586,4 @@ function RingingAlarmDialog({ alarm, onDismiss, timeFormat }: RingingAlarmDialog
   );
 }
 
-
+    
