@@ -51,7 +51,7 @@ export default function AppLayout({ children }: { children?: React.ReactNode }) 
         <SidebarHeader className="p-4 items-center justify-between">
           <Link href="/" className="flex items-center gap-2 font-semibold text-lg">
             <Logo />
-            <span className="group-data-[collapsible=icon]:hidden">ChronoZen</span>
+            <span className="group-data-[collapsible=icon]:hidden">TimeVerse</span>
           </Link>
         </SidebarHeader>
         <SidebarContent className="p-2">

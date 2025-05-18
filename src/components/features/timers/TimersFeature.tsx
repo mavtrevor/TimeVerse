@@ -57,7 +57,7 @@ export default function TimersFeature() {
                 description: `Timer "${timer.name}" has completed.`,
               });
               if ("Notification" in window && Notification.permission === "granted") {
-                new Notification("ChronoZen Timer", {
+                new Notification("TimeVerse Timer", {
                   body: `Timer "${timer.name}" has finished!`,
                   icon: "/logo.png",
                 });

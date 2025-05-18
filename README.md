@@ -1,4 +1,5 @@
-# Firebase Studio
+
+# TimeVerse – The Ultimate Online Clock Suite
 
 This is a NextJS starter in Firebase Studio.
 

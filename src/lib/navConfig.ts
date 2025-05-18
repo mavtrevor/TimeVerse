@@ -32,10 +32,10 @@ export const getFeatureComponent = (key: FeatureKey | null): React.ElementType =
 };
 
 export const getFeatureLabel = (key: FeatureKey | null): string => {
-  if (!key) return "ChronoZen";
+  if (!key) return "TimeVerse";
   const allItems = [...navItemsList, settingsItem];
   const item = allItems.find(i => i.id === key);
-  return item ? item.label : "ChronoZen";
+  return item ? item.label : "TimeVerse";
 }
 
 export const getActiveFeatureKeyFromPathname = (pathname: string): FeatureKey => {

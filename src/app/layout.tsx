@@ -10,7 +10,7 @@ const geistSans = GeistSans;
 const geistMono = GeistMono;
 
 export const metadata: Metadata = {
-  title: 'ChronoZen - Time Management Suite',
+  title: 'TimeVerse – The Ultimate Online Clock Suite',
   description: 'Your ultimate online clock suite for alarms, timers, stopwatch, world clock, and more.',
 };
 

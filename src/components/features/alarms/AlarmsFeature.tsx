@@ -99,11 +99,11 @@ const triggerDesktopNotification = (alarm: Alarm) => {
   if (!("Notification" in window)) {
     console.warn("Desktop notification not supported.");
   } else if (Notification.permission === "granted") {
-    new Notification("ChronoZen Alarm", notificationOptions);
+    new Notification("TimeVerse Alarm", notificationOptions);
   } else if (Notification.permission !== "denied") {
     Notification.requestPermission().then((permission) => {
       if (permission === "granted") {
-        new Notification("ChronoZen Alarm", notificationOptions);
+        new Notification("TimeVerse Alarm", notificationOptions);
       }
     });
   }
