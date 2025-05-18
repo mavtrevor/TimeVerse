@@ -117,7 +117,7 @@ export default function AppLayout({ children }: { children?: React.ReactNode }) 
         </main>
         <footer className="border-t p-4 text-center text-xs text-muted-foreground">
           <div className="flex justify-center items-center gap-x-4 gap-y-2 flex-wrap">
-            <Link href="#" className="hover:text-foreground">Contacts</Link>
+            <Link href="/contact" className="hover:text-foreground">Contacts</Link>
             <span className="hidden sm:inline">|</span>
             <Link href="#" className="hover:text-foreground">Terms of use</Link>
             <span className="hidden sm:inline">|</span>
