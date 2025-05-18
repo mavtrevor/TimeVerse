@@ -113,7 +113,7 @@ const triggerDesktopNotification = (alarm: Alarm) => {
 const INITIAL_ALARMS: Alarm[] = [];
 
 export default function AlarmsFeature() {
-  const [alarms, setAlarms] = useLocalStorage<Alarm[]>('chronozen-alarms', INITIAL_ALARMS);
+  const [alarms, setAlarms] = useLocalStorage<Alarm[]>('timeverse-alarms', INITIAL_ALARMS);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingAlarm, setEditingAlarm] = useState<Alarm | null>(null);
   const { timeFormat, language } = useSettings();

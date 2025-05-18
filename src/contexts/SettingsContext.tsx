@@ -21,7 +21,7 @@ const defaultSettings: AppSettings = {
 export const SettingsContext = createContext<SettingsContextProps | undefined>(undefined);
 
 export const SettingsProvider = ({ children }: { children: ReactNode }) => {
-  const [settings, setSettings] = useLocalStorage<AppSettings>('chronozen-settings', defaultSettings);
+  const [settings, setSettings] = useLocalStorage<AppSettings>('timeverse-settings', defaultSettings);
 
   useEffect(() => {
     if (settings.theme === 'dark' || (settings.theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)) {

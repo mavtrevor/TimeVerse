@@ -19,7 +19,7 @@ import { Separator } from '@/components/ui/separator';
 const INITIAL_USER_ADDED_CLOCKS: WorldClockCity[] = [];
 
 export default function WorldClockFeature() {
-  const [userAddedCities, setUserAddedCities] = useLocalStorage<WorldClockCity[]>('chronozen-user-worldclocks', INITIAL_USER_ADDED_CLOCKS);
+  const [userAddedCities, setUserAddedCities] = useLocalStorage<WorldClockCity[]>('timeverse-user-worldclocks', INITIAL_USER_ADDED_CLOCKS);
   const [isAddCityDialogOpen, setIsAddCityDialogOpen] = useState(false);
   const settings = useSettings();
   const { timeFormat, language } = settings;

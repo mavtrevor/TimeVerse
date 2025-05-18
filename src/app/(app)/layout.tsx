@@ -58,7 +58,7 @@ export default function AppShellLayout({ children }: { children: React.ReactNode
   };
   const activeKey = getActiveFeatureKey();
 
-  let currentFeatureLabel = "ChronoZen"; // Default
+  let currentFeatureLabel = "TimeVerse"; // Default
   if (activeKey) {
     const activeItem = [...navItemsList, settingsItem].find(item => item.id === activeKey);
     if (activeItem) {
@@ -73,7 +73,7 @@ export default function AppShellLayout({ children }: { children: React.ReactNode
         <SidebarHeader className="p-4 items-center justify-between">
           <Link href="/" className="flex items-center gap-2 font-semibold text-lg">
             <Logo />
-            <span className="group-data-[collapsible=icon]:hidden">ChronoZen</span>
+            <span className="group-data-[collapsible=icon]:hidden">TimeVerse</span>
           </Link>
         </SidebarHeader>
         <SidebarContent className="p-2">
