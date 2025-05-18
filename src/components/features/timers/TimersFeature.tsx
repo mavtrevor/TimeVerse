@@ -11,9 +11,8 @@ import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from '@/components/ui/dialog';
 import { PlusCircle, Play, Pause, RotateCcw, Edit, Trash2, Maximize, Minimize, TimerIcon as TimerIconLucide } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
-import { formatDuration, secondsToHMS } from '@/lib/timeUtils'; // Removed formatTime as it's no longer used here
+import { formatDuration, secondsToHMS } from '@/lib/timeUtils'; 
 import { useToast } from '@/hooks/use-toast';
-// import { useSettings } from '@/hooks/useSettings'; // Removed useSettings as timeFormat and language are no longer used here
 
 // Placeholder for actual audio playback for timers
 const playTimerSound = () => {
@@ -53,19 +52,16 @@ export default function TimersFeature() {
   const [editingTimer, setEditingTimer] = useState<Timer | null>(null);
   const [fullscreenTimerId, setFullscreenTimerId] = useState<string | null>(null);
   const { toast } = useToast();
-  // const { timeFormat, language } = useSettings(); // No longer needed for current time display
-  const [elapsedTime, setElapsedTime] = useState(0); // State for the up-timer, in seconds
+  const [elapsedTime, setElapsedTime] = useState(0); 
 
-  // Effect for the page load up-timer
   useEffect(() => {
     const intervalId = setInterval(() => {
       setElapsedTime(prevTime => prevTime + 1);
     }, 1000);
-    return () => clearInterval(intervalId); // Cleanup interval on component unmount
+    return () => clearInterval(intervalId); 
   }, []);
 
 
-  // Effect for managing countdown timers
   useEffect(() => {
     const interval = setInterval(() => {
       setTimers(prevTimers =>
@@ -73,7 +69,6 @@ export default function TimersFeature() {
           if (timer.isRunning && !timer.isPaused && timer.remainingTime > 0) {
             const newRemainingTime = timer.remainingTime - 1;
             if (newRemainingTime === 0) {
-              // Timer finished
               playTimerSound();
               toast({
                 title: "Timer Finished!",
@@ -124,7 +119,7 @@ export default function TimersFeature() {
       name: timerName,
       duration: durationInSeconds,
       remainingTime: durationInSeconds,
-      isRunning: true, // Start immediately
+      isRunning: true, 
       isPaused: false,
       createdAt: Date.now(),
     };
@@ -140,14 +135,14 @@ export default function TimersFeature() {
   const toggleTimer = (id: string) => {
     setTimers(timers.map(t => {
       if (t.id === id) {
-        if (t.remainingTime === 0) { // If finished, restart it
+        if (t.remainingTime === 0) { 
              return { ...t, isRunning: true, isPaused: false, remainingTime: t.duration };
         }
-        if (t.isRunning && !t.isPaused) { // If running, pause it
+        if (t.isRunning && !t.isPaused) { 
           return { ...t, isPaused: true };
-        } else if (t.isRunning && t.isPaused) { // If paused, resume it
+        } else if (t.isRunning && t.isPaused) { 
              return { ...t, isPaused: false };
-        } else { // If not running (fresh), start it
+        } else { 
           return { ...t, isRunning: true, isPaused: false };
         }
       }
@@ -217,7 +212,6 @@ export default function TimersFeature() {
 
   return (
     <div className="space-y-6 p-4 md:p-6">
-      {/* Page Load Up-Timer Display */}
       <div className="flex flex-col items-center justify-center text-center py-4">
         <div className="font-mono text-7xl md:text-8xl lg:text-9xl font-bold text-primary select-none">
           {formatDuration(elapsedTime)}
@@ -234,7 +228,6 @@ export default function TimersFeature() {
         </Button>
       </div>
 
-      {/* Timer Shortcuts Section */}
       <Card className="shadow-md">
         <CardHeader>
           <CardTitle className="text-lg">Set the timer for the specified time</CardTitle>
@@ -257,19 +250,11 @@ export default function TimersFeature() {
         isOpen={isFormOpen}
         onOpenChange={(open) => {
             setIsFormOpen(open);
-            if (!open) setEditingTimer(null); // Reset editingTimer when dialog closes
+            if (!open) setEditingTimer(null); 
         }}
         onSave={handleSaveTimer}
         timer={editingTimer}
       />
-
-      {timers.length === 0 && (
-        <Card className="shadow-lg mt-4">
-          <CardContent className="pt-6 text-center text-muted-foreground">
-            You have no timers set. Click "Add Timer" or a shortcut to create one.
-          </CardContent>
-        </Card>
-      )}
 
       <Card className="shadow-lg mt-4">
         <CardHeader>
@@ -320,6 +305,14 @@ export default function TimersFeature() {
           </div>
         </CardContent>
       </Card>
+      
+      {timers.length === 0 && (
+        <Card className="shadow-lg mt-4">
+          <CardContent className="pt-6 text-center text-muted-foreground">
+            You have no timers set. Click "Add Timer" or a shortcut to create one.
+          </CardContent>
+        </Card>
+      )}
 
       {timers.length > 0 && (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 mt-4">
@@ -381,19 +374,20 @@ function TimerFormDialog({ isOpen, onOpenChange, onSave, timer }: TimerFormDialo
   const [hours, setHours] = useState(0);
   const [minutes, setMinutes] = useState(5);
   const [seconds, setSeconds] = useState(0);
+  const { toast } = useToast(); // Added useToast here
 
   useEffect(() => {
-    if (isOpen) { // Only update form when dialog is opened
-        if (timer) { // Editing existing timer
+    if (isOpen) { 
+        if (timer) { 
           setName(timer.name);
           const { h, m, s } = secondsToHMS(timer.duration);
           setHours(h);
           setMinutes(m);
           setSeconds(s);
-        } else { // Adding new timer / reset form
+        } else { 
           setName('');
           setHours(0);
-          setMinutes(5); // Default to 5 minutes for new timers
+          setMinutes(5); 
           setSeconds(0);
         }
     }
@@ -403,7 +397,6 @@ function TimerFormDialog({ isOpen, onOpenChange, onSave, timer }: TimerFormDialo
     e.preventDefault();
     const totalSeconds = hours * 3600 + minutes * 60 + seconds;
     if (totalSeconds <= 0) {
-      // Using toast for validation feedback
       toast({
         title: "Invalid Duration",
         description: "Timer duration must be greater than 0 seconds.",
@@ -412,7 +405,7 @@ function TimerFormDialog({ isOpen, onOpenChange, onSave, timer }: TimerFormDialo
       return;
     }
     onSave({ name: name || "My Timer", duration: totalSeconds });
-    onOpenChange(false); // Close dialog on successful save
+    onOpenChange(false); 
   };
 
   return (
@@ -451,5 +444,7 @@ function TimerFormDialog({ isOpen, onOpenChange, onSave, timer }: TimerFormDialo
     </Dialog>
   );
 }
+
+    
 
     
