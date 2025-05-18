@@ -21,14 +21,22 @@ export interface Timer {
 }
 
 export interface WorldClockCity {
-  id: string;
-  name: string;
+  id: string; // User-defined ID or 'local'
+  name: string; // User-defined name or auto-detected for local
   timezone: string; // e.g., "America/New_York"
+}
+
+export interface CityDetail {
+  iana: string;
+  name: string;
+  displayName?: string; // Optional display name, e.g., "Beijing (Shanghai Time)"
+  description: string;
+  hemisphere: 'Northern' | 'Southern' | 'Equatorial';
 }
 
 export type TimeFormat = "12h" | "24h";
 export type AppTheme = "light" | "dark" | "system";
-export type AppLanguage = "en" | "ar" | "fr";
+export type AppLanguage = "en" | "ar" | "fr"; // Add more as needed
 
 export interface AppSettings {
   timeFormat: TimeFormat;
