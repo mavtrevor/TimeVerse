@@ -6,7 +6,7 @@ import type { Alarm } from '@/types';
 import useLocalStorage from '@/hooks/useLocalStorage';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter, CardDescription } from '@/components/ui/card';
-import { PlusCircle, Edit, Trash2, BellRing, AlarmClock, TimerIcon } from 'lucide-react';
+import { PlusCircle, Edit, Trash2, BellRing, AlarmClock } from 'lucide-react';
 import { useSettings } from '@/hooks/useSettings';
 import { formatTime, parseTimeString } from '@/lib/timeUtils';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from '@/components/ui/dialog';
@@ -27,12 +27,15 @@ const alarmSounds = [
 ];
 
 const alarmShortcuts = [
-  { time: '07:00', label: 'Morning Wake-up' },
-  { time: '08:00', label: 'School/Work Start' },
-  { time: '12:00', label: 'Lunch Break' },
-  { time: '14:00', label: 'Afternoon Meeting' },
-  { time: '18:00', label: 'Evening Workout' },
+  { time: '04:00', label: '4:00 AM' }, { time: '04:30', label: '4:30 AM' },
+  { time: '05:00', label: '5:00 AM' }, { time: '05:15', label: '5:15 AM' }, { time: '05:30', label: '5:30 AM' }, { time: '05:45', label: '5:45 AM' },
+  { time: '06:00', label: '6:00 AM' }, { time: '06:15', label: '6:15 AM' }, { time: '06:30', label: '6:30 AM' }, { time: '06:45', label: '6:45 AM' },
+  { time: '07:00', label: '7:00 AM' }, { time: '07:15', label: '7:15 AM' }, { time: '07:30', label: '7:30 AM' }, { time: '07:45', label: '7:45 AM' },
+  { time: '08:00', label: '8:00 AM' }, { time: '08:15', label: '8:15 AM' }, { time: '08:30', label: '8:30 AM' }, { time: '08:45', label: '8:45 AM' },
+  { time: '09:00', label: '9:00 AM' }, { time: '10:00', label: '10:00 AM' }, { time: '11:00', label: '11:00 AM' }, { time: '12:00', label: '12:00 PM' },
+  { time: '13:00', label: '1:00 PM' }, { time: '14:00', label: '2:00 PM' }
 ];
+
 
 const playFallbackBeep = () => {
   try {
@@ -242,11 +245,11 @@ export default function AlarmsFeature() {
     setIsFormOpen(true);
   };
 
-  const handleShortcutClick = (time: string, label: string) => {
+  const handleShortcutClick = (time: string, _label: string) => { // label from shortcut is only for display on button
     setEditingAlarm(null); // Ensure it's 'add' mode
     setShortcutInitialData({ 
       time, 
-      label, 
+      label: '', // Pre-fill alarm form label as empty
       sound: defaultAlarmSound, 
       snoozeEnabled: true, 
       snoozeDuration: 5, 
@@ -371,18 +374,16 @@ export default function AlarmsFeature() {
 
         <Card className="shadow-md mt-4">
           <CardHeader>
-            <CardTitle className="text-lg">Quick Alarm Presets</CardTitle>
-            <CardDescription>Click a preset to quickly set an alarm.</CardDescription>
+            <CardTitle className="text-lg">Set the alarm for the specified time</CardTitle>
           </CardHeader>
           <CardContent className="flex flex-wrap gap-2">
             {alarmShortcuts.map(shortcut => (
               <Button
                 key={shortcut.label}
-                variant="outline"
+                variant="default" // Changed to default for primary color background
                 onClick={() => handleShortcutClick(shortcut.time, shortcut.label)}
               >
-                <TimerIcon className="mr-2 h-4 w-4" /> 
-                {shortcut.label} ({shortcut.time})
+                {shortcut.label} 
               </Button>
             ))}
           </CardContent>
@@ -484,7 +485,7 @@ function AlarmFormDialog({ isOpen, onOpenChange, onSave, alarm, initialData }: A
         setDays(alarm.days || []);
       } else if (initialData) { // New alarm from shortcut
         setTime(initialData.time || '07:00');
-        setLabel(initialData.label || '');
+        setLabel(initialData.label || ''); // Use pre-filled empty label
         setSound(initialData.sound || defaultAlarmSound);
         setSnoozeEnabled(initialData.snoozeEnabled !== undefined ? initialData.snoozeEnabled : true);
         setSnoozeDuration(initialData.snoozeDuration || 5);
@@ -641,5 +642,7 @@ function RingingAlarmDialog({ alarm, onDismiss, timeFormat }: RingingAlarmDialog
     </Dialog>
   );
 }
+
+    
 
     
