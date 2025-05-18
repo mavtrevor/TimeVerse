@@ -80,7 +80,7 @@ export default function AppLayout() {
 
   return (
     <>
-      <Sidebar defaultOpen={true} collapsible="icon">
+      <Sidebar collapsible="icon">
         <SidebarHeader className="p-4 items-center justify-between">
           <Link href="/" className="flex items-center gap-2 font-semibold text-lg">
             <Logo />
