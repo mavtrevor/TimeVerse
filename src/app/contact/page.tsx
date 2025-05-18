@@ -27,7 +27,7 @@ export default function ContactPage() {
             <span className="hidden sm:inline">|</span>
             <Link href="/terms" className="hover:text-foreground">Terms of use</Link>
             <span className="hidden sm:inline">|</span>
-            <Link href="/privacy" className="hover:text-foreground">Privacy</Link> {/* Placeholder for now */}
+            <Link href="/privacy" className="hover:text-foreground">Privacy</Link>
             <span className="hidden sm:inline">|</span>
             <span>© 2025 TimeVerse – The Ultimate Online Clock Suite</span>
           </div>

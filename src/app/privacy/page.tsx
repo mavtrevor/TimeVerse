@@ -1,10 +1,10 @@
 
-import TermsOfUseFeature from '@/components/features/terms/TermsOfUseFeature';
+import PrivacyPolicyFeature from '@/components/features/privacy/PrivacyPolicyFeature';
 import { Logo } from '@/components/icons/Logo';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 
-export default function TermsPage() {
+export default function PrivacyPage() {
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground">
       <header className="sticky top-0 z-40 flex h-16 items-center justify-between border-b bg-background px-4 sm:px-6">
@@ -19,7 +19,7 @@ export default function TermsPage() {
         </Button>
       </header>
       <main className="flex-1 py-8">
-        <TermsOfUseFeature />
+        <PrivacyPolicyFeature />
       </main>
       <footer className="border-t p-6 text-center text-sm text-muted-foreground">
          <div className="flex justify-center items-center gap-x-4 gap-y-2 flex-wrap">
