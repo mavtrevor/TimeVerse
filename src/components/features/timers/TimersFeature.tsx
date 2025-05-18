@@ -34,8 +34,10 @@ const playTimerSound = () => {
   }
 };
 
+const INITIAL_TIMERS: Timer[] = [];
+
 export default function TimersFeature() {
-  const [timers, setTimers] = useLocalStorage<Timer[]>('chronozen-timers', []);
+  const [timers, setTimers] = useLocalStorage<Timer[]>('chronozen-timers', INITIAL_TIMERS);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingTimer, setEditingTimer] = useState<Timer | null>(null);
   const [fullscreenTimerId, setFullscreenTimerId] = useState<string | null>(null);
@@ -312,3 +314,4 @@ function TimerFormDialog({ isOpen, onOpenChange, onSave, timer }: TimerFormDialo
     </Dialog>
   );
 }
+

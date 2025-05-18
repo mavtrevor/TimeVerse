@@ -13,9 +13,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { commonTimezones, getTimeInTimezone, getTimezoneOffset } from '@/lib/timeUtils';
 import { useToast } from '@/hooks/use-toast';
 
+const INITIAL_WORLD_CLOCKS: WorldClockCity[] = [];
 
 export default function WorldClockFeature() {
-  const [cities, setCities] = useLocalStorage<WorldClockCity[]>('chronozen-worldclocks', []);
+  const [cities, setCities] = useLocalStorage<WorldClockCity[]>('chronozen-worldclocks', INITIAL_WORLD_CLOCKS);
   const [isAddCityDialogOpen, setIsAddCityDialogOpen] = useState(false);
   const { timeFormat, language } = useSettings(); // language for future date formatting per locale
   const settings = useSettings();
@@ -74,7 +75,7 @@ export default function WorldClockFeature() {
       });
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Run once on mount
+  }, []); // Run once on mount, `cities` and `setCities` are not needed here as per eslint suggestion for init logic.
 
 
   return (
