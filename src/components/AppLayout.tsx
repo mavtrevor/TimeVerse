@@ -115,6 +115,17 @@ export default function AppLayout({ children }: { children?: React.ReactNode }) 
         <main className="flex-1 overflow-auto">
           <ActiveComponent />
         </main>
+        <footer className="border-t p-4 text-center text-xs text-muted-foreground">
+          <div className="flex justify-center items-center gap-x-4 gap-y-2 flex-wrap">
+            <Link href="#" className="hover:text-foreground">Contacts</Link>
+            <span className="hidden sm:inline">|</span>
+            <Link href="#" className="hover:text-foreground">Terms of use</Link>
+            <span className="hidden sm:inline">|</span>
+            <Link href="#" className="hover:text-foreground">Privacy</Link>
+            <span className="hidden sm:inline">|</span>
+            <span>© 2025 TimeVerse</span>
+          </div>
+        </footer>
       </SidebarInset>
     </SidebarProvider>
   );
