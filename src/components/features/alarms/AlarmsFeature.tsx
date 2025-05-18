@@ -93,7 +93,7 @@ const triggerDesktopNotification = (alarm: Alarm) => {
   const notificationBody = alarm.label || "Your alarm is ringing!";
   const notificationOptions = {
     body: notificationBody,
-    icon: "/logo.png", // Ensure you have a logo.png in your public folder
+    icon: "/logo.png",
   };
 
   if (!("Notification" in window)) {
@@ -125,11 +125,11 @@ export default function AlarmsFeature() {
 
 
   useEffect(() => {
-    setCurrentTime(new Date()); // Set initial time on client after mount
+    setCurrentTime(new Date()); 
     const timerId = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => {
       clearInterval(timerId);
-      stopAlarmSound(audioRef); // Stop sound on component unmount
+      stopAlarmSound(audioRef); 
     };
   }, []);
   
@@ -137,7 +137,7 @@ export default function AlarmsFeature() {
     if (!currentTime) return;
 
     alarms.forEach(alarm => {
-      if (alarm.isActive && ringingAlarmId !== alarm.id) { // Check if not already marked as ringing
+      if (alarm.isActive && ringingAlarmId !== alarm.id) { 
         const alarmTime = parseTimeString(alarm.time);
         const now = currentTime;
         
@@ -154,10 +154,10 @@ export default function AlarmsFeature() {
           toast({
             title: "Alarm Ringing!",
             description: alarm.label || `Alarm set for ${formatTime(alarmTime, timeFormat)} is now ringing.`,
-            duration: 10000, // Keep toast longer
+            duration: 10000, 
           });
           setRingingAlarmId(alarm.id);
-          setRingingAlarmModal(alarm); // Set this to open the modal
+          setRingingAlarmModal(alarm); 
         }
       }
     });
@@ -181,10 +181,10 @@ export default function AlarmsFeature() {
   const handleDeleteAlarm = (id: string) => {
     const alarmToDelete = alarms.find(a => a.id === id);
     if (alarmToDelete) {
-      if (ringingAlarmId === id) { // If deleting a ringing alarm
+      if (ringingAlarmId === id) { 
         stopAlarmSound(audioRef);
         setRingingAlarmId(null);
-        setRingingAlarmModal(null); // Close modal if this alarm was ringing
+        setRingingAlarmModal(null); 
       }
       toast({ title: "Alarm Deleted", description: `Alarm "${alarmToDelete.label || 'Alarm'}" deleted.`, variant: "destructive" });
     }
@@ -194,10 +194,10 @@ export default function AlarmsFeature() {
   const toggleAlarmActive = (id: string, isActive: boolean) => {
     const alarmToToggle = alarms.find(a => a.id === id);
     if (alarmToToggle) {
-      if (!isActive && ringingAlarmId === id) { // If deactivating a ringing alarm
+      if (!isActive && ringingAlarmId === id) { 
         stopAlarmSound(audioRef);
         setRingingAlarmId(null);
-        setRingingAlarmModal(null); // Close modal if this alarm was ringing and is now deactivated
+        setRingingAlarmModal(null); 
       }
       setAlarms(alarms.map(a => a.id === id ? { ...a, isActive } : a));
       toast({ title: `Alarm ${isActive ? 'Activated' : 'Deactivated'}`, description: `Alarm "${alarmToToggle.label || 'Alarm'}" is now ${isActive ? 'active' : 'inactive'}.` });
@@ -206,11 +206,10 @@ export default function AlarmsFeature() {
 
   const handleDismissModalAndDeactivateIfNotRecurring = (alarmToDismiss: Alarm) => {
     stopAlarmSound(audioRef);
-    setRingingAlarmModal(null); // Close modal first
-    setRingingAlarmId(null);    // Reset card UI
+    setRingingAlarmModal(null); 
+    setRingingAlarmId(null);    
 
     if (!isRecurringAlarm(alarmToDismiss) && alarmToDismiss.isActive) {
-      // Deactivate non-recurring alarm
       setAlarms(prevAlarms => prevAlarms.map(a => 
         a.id === alarmToDismiss.id ? { ...a, isActive: false } : a
       ));
@@ -268,13 +267,78 @@ export default function AlarmsFeature() {
           timeFormat={timeFormat}
         />
         
-        {alarms.length === 0 && (
-          <Card className="shadow-lg mt-4">
-            <CardContent className="pt-6 text-center text-muted-foreground">
-              You have no alarms set. Click "Add Alarm" to create one.
-            </CardContent>
-          </Card>
-        )}
+        <Card className="shadow-lg mt-4">
+          <CardContent className="pt-6">
+            {alarms.length === 0 ? (
+              <p className="text-center text-muted-foreground">
+                You have no alarms set. Click "Add Alarm" to create one.
+              </p>
+            ) : (
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {alarms.map(alarm => {
+                    const isRinging = ringingAlarmId === alarm.id && !ringingAlarmModal; 
+                    const isEffectivelyInactive = !alarm.isActive && !(ringingAlarmId === alarm.id);
+
+                    return (
+                    <Card key={alarm.id} className={`shadow-lg flex flex-col ${isEffectivelyInactive ? 'opacity-60' : ''} ${isRinging ? 'border-destructive ring-2 ring-destructive' : ''}`}>
+                    <CardHeader className="flex flex-row items-center justify-between pb-2">
+                        <CardTitle className="text-xl truncate" title={alarm.label || "Alarm"}>{alarm.label || "Alarm"}</CardTitle>
+                        {!isRinging && ( 
+                        <Switch
+                            checked={alarm.isActive}
+                            onCheckedChange={(checked) => toggleAlarmActive(alarm.id, checked)}
+                            aria-label={alarm.isActive ? "Deactivate alarm" : "Activate alarm"}
+                            disabled={ringingAlarmId === alarm.id} 
+                        />
+                        )}
+                    </CardHeader>
+                    <CardContent className="flex-grow">
+                        {isRinging ? ( 
+                        <div className="text-center py-4">
+                            <BellRing className="h-12 w-12 text-destructive mx-auto mb-2 animate-pulse" />
+                            <p className="text-2xl font-bold text-destructive">RINGING!</p>
+                        </div>
+                        ) : (
+                        <>
+                            <p className="text-4xl font-bold text-primary">
+                            {formatTime(parseTimeString(alarm.time), timeFormat)}
+                            </p>
+                            <p className="text-sm text-muted-foreground">
+                            Sound: {alarmSounds.find(s => s.id === alarm.sound)?.name || 'Default'}
+                            </p>
+                            <p className="text-sm text-muted-foreground">
+                            Snooze: {alarm.snoozeEnabled ? `${alarm.snoozeDuration} min` : 'Off'}
+                            </p>
+                            {alarm.days && alarm.days.length > 0 && (
+                            <p className="text-xs text-muted-foreground mt-1">
+                                Repeats: {alarm.days.map(d => ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][d]).join(', ')}
+                            </p>
+                            )}
+                        </>
+                        )}
+                    </CardContent>
+                    <CardFooter className="p-4 border-t flex justify-end gap-2">
+                        {isRinging ? ( 
+                        <Button variant="destructive" onClick={() => handleDismissModalAndDeactivateIfNotRecurring(alarm)} className="w-full">
+                            Dismiss
+                        </Button>
+                        ) : (
+                        <>
+                            <Button variant="ghost" size="icon" onClick={() => openEditForm(alarm)} aria-label="Edit alarm" disabled={ringingAlarmId === alarm.id}>
+                            <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button variant="ghost" size="icon" onClick={() => handleDeleteAlarm(alarm.id)} aria-label="Delete alarm" className="text-destructive hover:text-destructive" disabled={ringingAlarmId === alarm.id}>
+                            <Trash2 className="h-4 w-4" />
+                            </Button>
+                        </>
+                        )}
+                    </CardFooter>
+                    </Card>
+                )})}
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
         {/* SEO Content Card */}
         <Card className="shadow-lg mt-4">
@@ -339,70 +403,6 @@ export default function AlarmsFeature() {
           </CardContent>
         </Card>
 
-        {alarms.length > 0 && (
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 mt-4">
-            {alarms.map(alarm => {
-                const isRinging = ringingAlarmId === alarm.id && !ringingAlarmModal; // Card shows ringing only if modal is NOT active for this alarm
-                const isEffectivelyInactive = !alarm.isActive && !(ringingAlarmId === alarm.id);
-
-                return (
-                <Card key={alarm.id} className={`shadow-lg flex flex-col ${isEffectivelyInactive ? 'opacity-60' : ''} ${isRinging ? 'border-destructive ring-2 ring-destructive' : ''}`}>
-                <CardHeader className="flex flex-row items-center justify-between pb-2">
-                    <CardTitle className="text-xl truncate" title={alarm.label || "Alarm"}>{alarm.label || "Alarm"}</CardTitle>
-                    {!isRinging && ( // Don't show switch if card is in "ringing" state
-                    <Switch
-                        checked={alarm.isActive}
-                        onCheckedChange={(checked) => toggleAlarmActive(alarm.id, checked)}
-                        aria-label={alarm.isActive ? "Deactivate alarm" : "Activate alarm"}
-                        disabled={ringingAlarmId === alarm.id} // Disable switch if this specific alarm is the one currently being handled by modal
-                    />
-                    )}
-                </CardHeader>
-                <CardContent className="flex-grow">
-                    {isRinging ? ( // This state now only for the card, modal has its own display
-                    <div className="text-center py-4">
-                        <BellRing className="h-12 w-12 text-destructive mx-auto mb-2 animate-pulse" />
-                        <p className="text-2xl font-bold text-destructive">RINGING!</p>
-                    </div>
-                    ) : (
-                    <>
-                        <p className="text-4xl font-bold text-primary">
-                        {formatTime(parseTimeString(alarm.time), timeFormat)}
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                        Sound: {alarmSounds.find(s => s.id === alarm.sound)?.name || 'Default'}
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                        Snooze: {alarm.snoozeEnabled ? `${alarm.snoozeDuration} min` : 'Off'}
-                        </p>
-                        {alarm.days && alarm.days.length > 0 && (
-                        <p className="text-xs text-muted-foreground mt-1">
-                            Repeats: {alarm.days.map(d => ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][d]).join(', ')}
-                        </p>
-                        )}
-                    </>
-                    )}
-                </CardContent>
-                <CardFooter className="p-4 border-t flex justify-end gap-2">
-                    {isRinging ? ( // This state now only for the card
-                    <Button variant="destructive" onClick={() => handleDismissModalAndDeactivateIfNotRecurring(alarm)} className="w-full">
-                        Dismiss
-                    </Button>
-                    ) : (
-                    <>
-                        <Button variant="ghost" size="icon" onClick={() => openEditForm(alarm)} aria-label="Edit alarm" disabled={ringingAlarmId === alarm.id}>
-                        <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button variant="ghost" size="icon" onClick={() => handleDeleteAlarm(alarm.id)} aria-label="Delete alarm" className="text-destructive hover:text-destructive" disabled={ringingAlarmId === alarm.id}>
-                        <Trash2 className="h-4 w-4" />
-                        </Button>
-                    </>
-                    )}
-                </CardFooter>
-                </Card>
-            )})}
-            </div>
-        )}
       </div>
     </div>
   );
@@ -432,7 +432,7 @@ function AlarmFormDialog({ isOpen, onOpenChange, onSave, alarm }: AlarmFormDialo
       setSnoozeEnabled(alarm.snoozeEnabled);
       setSnoozeDuration(alarm.snoozeDuration);
       setDays(alarm.days || []);
-    } else if (isOpen && !alarm) { // Reset form when opening for a new alarm
+    } else if (isOpen && !alarm) { 
       setTime('07:00');
       setLabel('');
       setSound(defaultAlarmSound);
@@ -546,14 +546,12 @@ function RingingAlarmDialog({ alarm, onDismiss, timeFormat }: RingingAlarmDialog
     if (alarm) {
       onDismiss(alarm);
     }
-    // The isOpen state will be updated by the useEffect when `alarm` becomes null by the parent
   };
   
   const handleOpenChange = (open: boolean) => {
-    // This function is called by Radix when the dialog attempts to close (e.g. Esc, overlay click)
     setIsOpen(open);
-    if (!open && alarm) { // If dialog is closed by 'x' or 'Esc' or overlay click
-      onDismiss(alarm); // Ensure parent knows to clear the ringing alarm state
+    if (!open && alarm) { 
+      onDismiss(alarm); 
     }
   };
 
@@ -563,14 +561,13 @@ function RingingAlarmDialog({ alarm, onDismiss, timeFormat }: RingingAlarmDialog
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogContent 
         className="sm:max-w-md p-0" 
-        onInteractOutside={(e) => e.preventDefault()} // Prevent closing by clicking outside
-        onEscapeKeyDown={(e) => e.preventDefault()} // Prevent closing by Esc key
+        onInteractOutside={(e) => e.preventDefault()} 
+        onEscapeKeyDown={(e) => e.preventDefault()} 
       >
         <DialogHeader className="bg-destructive text-destructive-foreground p-4 rounded-t-md flex flex-row justify-between items-center">
           <DialogTitle>
             Alarm
           </DialogTitle>
-          {/* Default Radix close button is on DialogContent, no need to add another here unless specifically overriding style */}
         </DialogHeader>
         <div className="p-6 flex flex-col items-center space-y-4">
           <AlarmClock className="h-20 w-20 text-destructive animate-pulse" />
