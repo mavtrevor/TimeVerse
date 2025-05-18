@@ -51,7 +51,7 @@ export default function AppLayout({ children }: { children?: React.ReactNode }) 
         <SidebarHeader className="p-4 items-center justify-between">
           <Link href="/" className="flex items-center gap-2 font-semibold text-lg">
             <Logo />
-            <span className="group-data-[collapsible=icon]:hidden">TimeVerse</span>
+            <span className="group-data-[collapsible=icon]:hidden">TimeVerse – The Ultimate Online Clock Suite</span>
           </Link>
         </SidebarHeader>
         <SidebarContent className="p-2">
@@ -119,11 +119,11 @@ export default function AppLayout({ children }: { children?: React.ReactNode }) 
           <div className="flex justify-center items-center gap-x-4 gap-y-2 flex-wrap">
             <Link href="/contact" className="hover:text-foreground">Contacts</Link>
             <span className="hidden sm:inline">|</span>
-            <Link href="#" className="hover:text-foreground">Terms of use</Link>
+            <Link href="/terms" className="hover:text-foreground">Terms of use</Link>
             <span className="hidden sm:inline">|</span>
-            <Link href="#" className="hover:text-foreground">Privacy</Link>
+            <Link href="/privacy" className="hover:text-foreground">Privacy</Link> {/* Placeholder for now */}
             <span className="hidden sm:inline">|</span>
-            <span>© 2025 TimeVerse</span>
+            <span>© 2025 TimeVerse – The Ultimate Online Clock Suite</span>
           </div>
         </footer>
       </SidebarInset>
