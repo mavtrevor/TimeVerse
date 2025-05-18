@@ -50,7 +50,14 @@ export interface NavItem {
   id: FeatureKey;
   label: string;
   icon: React.ElementType;
-  component: React.ElementType; // Made mandatory again
-  href: string; // Keep href for Link components
+  component: React.ElementType; 
+  href: string; 
 }
 
+export interface Holiday {
+  date: string; // YYYY-MM-DD format
+  name: string;
+  type: 'public' | 'observance' | 'other';
+  countryCode: string;
+  description?: string;
+}
