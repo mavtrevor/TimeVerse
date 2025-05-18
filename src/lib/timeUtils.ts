@@ -65,8 +65,8 @@ export const formatDuration = (totalSeconds: number): string => {
   return `${hoursStr}${minutesStr}${secondsStr}`;
 };
 
-export const getTimeInTimezone = (timezone: string, settings: AppSettings) => {
-  const date = new Date();
+export const getTimeInTimezone = (timezone: string, settings: AppSettings, baseDateInput?: Date | null) => {
+  const baseDate = baseDateInput instanceof Date && !isNaN(baseDateInput.getTime()) ? baseDateInput : new Date();
   try {
     const formatter = new Intl.DateTimeFormat('en-US', {
       timeZone: timezone,
@@ -75,11 +75,11 @@ export const getTimeInTimezone = (timezone: string, settings: AppSettings) => {
       second: '2-digit',
       hour12: settings.timeFormat === '12h',
     });
-    return formatter.format(date);
+    return formatter.format(baseDate);
   } catch (error) {
     console.error(`Invalid timezone: ${timezone}`, error);
     // Fallback to UTC or local if timezone is invalid
-    return formatTime(date, settings.timeFormat) + (timezone === 'UTC' ? ' UTC' : ' (Local)');
+    return formatTime(baseDate, settings.timeFormat) + (timezone === 'UTC' ? ' UTC' : ' (Local)');
   }
 };
 
@@ -134,3 +134,4 @@ export const commonTimezones = [
   { name: "Dubai", timezone: "Asia/Dubai" },
   { name: "Shanghai", timezone: "Asia/Shanghai" },
 ];
+

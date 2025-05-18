@@ -18,13 +18,14 @@ const INITIAL_WORLD_CLOCKS: WorldClockCity[] = [];
 export default function WorldClockFeature() {
   const [cities, setCities] = useLocalStorage<WorldClockCity[]>('chronozen-worldclocks', INITIAL_WORLD_CLOCKS);
   const [isAddCityDialogOpen, setIsAddCityDialogOpen] = useState(false);
-  const { timeFormat, language } = useSettings(); // language for future date formatting per locale
+  const { timeFormat, language } = useSettings(); 
   const settings = useSettings();
   const { toast } = useToast();
-  const [currentTime, setCurrentTime] = useState(new Date());
+  const [clientNow, setClientNow] = useState<Date | null>(null);
 
   useEffect(() => {
-    const timerId = setInterval(() => setCurrentTime(new Date()), 1000); // Update every second
+    setClientNow(new Date()); // Set initial time on client after mount
+    const timerId = setInterval(() => setClientNow(new Date()), 1000); // Update every second
     return () => clearInterval(timerId);
   }, []);
 
@@ -54,28 +55,39 @@ export default function WorldClockFeature() {
     }
   };
   
-  // Add local timezone automatically if not present
   useEffect(() => {
     const localTz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-    const localCityExists = cities.some(city => city.timezone === localTz && city.name === "Local Time");
+    const localCityExists = cities.some(city => city.timezone === localTz && city.id === 'local');
     
     if (!localCityExists) {
       const localCityInfo = commonTimezones.find(tz => tz.timezone === localTz);
-      const name = localCityInfo ? localCityInfo.name : "Local Time";
+      const name = localCityInfo ? localCityInfo.name.replace(/\b\w/g, l => l.toUpperCase()) : "Local Time"; // Ensure consistent "Local Time" for auto-add if no match
 
       setCities(prevCities => {
-        // Ensure "Local Time" is always first if added automatically
-        const existingLocal = prevCities.find(c => c.timezone === localTz);
-        if(existingLocal) return prevCities; // Already exists, perhaps with a custom name
+        const existingLocalById = prevCities.find(c => c.id === 'local');
+        if(existingLocalById) { // If "local" id exists, update its timezone if different, otherwise leave it
+            if(existingLocalById.timezone !== localTz) {
+                return prevCities.map(c => c.id === 'local' ? {...c, timezone: localTz, name: name} : c);
+            }
+            return prevCities;
+        }
         
+        // Remove any other city that might be using the local timezone string but a different name or id
+        const filteredCities = prevCities.filter(c => c.timezone !== localTz || c.id === 'local');
         const newLocalCity: WorldClockCity = { id: 'local', name: name, timezone: localTz };
-        // Remove any other city that might be using the local timezone string but a different name
-        const filteredCities = prevCities.filter(c => c.timezone !== localTz);
-        return [newLocalCity, ...filteredCities];
+
+        // If there was another city with the local timezone but not id 'local', replace it if it exists, otherwise add
+        const indexOfOldLocal = filteredCities.findIndex(c => c.timezone === localTz && c.id !== 'local');
+        if (indexOfOldLocal !== -1) {
+            filteredCities.splice(indexOfOldLocal, 1, newLocalCity);
+            return filteredCities;
+        }
+
+        return [newLocalCity, ...filteredCities.filter(c => c.id !== 'local')];
       });
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Run once on mount, `cities` and `setCities` are not needed here as per eslint suggestion for init logic.
+  }, []); 
 
 
   return (
@@ -113,7 +125,7 @@ export default function WorldClockFeature() {
                 <CardTitle className="text-xl">{city.name}</CardTitle>
                 <p className="text-xs text-muted-foreground">{getTimezoneOffset(city.timezone)}</p>
               </div>
-              {city.id !== 'local' && ( // Prevent deleting the auto-added local time
+              {city.id !== 'local' && ( 
                  <Button variant="ghost" size="icon" onClick={() => handleDeleteCity(city.id)} className="text-muted-foreground hover:text-destructive -mt-1 -mr-2">
                   <Trash2 className="h-4 w-4" />
                 </Button>
@@ -121,10 +133,10 @@ export default function WorldClockFeature() {
             </CardHeader>
             <CardContent className="flex-grow flex flex-col items-center justify-center">
               <p className="text-4xl font-mono font-bold text-primary">
-                {getTimeInTimezone(city.timezone, settings)}
+                {clientNow ? getTimeInTimezone(city.timezone, settings, clientNow) : "00:00:00"}
               </p>
               <p className="text-sm text-muted-foreground mt-1">
-                {new Date().toLocaleDateString(language, { timeZone: city.timezone, weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                {clientNow ? clientNow.toLocaleDateString(language, { timeZone: city.timezone, weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) : "Loading date..."}
               </p>
             </CardContent>
           </Card>
@@ -147,11 +159,11 @@ function AddCityForm({ onAddCity, existingTimezones }: AddCityFormProps) {
     e.preventDefault();
     if (selectedTimezone) {
       onAddCity(selectedTimezone);
-      setSelectedTimezone(''); // Reset for next use
+      setSelectedTimezone(''); 
     }
   };
 
-  const availableTimezones = commonTimezones.filter(tz => !existingTimezones.includes(tz.timezone));
+  const availableTimezones = commonTimezones.filter(tz => tz.timezone !== Intl.DateTimeFormat().resolvedOptions().timeZone && !existingTimezones.includes(tz.timezone));
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4 py-4">
@@ -166,7 +178,7 @@ function AddCityForm({ onAddCity, existingTimezones }: AddCityFormProps) {
               <SelectItem key={tz.timezone} value={tz.timezone}>
                 {tz.name} ({tz.timezone})
               </SelectItem>
-            )) : <SelectItem value="none" disabled>No more timezones to add</SelectItem>}
+            )) : <SelectItem value="none" disabled>No more timezones to add or all unique ones added</SelectItem>}
           </SelectGroup>
         </SelectContent>
       </Select>

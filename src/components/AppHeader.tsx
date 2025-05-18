@@ -1,40 +1,49 @@
 
 "use client";
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Menu, Settings, Sun, Moon } from 'lucide-react';
 import { useSettings } from '@/hooks/useSettings';
-import { useSidebar } from '@/components/ui/sidebar'; // If using the shadcn sidebar component
+import { useSidebar } from '@/components/ui/sidebar'; 
 
 interface AppHeaderProps {
   currentFeatureName: string;
-  onNavigate: (featureKey: string) => void; // For mobile settings navigation
+  onNavigate: (featureKey: string) => void; 
 }
 
 export default function AppHeader({ currentFeatureName, onNavigate }: AppHeaderProps) {
   const { theme, setTheme } = useSettings();
-  const { toggleSidebar, isMobile } = useSidebar(); // Assuming useSidebar hook is available from shadcn sidebar
+  const { toggleSidebar, isMobile } = useSidebar(); 
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const toggleTheme = () => {
-    if (theme === 'light') setTheme('dark');
-    else if (theme === 'dark') setTheme('light');
-    else { // System theme
-      const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      setTheme(systemPrefersDark ? 'light' : 'dark'); // Toggle opposite to current effective system theme
+    let currentEffectiveTheme = theme;
+    if (theme === 'system' && typeof window !== 'undefined') {
+        currentEffectiveTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    } else if (theme === 'system') {
+        currentEffectiveTheme = 'light'; // Fallback for SSR or pre-mount
+    }
+
+    if (currentEffectiveTheme === 'dark') {
+      setTheme('light');
+    } else {
+      setTheme('dark');
     }
   };
   
-  // Determine current effective theme for icon display
-  let effectiveTheme = theme;
-  if (theme === 'system') {
-    if (typeof window !== 'undefined') {
-       effectiveTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-    } else {
-        effectiveTheme = 'light'; // Default for SSR or before hydration
-    }
+  let displayTheme = theme;
+  if (mounted && theme === 'system') {
+    displayTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  } else if (!mounted && theme === 'system') {
+    displayTheme = 'light'; // Consistent SSR default for system theme
   }
+  // If theme is 'light' or 'dark', displayTheme is already correct.
 
 
   return (
@@ -47,9 +56,15 @@ export default function AppHeader({ currentFeatureName, onNavigate }: AppHeaderP
       )}
       <h1 className="text-xl font-semibold grow">{currentFeatureName}</h1>
       <div className="flex items-center gap-2">
-        <Button variant="ghost" size="icon" onClick={toggleTheme} aria-label="Toggle theme">
-          {effectiveTheme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-        </Button>
+        {mounted ? ( // Only render theme toggle button once mounted to ensure correct icon
+            <Button variant="ghost" size="icon" onClick={toggleTheme} aria-label="Toggle theme">
+                {displayTheme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+            </Button>
+        ) : (
+            <Button variant="ghost" size="icon" aria-label="Toggle theme" disabled>
+                <Moon className="h-5 w-5" /> {/* Default placeholder icon */}
+            </Button>
+        )}
         <Button variant="ghost" size="icon" onClick={() => onNavigate('settings')} aria-label="Open settings">
            <Settings className="h-5 w-5" />
         </Button>
@@ -57,3 +72,4 @@ export default function AppHeader({ currentFeatureName, onNavigate }: AppHeaderP
     </header>
   );
 }
+

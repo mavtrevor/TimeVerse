@@ -12,7 +12,7 @@ import {
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
-  SidebarTrigger, // This is for the hamburger menu button for mobile.
+  SidebarTrigger, 
   SidebarInset,
   useSidebar,
 } from '@/components/ui/sidebar';
@@ -26,7 +26,7 @@ import WorldClockFeature from '@/components/features/world-clock/WorldClockFeatu
 import UtilitiesFeature from '@/components/features/utilities/UtilitiesFeature';
 import CalendarFeature from '@/components/features/calendar/CalendarFeature';
 import SettingsFeature from '@/components/features/settings/SettingsFeature';
-import AppHeader from '@/components/AppHeader'; // Import the new header
+import AppHeader from '@/components/AppHeader'; 
 import type { NavItem, FeatureKey } from '@/types';
 import { useSettings } from '@/hooks/useSettings';
 
@@ -46,7 +46,12 @@ const settingsItem: NavItem = { id: 'settings', label: 'Settings', icon: Setting
 export default function AppLayout() {
   const [activeFeatureKey, setActiveFeatureKey] = useState<FeatureKey>('alarms');
   const { theme, setTheme } = useSettings();
-  const { isMobile, setOpenMobile } = useSidebar(); // from SidebarProvider context
+  const { isMobile, setOpenMobile } = useSidebar(); 
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const ActiveComponent = navItemsList.find(item => item.id === activeFeatureKey)?.component || 
                           (activeFeatureKey === 'settings' ? settingsItem.component : navItemsList[0].component);
@@ -57,24 +62,28 @@ export default function AppLayout() {
   const handleNavigation = (featureKey: FeatureKey) => {
     setActiveFeatureKey(featureKey);
     if (isMobile) {
-      setOpenMobile(false); // Close sidebar on mobile after navigation
+      setOpenMobile(false); 
     }
   };
   
-  // Determine current effective theme for icon display
-  let effectiveTheme = theme;
-  if (typeof window !== 'undefined' && theme === 'system') {
-    effectiveTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-  } else if (theme === 'system') {
-    effectiveTheme = 'light'; // Default for SSR or before hydration
+  let displayTheme = theme;
+  if (mounted && theme === 'system') {
+    displayTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  } else if (!mounted && theme === 'system') {
+    displayTheme = 'light'; // Consistent SSR default
   }
   
-  const toggleTheme = () => {
-    if (theme === 'light') setTheme('dark');
-    else if (theme === 'dark') setTheme('light');
-    else { // System theme
-      setTheme(effectiveTheme === 'dark' ? 'light' : 'dark');
+  const toggleThemeInLayout = () => {
+    // Determine the theme that is *currently effectively active* to toggle from it
+    let currentEffectiveTheme = theme;
+    if (theme === 'system' && typeof window !== 'undefined') { // Check window for client-side media query
+        currentEffectiveTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    } else if (theme === 'system') { // Fallback for SSR or if window is not available
+        currentEffectiveTheme = 'light'; 
     }
+    // Now toggle: if currently effectively dark, set to light; otherwise, set to dark.
+    // This logic directly sets theme to 'light' or 'dark', moving away from 'system' temporarily if user interacts.
+    setTheme(currentEffectiveTheme === 'dark' ? 'light' : 'dark');
   };
 
 
@@ -86,7 +95,6 @@ export default function AppLayout() {
             <Logo />
             <span className="group-data-[collapsible=icon]:hidden">ChronoZen</span>
           </Link>
-           {/* Mobile menu trigger is part of SidebarProvider, rendered typically outside or in a header */}
         </SidebarHeader>
         <SidebarContent className="p-2">
           <SidebarMenu>
@@ -119,21 +127,34 @@ export default function AppLayout() {
                 </SidebarMenuButton>
               </SidebarMenuItem>
              <SidebarMenuItem>
-                <SidebarMenuButton
-                  onClick={toggleTheme}
-                  tooltip={effectiveTheme === 'dark' ? "Switch to Light Mode" : "Switch to Dark Mode"}
-                  className="justify-start"
-                >
-                  {effectiveTheme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-                  <span className="group-data-[collapsible=icon]:hidden">
-                    {effectiveTheme === 'dark' ? "Light Mode" : "Dark Mode"}
-                  </span>
-                </SidebarMenuButton>
+                {mounted ? (
+                    <SidebarMenuButton
+                        onClick={toggleThemeInLayout}
+                        tooltip={displayTheme === 'dark' ? "Switch to Light Mode" : "Switch to Dark Mode"}
+                        className="justify-start"
+                    >
+                        {displayTheme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+                        <span className="group-data-[collapsible=icon]:hidden">
+                        {displayTheme === 'dark' ? "Light Mode" : "Dark Mode"}
+                        </span>
+                    </SidebarMenuButton>
+                ) : (
+                    <SidebarMenuButton
+                        tooltip="Toggle theme"
+                        className="justify-start"
+                        disabled
+                    >
+                        <Moon className="h-5 w-5" /> {/* Default placeholder */}
+                        <span className="group-data-[collapsible=icon]:hidden">
+                            Dark Mode
+                        </span>
+                    </SidebarMenuButton>
+                )}
               </SidebarMenuItem>
           </SidebarMenu>
         </SidebarFooter>
       </Sidebar>
-      <SidebarInset className="flex flex-col"> {/* Use SidebarInset for main content area */}
+      <SidebarInset className="flex flex-col"> 
         <AppHeader currentFeatureName={currentFeature.label} onNavigate={handleNavigation} />
         <main className="flex-1 overflow-auto">
           <ActiveComponent />
@@ -142,3 +163,4 @@ export default function AppLayout() {
     </>
   );
 }
+

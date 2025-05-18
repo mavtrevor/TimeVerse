@@ -80,9 +80,11 @@ export default function AlarmsFeature() {
   const [editingAlarm, setEditingAlarm] = useState<Alarm | null>(null);
   const { timeFormat, language } = useSettings();
   const { toast } = useToast();
-  const [currentTime, setCurrentTime] = useState(new Date());
+  const [currentTime, setCurrentTime] = useState<Date | null>(null);
 
   useEffect(() => {
+    // Set initial time on client after mount to avoid hydration mismatch
+    setCurrentTime(new Date());
     const timerId = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(timerId);
   }, []);
@@ -117,6 +119,8 @@ export default function AlarmsFeature() {
   }, []);
   
   useEffect(() => {
+    if (!currentTime) return; // Don't check alarms if currentTime is not set yet
+
     alarms.forEach(alarm => {
       if (alarm.isActive) {
         const alarmTime = parseTimeString(alarm.time);
@@ -181,10 +185,10 @@ export default function AlarmsFeature() {
       {/* Digital Clock Display */}
       <div className="flex-grow flex flex-col items-center justify-center text-center py-4">
         <div className="font-mono text-7xl md:text-8xl lg:text-9xl font-bold text-primary select-none">
-          {formatTime(currentTime, timeFormat)}
+          {currentTime ? formatTime(currentTime, timeFormat) : "00:00:00"}
         </div>
         <div className="text-lg md:text-xl lg:text-2xl text-muted-foreground select-none mt-2">
-          {currentTime.toLocaleDateString(language, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+          {currentTime ? currentTime.toLocaleDateString(language, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) : "Loading date..."}
         </div>
       </div>
 
