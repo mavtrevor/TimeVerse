@@ -426,6 +426,55 @@ export default function CalendarFeature() {
         )}
       </div>
 
+      {/* New SEO Content Section */}
+      <Card className="shadow-lg mt-8">
+        <CardHeader>
+          <CardTitle className="text-xl">📅 What Is This Online Calendar?</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4 text-sm">
+          <p>
+            This interactive calendar lets you instantly view the full current year’s calendar, complete with national holidays and observance days. The calendar is fully accessible in one scrollable page, with quick navigation options to explore previous or upcoming years (up to five years ahead).
+          </p>
+          <p>We currently support holiday data for:</p>
+          <ul className="list-disc list-inside pl-4 space-y-1">
+            <li>United States 🇺🇸</li>
+            <li>United Kingdom 🇬🇧</li>
+            <li>Canada 🇨🇦</li>
+            <li>Australia 🇦🇺</li>
+            <li>India 🇮🇳</li>
+            <li>Philippines 🇵🇭</li>
+            <li>South Africa 🇿🇦</li>
+          </ul>
+          <p>Each date is color-coded for clarity:</p>
+          <ul className="list-disc list-inside pl-4 space-y-1">
+            <li><span className="text-pink-600 font-semibold">Red</span> = National/Public Holidays (e.g., New Year’s Day, Independence Day)</li>
+            <li><span className="text-sky-600 font-semibold">Blue</span> = Observances & Special Days (e.g., Valentine’s Day, Mother's Day)</li>
+          </ul>
+          <p>Click on any red or blue date to see the name and details of the holiday or observance.</p>
+
+          <h3 className="font-semibold text-md pt-2">🔍 How to Use This Calendar</h3>
+          <p>Using this calendar is fast and simple:</p>
+          <ul className="list-disc list-inside pl-4 space-y-1">
+            <li>Navigate Months: Use the left and right arrows to move between months.</li>
+            <li>Change Year: Click on the year to jump to past or future years. (Note: Year navigation is primarily via month arrows; the main title displays the current year of the viewed month).</li>
+            <li>View Holidays: Click on any colored date to learn about that day’s significance.</li>
+          </ul>
+          <p>All month names are displayed in full (e.g., “November”), while days of the week are abbreviated (e.g., “Su”, “Mo”, “Tu”, etc.).</p>
+          <p>You don’t need to reload or leave the page to switch between months or years — it’s a seamless, one-page calendar experience.</p>
+          
+          <h3 className="font-semibold text-md pt-2">✨ Why Use Our Online Calendar with Holidays?</h3>
+          <p>This calendar is more than just a date viewer — it's a practical tool for:</p>
+          <ul className="list-disc list-inside pl-4 space-y-1">
+            <li>Planning holidays, vacations, and events</li>
+            <li>Tracking international public holidays</li>
+            <li>Checking observances and state holidays</li>
+            <li>Finding out what day any future date falls on</li>
+            <li>Counting down days to a birthday, anniversary, or party</li>
+            <li>Switching quickly between country-specific calendars</li>
+          </ul>
+          <p>Whether you're a student, traveler, remote worker, or event planner, this calendar helps you stay organized and informed all year round.</p>
+        </CardContent>
+      </Card>
 
       <Dialog open={!!selectedHolidayDetail} onOpenChange={(isOpen) => {
         if (!isOpen) setSelectedHolidayDetail(null);
@@ -459,6 +508,5 @@ export default function CalendarFeature() {
     </div>
   );
 }
-
 
     
