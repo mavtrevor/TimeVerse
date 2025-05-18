@@ -74,8 +74,15 @@ const playAlarmSound = (soundId: string, audioRef: React.MutableRefObject<HTMLAu
       audioRef.current.src = `/sounds/${soundId}.mp3`;
       audioRef.current.loop = true; // Loop the sound until dismissed
       audioRef.current.play().catch(error => {
-        console.error(`Error playing sound ${soundId}.mp3:`, error);
-        playFallbackBeep();
+        if (error.name === 'AbortError') {
+          // This is an expected interruption, usually by a subsequent pause() call.
+          // Log it as a warning or info, but don't treat it as a critical failure needing a fallback.
+          console.warn(`Play request for '${soundId}' was interrupted. This is usually normal if the sound was stopped quickly.`);
+        } else {
+          // For other errors (e.g., file not found, decoding issues), log and play the fallback.
+          console.error(`Error playing sound '${soundId}':`, error);
+          playFallbackBeep();
+        }
       });
     } catch (e) {
       console.error("Audio object creation or playback failed:", e);
@@ -89,7 +96,9 @@ const playAlarmSound = (soundId: string, audioRef: React.MutableRefObject<HTMLAu
 
 const stopAlarmSound = (audioRef: React.MutableRefObject<HTMLAudioElement | null>) => {
   if (audioRef.current) {
-    audioRef.current.pause();
+    if (!audioRef.current.paused) { // Only try to pause if it's not already paused
+        audioRef.current.pause();
+    }
     audioRef.current.currentTime = 0; // Reset for next play
     audioRef.current.loop = false;
   }
@@ -104,7 +113,7 @@ const triggerDesktopNotification = (alarm: Alarm) => {
   const notificationBody = alarm.label || "Your alarm is ringing!";
   const notificationOptions = {
     body: notificationBody,
-    icon: "/logo.png", // Assuming you have a logo.png in your public folder
+    icon: "/logo.png", 
   };
 
   if (!("Notification" in window)) {
@@ -117,7 +126,6 @@ const triggerDesktopNotification = (alarm: Alarm) => {
       new Notification("TimeVerse Alarm", notificationOptions);
     } catch (error) {
       console.error("Error creating desktop notification (permission granted):", error);
-      // Potentially log that direct constructor failed, and SW might be needed
     }
   } else if (Notification.permission !== "denied") {
     Notification.requestPermission().then((permission) => {
@@ -221,7 +229,7 @@ export default function AlarmsFeature() {
   const toggleAlarmActive = (id: string, isActive: boolean) => {
     const alarmToToggle = alarms.find(a => a.id === id);
     if (alarmToToggle) {
-      if (!isActive && (ringingAlarmId === id || (ringingAlarmModal && ringingAlarmModal.id === id))) { 
+      if (!isActive && (ringingAlarmId === id || (ringingAlarmModal && ringingAlarmModal.id === alarm.id))) { 
         stopAlarmSound(audioRef);
         setRingingAlarmId(null);
         setRingingAlarmModal(null); 
@@ -259,11 +267,11 @@ export default function AlarmsFeature() {
     setIsFormOpen(true);
   };
 
-  const handleShortcutClick = (time: string, _label: string) => { // label from shortcut is only for display on button
-    setEditingAlarm(null); // Ensure it's 'add' mode
+  const handleShortcutClick = (time: string, _label: string) => { 
+    setEditingAlarm(null); 
     setShortcutInitialData({ 
       time, 
-      label: '', // Pre-fill alarm form label as empty
+      label: '', 
       sound: defaultAlarmSound, 
       snoozeEnabled: true, 
       snoozeDuration: 5, 
@@ -489,21 +497,21 @@ function AlarmFormDialog({ isOpen, onOpenChange, onSave, alarm, initialData }: A
 
   useEffect(() => {
     if (isOpen) {
-      if (alarm) { // Editing existing alarm
+      if (alarm) { 
         setTime(alarm.time);
         setLabel(alarm.label);
         setSound(alarm.sound);
         setSnoozeEnabled(alarm.snoozeEnabled);
         setSnoozeDuration(alarm.snoozeDuration);
         setDays(alarm.days || []);
-      } else if (initialData) { // New alarm from shortcut
+      } else if (initialData) { 
         setTime(initialData.time || '07:00');
-        setLabel(initialData.label || ''); // Use pre-filled empty label
+        setLabel(initialData.label || ''); 
         setSound(initialData.sound || defaultAlarmSound);
-        setSnoozeEnabled(initialData.snoozeEnabled !== undefined ? initialData.snoozedEnabled : true);
+        setSnoozeEnabled(initialData.snoozeEnabled !== undefined ? initialData.snoozeEnabled : true); // Corrected potential typo
         setSnoozeDuration(initialData.snoozeDuration || 5);
         setDays(initialData.days || []);
-      } else { // New alarm from "Add Alarm" button
+      } else { 
         setTime('07:00');
         setLabel('');
         setSound(defaultAlarmSound);
@@ -659,3 +667,5 @@ function RingingAlarmDialog({ alarm, onDismiss, timeFormat }: RingingAlarmDialog
     
 
       
+
+    
