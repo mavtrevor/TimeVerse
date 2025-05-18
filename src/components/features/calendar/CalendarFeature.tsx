@@ -35,7 +35,7 @@ const allSampleHolidays: Holiday[] = [
   { date: '2025-06-19', name: "Juneteenth National Independence Day", type: 'public', countryCode: 'US', description: "Commemorates the end of slavery in the U.S." },
   { date: '2025-07-04', name: "Independence Day", type: 'public', countryCode: 'US', description: "Celebrates the Declaration of Independence." },
   { date: '2025-09-01', name: "Labor Day", type: 'public', countryCode: 'US', description: "Celebrates the American labor movement." },
-  { date: '2025-10-13', name: "Columbus Day", type: 'public', countryCode: 'US', description: "Commemorates Christopher Columbus's arrival in the Americas. (Varies by state, some observe Indigenous Peoples' Day instead or as well)" }, // Changed to public as per image, added note
+  { date: '2025-10-13', name: "Columbus Day", type: 'public', countryCode: 'US', description: "Commemorates Christopher Columbus's arrival in the Americas. (Varies by state, some observe Indigenous Peoples' Day instead or as well)" },
   { date: '2025-11-11', name: "Veterans Day", type: 'public', countryCode: 'US', description: "Honors military veterans." },
   { date: '2025-11-27', name: "Thanksgiving Day", type: 'public', countryCode: 'US', description: "A day of giving thanks for the harvest and preceding year." },
   { date: '2025-12-25', name: "Christmas Day", type: 'public', countryCode: 'US', description: "Celebrates the birth of Jesus Christ." },
@@ -49,7 +49,6 @@ const allSampleHolidays: Holiday[] = [
   { date: '2025-08-25', name: "Summer Bank Holiday", type: 'public', countryCode: 'GB', description: "Public holiday, typically the last Monday in August." },
   { date: '2025-12-25', name: "Christmas Day", type: 'public', countryCode: 'GB', description: "Celebrates the birth of Jesus Christ." },
   { date: '2025-12-26', name: "Boxing Day", type: 'public', countryCode: 'GB', description: "Public holiday celebrated the day after Christmas Day." },
-  // Adding St. Patrick's Day for NI (Observance for GB for simplicity here)
   { date: '2025-03-17', name: "St. Patrick's Day", type: 'observance', countryCode: 'GB', description: "Cultural and religious celebration. Public holiday in Northern Ireland." },
 
 
@@ -99,8 +98,8 @@ const allSampleHolidays: Holiday[] = [
 
   // Philippines (PH) - 2025 (Regular Holidays and some common Special Non-Working Days)
   { date: '2025-01-01', name: "New Year's Day", type: 'public', countryCode: 'PH', description: "Celebrates the first day of the year." },
-  { date: '2025-01-29', name: "Chinese New Year", type: 'public', countryCode: 'PH', description: "Marks the beginning of the new year on the traditional Chinese calendar. Often a special non-working day, declared public for 2025." }, // Updated type
-  { date: '2025-02-25', name: "EDSA People Power Revolution Anniversary", type: 'public', countryCode: 'PH', description: "Commemorates the 1986 People Power Revolution. Often a special non-working day, declared public for 2025." }, // Updated type
+  { date: '2025-01-29', name: "Chinese New Year", type: 'public', countryCode: 'PH', description: "Marks the beginning of the new year on the traditional Chinese calendar. Often a special non-working day, declared public for 2025." },
+  { date: '2025-02-25', name: "EDSA People Power Revolution Anniversary", type: 'public', countryCode: 'PH', description: "Commemorates the 1986 People Power Revolution. Often a special non-working day, declared public for 2025." },
   { date: '2025-04-09', name: "Araw ng Kagitingan (Day of Valor)", type: 'public', countryCode: 'PH', description: "National observance in the Philippines which commemorates the fall of Bataan during World War II." },
   { date: '2025-04-17', name: "Maundy Thursday", type: 'public', countryCode: 'PH', description: "Christian holy day falling on the Thursday before Easter." },
   { date: '2025-04-18', name: "Good Friday", type: 'public', countryCode: 'PH', description: "Christian holiday observing the crucifixion of Jesus." },
@@ -125,7 +124,7 @@ const allSampleHolidays: Holiday[] = [
   { date: '2025-04-18', name: "Good Friday", type: 'public', countryCode: 'ZA', description: "Christian holiday observing the crucifixion of Jesus." },
   { date: '2025-04-21', name: "Family Day", type: 'public', countryCode: 'ZA', description: "Public holiday following Easter Sunday." },
   { date: '2025-04-27', name: "Freedom Day", type: 'public', countryCode: 'ZA', description: "Celebrates first post-apartheid elections (falls on Sunday)." },
-  { date: '2025-04-28', name: "Public Holiday (Freedom Day Observed)", type: 'public', countryCode: 'ZA', description: "Public holiday observed as Freedom Day falls on Sunday." }, // Clarified name
+  { date: '2025-04-28', name: "Public Holiday (Freedom Day Observed)", type: 'public', countryCode: 'ZA', description: "Public holiday observed as Freedom Day falls on Sunday." },
   { date: '2025-05-01', name: "Workers' Day", type: 'public', countryCode: 'ZA', description: "International Workers' Day." },
   { date: '2025-06-16', name: "Youth Day", type: 'public', countryCode: 'ZA', description: "Commemorates the Soweto Uprising." },
   { date: '2025-08-09', name: "National Women's Day", type: 'public', countryCode: 'ZA', description: "Commemorates the 1956 women's march to the Union Buildings (falls on Saturday)." },
@@ -320,15 +319,15 @@ export default function CalendarFeature() {
                   buttonVariants({ variant: "outline" }),
                   "h-9 w-9 bg-transparent p-0 opacity-75 hover:opacity-100"
                 ),
-                head_cell: "text-muted-foreground rounded-md w-16 font-semibold text-sm",
+                head_cell: "text-muted-foreground rounded-md w-20 font-semibold text-sm",
                 cell: cn(
-                  "h-16 w-16 text-center text-base p-0 relative",
+                  "h-20 w-20 text-center text-base p-0 relative",
                   "[&:has([aria-selected].day-outside)]:bg-accent/50 focus-within:relative focus-within:z-20",
                   "[&:has([aria-selected].day-range-end)]:rounded-r-md first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md"
                 ),
                 day: cn(
                   buttonVariants({ variant: "ghost" }),
-                  "h-16 w-16 p-0 font-normal text-base aria-selected:opacity-100"
+                  "h-20 w-20 p-0 font-normal text-base aria-selected:opacity-100"
                 ),
                 day_selected: selectedHolidayDetail?.type !== 'public' && selectedHolidayDetail?.type !== 'observance' 
                               ? 'ring-2 ring-primary !bg-transparent text-foreground rounded-sm' 
@@ -460,3 +459,6 @@ export default function CalendarFeature() {
     </div>
   );
 }
+
+
+    
