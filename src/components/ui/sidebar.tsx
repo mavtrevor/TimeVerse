@@ -596,17 +596,25 @@ const SidebarMenuButton = React.forwardRef<
       return buttonContent
     }
 
-    const tooltipProps = typeof tooltip === "string" ? { children: tooltip } : tooltip;
+    const tooltipProps = React.useMemo(() => {
+        return typeof tooltip === "string" ? { children: tooltip } : tooltip;
+    }, [tooltip]);
+
+
+    // Tooltip should only be active (and its content rendered)
+    // when the sidebar is collapsed to icon state and not on mobile.
+    const showTooltipContent = state === "collapsed" && !isMobile;
 
     return (
       <Tooltip>
         <TooltipTrigger asChild>{buttonContent}</TooltipTrigger>
-        <TooltipContent
-          side="right"
-          align="center"
-          hidden={state !== "collapsed" || isMobile}
-          {...tooltipProps}
-        />
+        {showTooltipContent && (
+            <TooltipContent
+              side="right"
+              align="center"
+              {...tooltipProps}
+            />
+        )}
       </Tooltip>
     )
   }
