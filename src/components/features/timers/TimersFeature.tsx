@@ -11,9 +11,9 @@ import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from '@/components/ui/dialog';
 import { PlusCircle, Play, Pause, RotateCcw, Edit, Trash2, Maximize, Minimize, TimerIcon as TimerIconLucide } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
-import { formatDuration, secondsToHMS, formatTime } from '@/lib/timeUtils';
+import { formatDuration, secondsToHMS } from '@/lib/timeUtils'; // Removed formatTime as it's no longer used here
 import { useToast } from '@/hooks/use-toast';
-import { useSettings } from '@/hooks/useSettings'; // Import useSettings
+// import { useSettings } from '@/hooks/useSettings'; // Removed useSettings as timeFormat and language are no longer used here
 
 // Placeholder for actual audio playback for timers
 const playTimerSound = () => {
@@ -53,15 +53,17 @@ export default function TimersFeature() {
   const [editingTimer, setEditingTimer] = useState<Timer | null>(null);
   const [fullscreenTimerId, setFullscreenTimerId] = useState<string | null>(null);
   const { toast } = useToast();
-  const { timeFormat, language } = useSettings(); // Get settings
-  const [currentTime, setCurrentTime] = useState<Date | null>(null); // State for current time display
+  // const { timeFormat, language } = useSettings(); // No longer needed for current time display
+  const [elapsedTime, setElapsedTime] = useState(0); // State for the up-timer, in seconds
 
-  // Effect for the main current time display
+  // Effect for the page load up-timer
   useEffect(() => {
-    setCurrentTime(new Date()); // Set initial time on client after mount
-    const timerId = setInterval(() => setCurrentTime(new Date()), 1000);
-    return () => clearInterval(timerId);
+    const intervalId = setInterval(() => {
+      setElapsedTime(prevTime => prevTime + 1);
+    }, 1000);
+    return () => clearInterval(intervalId); // Cleanup interval on component unmount
   }, []);
+
 
   // Effect for managing countdown timers
   useEffect(() => {
@@ -215,13 +217,13 @@ export default function TimersFeature() {
 
   return (
     <div className="space-y-6 p-4 md:p-6">
-      {/* Current Time Display */}
+      {/* Page Load Up-Timer Display */}
       <div className="flex flex-col items-center justify-center text-center py-4">
         <div className="font-mono text-7xl md:text-8xl lg:text-9xl font-bold text-primary select-none">
-          {currentTime ? formatTime(currentTime, timeFormat) : "00:00:00"}
+          {formatDuration(elapsedTime)}
         </div>
         <div className="text-lg md:text-xl lg:text-2xl text-muted-foreground select-none mt-2">
-          {currentTime ? currentTime.toLocaleDateString(language, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) : "Loading date..."}
+          Elapsed Time
         </div>
       </div>
 
