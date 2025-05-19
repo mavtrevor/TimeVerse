@@ -34,9 +34,9 @@ export default function WorldClockFeature() {
 
   useEffect(() => {
     setMounted(true);
-    setClientNow(new Date()); 
-    const timerId = setInterval(() => setClientNow(new Date()), 1000); 
-    
+    setClientNow(new Date());
+    const timerId = setInterval(() => setClientNow(new Date()), 1000);
+
     const detectedTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
     setLocalTimezone(detectedTimezone);
 
@@ -47,7 +47,6 @@ export default function WorldClockFeature() {
         const foundLocalInExtended = extendedCommonTimezones.find(c => c.timezone === detectedTimezone);
         setLocalCityName(foundLocalInExtended?.city || 'Local Time');
     }
-    
 
     return () => clearInterval(timerId);
   }, []);
@@ -67,7 +66,7 @@ export default function WorldClockFeature() {
     } else {
       const newCity: WorldClockCity = {
         id: Date.now().toString(),
-        name: title, 
+        name: title,
         timezone: timezoneIana,
       };
       setUserAddedCities([...userAddedCities, newCity]);
@@ -85,9 +84,9 @@ export default function WorldClockFeature() {
   };
 
   const renderCityCard = (city: CityDetail | WorldClockCity, isUserAdded: boolean = false, isLocal: boolean = false) => {
-    const cityData = city as CityDetail; 
-    const userCityData = city as WorldClockCity; 
-    
+    const cityData = city as CityDetail;
+    const userCityData = city as WorldClockCity;
+
     const name = isUserAdded ? userCityData.name : (cityData.displayName || cityData.name);
     const timezone = isUserAdded ? userCityData.timezone : cityData.iana;
     const linkHref = `/world-clock/${encodeURIComponent(timezone)}`;
@@ -105,12 +104,12 @@ export default function WorldClockFeature() {
               {clientNow ? getTimezoneOffset(timezone, clientNow) : 'N/A'}
             </p>
           </div>
-          {isUserAdded && ( 
+          {isUserAdded && (
              <Button variant="ghost" size="icon" onClick={() => handleDeleteUserAddedCity(userCityData.id)} className="text-muted-foreground hover:text-destructive -mt-1 -mr-2">
               <Trash2 className="h-4 w-4" />
             </Button>
           )}
-          {(!isUserAdded && !isLocal) && ( 
+          {(!isUserAdded && !isLocal) && (
              <Link href={linkHref} passHref legacyBehavior>
                 <Button variant="ghost" size="icon" aria-label={`Details for ${name}`} className="text-muted-foreground hover:text-primary -mt-1 -mr-2">
                     <ArrowRight className="h-4 w-4" />
@@ -173,7 +172,32 @@ export default function WorldClockFeature() {
           </CardContent>
         </Card>
       )}
-      
+
+      <Separator />
+
+      <div>
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-2xl font-semibold">Your Custom Clocks</h2>
+          <Dialog open={isAddCityDialogOpen} onOpenChange={setIsAddCityDialogOpen}>
+            <DialogTrigger asChild>
+              <Button>
+                <PlusCircle className="mr-2 h-4 w-4" /> Add Custom City
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle className="font-bold text-xl">Add</DialogTitle>
+              </DialogHeader>
+              <AddCityForm
+                onAddCity={handleAddCity}
+                onClose={() => setIsAddCityDialogOpen(false)}
+              />
+            </DialogContent>
+          </Dialog>
+        </div>
+        {renderUserAddedCitiesList()}
+      </div>
+
       <Separator />
 
       <div>
@@ -193,31 +217,6 @@ export default function WorldClockFeature() {
         )}
       </div>
 
-      <Separator />
-      
-      <div>
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-2xl font-semibold">Your Custom Clocks</h2>
-          <Dialog open={isAddCityDialogOpen} onOpenChange={setIsAddCityDialogOpen}>
-            <DialogTrigger asChild>
-              <Button>
-                <PlusCircle className="mr-2 h-4 w-4" /> Add Custom City
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-md">
-              <DialogHeader>
-                <DialogTitle className="font-bold text-xl">Add</DialogTitle>
-              </DialogHeader>
-              <AddCityForm 
-                onAddCity={handleAddCity} 
-                onClose={() => setIsAddCityDialogOpen(false)}
-              />
-            </DialogContent>
-          </Dialog>
-        </div>
-        {renderUserAddedCitiesList()}
-      </div>
-      
       <Card className="shadow-lg mt-8">
         <CardHeader>
           <CardTitle className="text-xl">TimeVerse World Clock</CardTitle>
@@ -249,13 +248,13 @@ function AddCityForm({ onAddCity, onClose }: AddCityFormProps) {
   const [clientNowForOffset, setClientNowForOffset] = useState<Date | null>(null);
 
   useEffect(() => {
-    setClientNowForOffset(new Date()); // For calculating current offsets in dropdown
+    setClientNowForOffset(new Date());
   }, []);
 
 
   const handleCountryChange = (countryCode: string) => {
     setSelectedCountryCode(countryCode);
-    setSelectedTimezoneIana(''); 
+    setSelectedTimezoneIana('');
     setCustomTitle('');
   };
 
@@ -298,9 +297,9 @@ function AddCityForm({ onAddCity, onClose }: AddCityFormProps) {
 
       <div>
         <Label htmlFor="timezone">Time zone</Label>
-        <Select 
-            onValueChange={handleTimezoneChange} 
-            value={selectedTimezoneIana} 
+        <Select
+            onValueChange={handleTimezoneChange}
+            value={selectedTimezoneIana}
             disabled={!selectedCountryCode || timezonesForSelectedCountry.length === 0 || !clientNowForOffset}
         >
           <SelectTrigger id="timezone" className="w-full mt-1">
@@ -317,14 +316,14 @@ function AddCityForm({ onAddCity, onClose }: AddCityFormProps) {
           </SelectContent>
         </Select>
       </div>
-      
+
       <div>
         <Label htmlFor="title">Title</Label>
-        <Input 
-            id="title" 
-            className="mt-1" 
-            value={customTitle} 
-            onChange={(e) => setCustomTitle(e.target.value)} 
+        <Input
+            id="title"
+            className="mt-1"
+            value={customTitle}
+            onChange={(e) => setCustomTitle(e.target.value)}
             placeholder="Enter custom title"
             disabled={!selectedTimezoneIana}
         />
@@ -332,9 +331,9 @@ function AddCityForm({ onAddCity, onClose }: AddCityFormProps) {
 
       <DialogFooter className="pt-2">
         <Button type="button" variant="outline" onClick={onClose}>Cancel</Button>
-        <Button 
-            type="submit" 
-            disabled={!selectedTimezoneIana || !customTitle.trim()} 
+        <Button
+            type="submit"
+            disabled={!selectedTimezoneIana || !customTitle.trim()}
             className="bg-accent text-accent-foreground hover:bg-accent/90"
         >
             OK
