@@ -128,9 +128,9 @@ export default function StopwatchFeature() {
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead className="w-[80px]">Lap</TableHead>
-          <TableHead>Lap Time</TableHead>
-          <TableHead className="text-right">Total Time</TableHead>
+          <TableHead className="w-[60px] sm:w-[80px] p-2 sm:p-4 text-xs sm:text-sm">Lap</TableHead>
+          <TableHead className="p-2 sm:p-4 text-xs sm:text-sm">Lap Time</TableHead>
+          <TableHead className="text-right p-2 sm:p-4 text-xs sm:text-sm">Total Time</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -142,9 +142,9 @@ export default function StopwatchFeature() {
           }
           return (
             <TableRow key={lapNumber}>
-              <TableCell>{lapNumber}</TableCell>
-              <TableCell>{formatDuration(lapTime / 1000)}.{String(lapTime % 1000).padStart(3, '0').slice(0,2)}</TableCell>
-              <TableCell className="text-right">{formatDuration(cumulativeTime / 1000)}.{String(cumulativeTime % 1000).padStart(3, '0').slice(0,2)}</TableCell>
+              <TableCell className="p-2 sm:p-4 text-xs sm:text-sm">{lapNumber}</TableCell>
+              <TableCell className="p-2 sm:p-4 text-xs sm:text-sm">{formatDuration(lapTime / 1000)}.{String(lapTime % 1000).padStart(3, '0').slice(0,2)}</TableCell>
+              <TableCell className="text-right p-2 sm:p-4 text-xs sm:text-sm">{formatDuration(cumulativeTime / 1000)}.{String(cumulativeTime % 1000).padStart(3, '0').slice(0,2)}</TableCell>
             </TableRow>
           );
         })}
@@ -163,37 +163,40 @@ export default function StopwatchFeature() {
           className={`shadow-lg w-full ${isFullscreen ? 'h-full border-0 rounded-none' : ''} flex flex-col`}
         >
           <CardHeader className="flex flex-row items-center justify-between pt-4 px-4 sm:pt-6 sm:px-6">
-            <CardTitle className={`text-2xl ${isFullscreen ? 'sm:text-3xl' : ''}`}>Stopwatch</CardTitle>
+            <CardTitle className={`text-xl sm:text-2xl ${isFullscreen ? 'sm:text-3xl' : ''}`}>Stopwatch</CardTitle>
             <Button variant="ghost" size="icon" onClick={toggleFullscreen} className="text-muted-foreground hover:text-primary">
               {isFullscreen ? <Minimize className="h-5 w-5" /> : <Maximize className="h-5 w-5" />}
             </Button>
           </CardHeader>
-          <CardContent className="flex flex-col items-center justify-center py-8">
-            <div className={`font-mono font-bold text-primary select-none ${isFullscreen ? 'text-8xl sm:text-9xl md:text-[10rem] lg:text-[12rem]' : 'text-7xl sm:text-8xl'}`}>
-              {displayTime}<span className={` ${isFullscreen ? 'text-5xl sm:text-6xl md:text-7xl lg:text-8xl' : 'text-4xl sm:text-5xl'}`}>{milliseconds}</span>
+          <CardContent className="flex flex-col items-center justify-center py-6 sm:py-8">
+            <div className={`font-mono font-bold text-primary select-none ${isFullscreen ? 'text-6xl xs:text-7xl sm:text-8xl md:text-[8rem] lg:text-[10rem] xl:text-[12rem]' : 'text-5xl sm:text-6xl md:text-7xl lg:text-8xl'}`}>
+              {displayTime}<span className={` ${isFullscreen ? 'text-4xl xs:text-5xl sm:text-6xl md:text-[5rem] lg:text-[6rem] xl:text-[7rem]' : 'text-2xl sm:text-3xl md:text-4xl lg:text-5xl'}`}>{milliseconds}</span>
             </div>
           </CardContent>
-          <CardFooter className={`border-t p-4 flex flex-col sm:flex-row justify-between items-center gap-4 ${isFullscreen ? 'sm:pb-8' : ''}`}>
+          <CardFooter className={`border-t p-3 sm:p-4 flex flex-col sm:flex-row justify-between items-center gap-2 sm:gap-4 ${isFullscreen ? 'sm:pb-6 md:pb-8' : ''}`}>
             <div className="flex gap-2 w-full sm:w-auto">
-              <Button onClick={isRunning ? pauseStopwatch : startStopwatch} size="lg" className={`w-full sm:w-32 ${isFullscreen ? 'py-3 text-lg' : ''}`}>
+              <Button onClick={isRunning ? pauseStopwatch : startStopwatch} size={isFullscreen ? "lg" : "default"} className={`w-full sm:w-28 md:w-32 ${isFullscreen ? 'py-3 text-base sm:text-lg' : ''}`}>
                 {isRunning ? <Pause className="mr-2 h-5 w-5" /> : <Play className="mr-2 h-5 w-5" />}
                 {isRunning ? 'Pause' : 'Start'}
               </Button>
-              <Button onClick={resetStopwatch} variant="outline" size="lg" className={`w-full sm:w-32 ${isFullscreen ? 'py-3 text-lg' : ''}`}>
+              <Button onClick={resetStopwatch} variant="outline" size={isFullscreen ? "lg" : "default"} className={`w-full sm:w-28 md:w-32 ${isFullscreen ? 'py-3 text-base sm:text-lg' : ''}`}>
                 <RotateCcw className="mr-2 h-5 w-5" /> Reset
               </Button>
             </div>
             <div className="flex gap-2 w-full sm:w-auto">
-               <Button onClick={recordLap} variant="secondary" size="lg" disabled={!isRunning && time === 0} className={`w-full sm:w-32 ${isFullscreen ? 'py-3 text-lg' : ''}`}>
+               <Button onClick={recordLap} variant="secondary" size={isFullscreen ? "lg" : "default"} disabled={!isRunning && time === 0} className={`w-full sm:w-28 md:w-32 ${isFullscreen ? 'py-3 text-base sm:text-lg' : ''}`}>
                 <Flag className="mr-2 h-5 w-5" /> Lap
               </Button>
-               <Button onClick={exportLaps} variant="ghost" size="lg" disabled={laps.length === 0} className={`${isFullscreen ? 'py-3 text-lg' : ''} hidden sm:flex`}>
+               <Button onClick={exportLaps} variant="ghost" size={isFullscreen ? "lg" : "default"} disabled={laps.length === 0} className={`${isFullscreen ? 'py-3 text-base sm:text-lg' : ''} hidden sm:flex`}>
                 <Download className="mr-2 h-5 w-5" /> Export
               </Button>
             </div>
+             <Button onClick={exportLaps} variant="ghost" size="default" disabled={laps.length === 0} className="sm:hidden w-full mt-2">
+                <Download className="mr-2 h-5 w-5" /> Export Laps
+            </Button>
           </CardFooter>
-          {laps.length > 0 && !isFullscreen && (
-             <ScrollArea className={cn("px-4 pb-4 mt-2 w-full", laps.length > 10 && "max-h-96")}>
+          {!isFullscreen && laps.length > 0 && (
+             <ScrollArea className={cn("px-4 pb-4 mt-2 w-full", laps.length > 10 && "max-h-60 sm:max-h-72 md:max-h-96")}>
               {renderLapsTable()}
             </ScrollArea>
           )}

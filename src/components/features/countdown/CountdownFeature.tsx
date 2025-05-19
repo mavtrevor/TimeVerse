@@ -107,8 +107,8 @@ export default function CountdownFeature() {
             <Card key={countdown.id} className={`shadow-xl flex flex-col ${isFinished ? 'opacity-70 bg-muted/50' : 'ring-1 ring-primary/30'}`}>
               <CardHeader className="pb-3">
                 <div className="flex justify-between items-start">
-                  <CardTitle className="text-2xl font-bold flex items-center">
-                    {countdown.emoji && <span className="text-3xl mr-3">{countdown.emoji}</span>}
+                  <CardTitle className="text-xl sm:text-2xl font-bold flex items-center">
+                    {countdown.emoji && <span className="text-2xl sm:text-3xl mr-2 sm:mr-3">{countdown.emoji}</span>}
                     <span className="truncate" title={countdown.name}>{countdown.name}</span>
                   </CardTitle>
                    {!isFinished && (
@@ -117,35 +117,35 @@ export default function CountdownFeature() {
                     </Button>
                    )}
                 </div>
-                <p className="text-sm text-muted-foreground pt-1">
+                <p className="text-xs sm:text-sm text-muted-foreground pt-1">
                   {format(targetDate, "PPPPp")} {/* e.g., July 10, 2024 at 12:00 PM */}
                 </p>
               </CardHeader>
-              <CardContent className="flex-grow flex flex-col items-center justify-center text-center py-6">
+              <CardContent className="flex-grow flex flex-col items-center justify-center text-center py-4 sm:py-6">
                 {isFinished ? (
-                  <div className="text-destructive text-3xl font-bold">EVENT REACHED!</div>
+                  <div className="text-destructive text-2xl sm:text-3xl font-bold">EVENT REACHED!</div>
                 ) : (
-                  <div className="grid grid-cols-4 gap-x-1 text-center w-full max-w-xs mx-auto">
+                  <div className="grid grid-cols-4 gap-x-1 sm:gap-x-2 text-center w-full max-w-xs mx-auto">
                     <div>
-                      <div className="text-4xl font-bold text-primary">{String(remaining.days).padStart(2, '0')}</div>
+                      <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-primary">{String(remaining.days).padStart(2, '0')}</div>
                       <div className="text-xs text-muted-foreground">DAYS</div>
                     </div>
                     <div>
-                      <div className="text-4xl font-bold text-primary">{String(remaining.hours).padStart(2, '0')}</div>
+                      <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-primary">{String(remaining.hours).padStart(2, '0')}</div>
                       <div className="text-xs text-muted-foreground">HOURS</div>
                     </div>
                     <div>
-                      <div className="text-4xl font-bold text-primary">{String(remaining.minutes).padStart(2, '0')}</div>
+                      <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-primary">{String(remaining.minutes).padStart(2, '0')}</div>
                       <div className="text-xs text-muted-foreground">MINS</div>
                     </div>
                     <div>
-                      <div className="text-4xl font-bold text-primary">{String(remaining.seconds).padStart(2, '0')}</div>
+                      <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-primary">{String(remaining.seconds).padStart(2, '0')}</div>
                       <div className="text-xs text-muted-foreground">SECS</div>
                     </div>
                   </div>
                 )}
               </CardContent>
-              <CardFooter className="p-4 border-t">
+              <CardFooter className="p-3 sm:p-4 border-t">
                 <Button variant="outline" size="sm" onClick={() => handleDeleteCountdown(countdown.id)} className="w-full text-destructive hover:border-destructive hover:text-destructive">
                   <Trash2 className="mr-2 h-4 w-4" /> Delete Countdown
                 </Button>
@@ -159,11 +159,11 @@ export default function CountdownFeature() {
 
   const renderCountdownsContainer = () => {
     if (!mounted) {
-      return <p className="text-center text-muted-foreground">Loading countdowns...</p>;
+      return <p className="text-center text-muted-foreground py-10">Loading countdowns...</p>;
     }
     if (countdowns.length === 0) {
       return (
-        <p className="text-center text-muted-foreground">
+        <p className="text-center text-muted-foreground py-10">
           You have no countdowns set. Click "Add Countdown" to create one.
         </p>
       );
@@ -174,9 +174,9 @@ export default function CountdownFeature() {
 
   return (
     <div className="p-4 md:p-6 space-y-8">
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold flex items-center"><CalendarClock className="mr-3 h-8 w-8 text-primary" /> Event Countdowns</h1>
-        <Button onClick={openAddForm}>
+      <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+        <h1 className="text-2xl sm:text-3xl font-bold flex items-center"><CalendarClock className="mr-2 sm:mr-3 h-7 w-7 sm:h-8 sm:w-8 text-primary" /> Event Countdowns</h1>
+        <Button onClick={openAddForm} className="w-full sm:w-auto">
           <PlusCircle className="mr-2 h-4 w-4" /> Add Countdown
         </Button>
       </div>

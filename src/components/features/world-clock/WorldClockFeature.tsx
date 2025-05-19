@@ -95,7 +95,7 @@ export default function WorldClockFeature() {
       <Card key={isUserAdded ? userCityData.id : cityData.iana} className="shadow-lg flex flex-col">
         <CardHeader className="pb-2 flex flex-row items-start justify-between">
           <div>
-            <CardTitle className="text-xl hover:text-primary">
+            <CardTitle className="text-lg sm:text-xl hover:text-primary">
               <Link href={linkHref}>
                 {name}
               </Link>
@@ -117,11 +117,11 @@ export default function WorldClockFeature() {
              </Link>
           )}
         </CardHeader>
-        <CardContent className="flex-grow flex flex-col items-center justify-center">
-          <p className="text-4xl font-mono font-bold text-primary">
+        <CardContent className="flex-grow flex flex-col items-center justify-center py-3 sm:py-4">
+          <p className="text-3xl sm:text-4xl font-mono font-bold text-primary">
             {clientNow ? getTimeInTimezone(timezone, settings, clientNow) : "00:00:00"}
           </p>
-          <p className="text-sm text-muted-foreground mt-1">
+          <p className="text-xs sm:text-sm text-muted-foreground mt-1">
             {clientNow ? clientNow.toLocaleDateString(language, { timeZone: timezone, weekday: 'long', month: 'long', day: 'numeric' }) : "Loading date..."}
           </p>
         </CardContent>
@@ -155,18 +155,18 @@ export default function WorldClockFeature() {
       {mounted && localTimezone && clientNow && (
         <Card className="shadow-xl border-primary ring-1 ring-primary/50">
           <CardHeader>
-            <CardTitle className="text-2xl md:text-3xl">
+            <CardTitle className="text-xl sm:text-2xl md:text-3xl">
                 <Link href={`/world-clock/${encodeURIComponent(localTimezone)}`} className="hover:underline">
                     {localCityName} (Your Local Time)
                 </Link>
             </CardTitle>
             <CardDescription>{getTimezoneOffset(localTimezone, clientNow)}</CardDescription>
           </CardHeader>
-          <CardContent className="text-center">
-            <div className="font-mono text-5xl md:text-7xl font-bold text-primary select-none">
+          <CardContent className="text-center py-4 sm:py-6">
+            <div className="font-mono text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-primary select-none">
               {formatTime(clientNow, timeFormat)}
             </div>
-            <div className="text-md md:text-lg text-muted-foreground select-none mt-1">
+            <div className="text-sm sm:text-md md:text-lg text-muted-foreground select-none mt-1">
               {clientNow.toLocaleDateString(language, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
             </div>
           </CardContent>
@@ -176,11 +176,11 @@ export default function WorldClockFeature() {
       <Separator />
 
       <div>
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-2xl font-semibold">Your Custom Clocks</h2>
+        <div className="flex flex-col sm:flex-row justify-between items-center mb-4 gap-4">
+          <h2 className="text-xl sm:text-2xl font-semibold">Your Custom Clocks</h2>
           <Dialog open={isAddCityDialogOpen} onOpenChange={setIsAddCityDialogOpen}>
             <DialogTrigger asChild>
-              <Button>
+              <Button className="w-full sm:w-auto">
                 <PlusCircle className="mr-2 h-4 w-4" /> Add Custom City
               </Button>
             </DialogTrigger>
@@ -201,7 +201,7 @@ export default function WorldClockFeature() {
       <Separator />
 
       <div>
-        <h2 className="text-2xl font-semibold mb-4">Popular Cities</h2>
+        <h2 className="text-xl sm:text-2xl font-semibold mb-4">Popular Cities</h2>
         {!mounted || !clientNow ? (
            <Card className="shadow-lg"><CardContent className="pt-6 text-center text-muted-foreground">Loading popular cities...</CardContent></Card>
         ) : popularCityDetails.length === 0 ? (
@@ -342,4 +342,5 @@ function AddCityForm({ onAddCity, onClose }: AddCityFormProps) {
     </form>
   );
 }
+
 

@@ -279,26 +279,25 @@ export default function AlarmsFeature() {
 
   const renderAlarmsList = () => {
     if (!mounted) {
-      return <p className="text-center text-muted-foreground">Loading alarms...</p>;
+      return <p className="text-center text-muted-foreground py-10">Loading alarms...</p>;
     }
     if (alarms.length === 0) {
       return (
-        <p className="text-center text-muted-foreground">
-          You have no alarms set. Click "Add Alarm" to create one.
+        <p className="text-center text-muted-foreground py-10">
+          You have no alarms set. Click "Add Alarm" or a shortcut to create one.
         </p>
       );
     }
     return (
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {alarms.map(alarm => {
-            // isRingingCardUI is true if the modal is not showing and this specific alarm is the ringingAlarmId.
             const isRingingCardUI = ringingAlarmId === alarm.id && !ringingAlarmModal;
             const isEffectivelyInactive = !alarm.isActive && !(ringingAlarmId === alarm.id || (ringingAlarmModal && ringingAlarmModal.id === alarm.id));
 
             return (
             <Card key={alarm.id} className={`shadow-lg flex flex-col ${isEffectivelyInactive ? 'opacity-60' : ''} ${isRingingCardUI ? 'border-destructive ring-2 ring-destructive' : ''}`}>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-xl truncate" title={alarm.label || "Alarm"}>{alarm.label || "Alarm"}</CardTitle>
+                <CardTitle className="text-lg sm:text-xl truncate" title={alarm.label || "Alarm"}>{alarm.label || "Alarm"}</CardTitle>
                 {!isRingingCardUI && !(ringingAlarmModal && ringingAlarmModal.id === alarm.id) && ( 
                 <Switch
                     checked={alarm.isActive}
@@ -308,21 +307,21 @@ export default function AlarmsFeature() {
                 />
                 )}
             </CardHeader>
-            <CardContent className="flex-grow">
+            <CardContent className="flex-grow py-2 sm:py-4">
                 {isRingingCardUI ? ( 
-                <div className="text-center py-4">
-                    <BellRing className="h-12 w-12 text-destructive mx-auto mb-2 animate-pulse" />
-                    <p className="text-2xl font-bold text-destructive">RINGING!</p>
+                <div className="text-center py-2 sm:py-4">
+                    <BellRing className="h-10 w-10 sm:h-12 sm:w-12 text-destructive mx-auto mb-2 animate-pulse" />
+                    <p className="text-xl sm:text-2xl font-bold text-destructive">RINGING!</p>
                 </div>
                 ) : (
                 <>
-                    <p className="text-4xl font-bold text-primary">
+                    <p className="text-3xl sm:text-4xl font-bold text-primary">
                     {formatTime(parseTimeString(alarm.time), timeFormat)}
                     </p>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-xs sm:text-sm text-muted-foreground">
                     Sound: {alarmSounds.find(s => s.id === alarm.sound)?.name || 'Default'}
                     </p>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-xs sm:text-sm text-muted-foreground">
                     Snooze: {alarm.snoozeEnabled ? `${alarm.snoozeDuration} min` : 'Off'}
                     </p>
                     {alarm.days && alarm.days.length > 0 && (
@@ -333,7 +332,7 @@ export default function AlarmsFeature() {
                 </>
                 )}
             </CardContent>
-            <CardFooter className="p-4 border-t flex justify-end gap-2">
+            <CardFooter className="p-3 sm:p-4 border-t flex justify-end gap-2">
                 {isRingingCardUI ? ( 
                 <Button variant="destructive" onClick={() => handleDismissModalAndDeactivateIfNotRecurring(alarm)} className="w-full">
                     Dismiss
@@ -359,19 +358,19 @@ export default function AlarmsFeature() {
     <div className="flex flex-col flex-1 p-4 md:p-6 space-y-8">
       {/* Digital Clock Display */}
       <div className="flex-grow flex flex-col items-center justify-center text-center py-4">
-        <div className="font-mono text-7xl md:text-8xl lg:text-9xl font-bold text-primary select-none">
+        <div className="font-mono text-5xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl font-bold text-primary select-none">
           {mounted && currentTime ? formatTime(currentTime, timeFormat) : "00:00:00"}
         </div>
-        <div className="text-lg md:text-xl lg:text-2xl text-muted-foreground select-none mt-2">
+        <div className="text-md sm:text-lg md:text-xl lg:text-2xl text-muted-foreground select-none mt-2">
           {mounted && currentTime ? currentTime.toLocaleDateString(language, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) : "Loading date..."}
         </div>
       </div>
 
       {/* Alarm Management Section */}
-      <div className="mt-auto">
-        <div className="flex justify-between items-center">
-          <h2 className="text-2xl font-semibold">Alarms</h2>
-          <Button onClick={openAddForm}>
+      <div className="mt-auto space-y-6">
+        <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+          <h2 className="text-xl sm:text-2xl font-semibold">Alarms</h2>
+          <Button onClick={openAddForm} className="w-full sm:w-auto">
             <PlusCircle className="mr-2 h-4 w-4" /> Add Alarm
           </Button>
         </div>
@@ -396,13 +395,13 @@ export default function AlarmsFeature() {
           timeFormat={timeFormat}
         />
         
-        <Card className="shadow-lg mt-4">
+        <Card className="shadow-lg">
           <CardContent className="pt-6">
             {renderAlarmsList()}
           </CardContent>
         </Card>
 
-        <Card className="shadow-md mt-4">
+        <Card className="shadow-md">
           <CardHeader>
             <CardTitle className="text-lg">Set the alarm for the specified time</CardTitle>
           </CardHeader>
@@ -411,6 +410,7 @@ export default function AlarmsFeature() {
               <Button
                 key={shortcut.label}
                 variant="default" 
+                size="sm"
                 onClick={() => handleShortcutClick(shortcut.time, shortcut.label)}
               >
                 {shortcut.label} 
@@ -419,7 +419,7 @@ export default function AlarmsFeature() {
           </CardContent>
         </Card>
 
-        <Card className="shadow-lg mt-4">
+        <Card className="shadow-lg">
           <CardHeader>
             <CardTitle className="text-xl">🔔 TimeVerse Online Alarm Clock</CardTitle>
           </CardHeader>
@@ -610,9 +610,9 @@ function RingingAlarmDialog({ alarm, onDismiss, timeFormat }: RingingAlarmDialog
           </DialogTitle>
         </DialogHeader>
         <div className="p-6 flex flex-col items-center space-y-4">
-          <AlarmClock className="h-20 w-20 text-destructive animate-pulse" />
-          <p className="text-2xl font-semibold text-center">{alarm.label || "Alarm"}</p>
-          <p className="text-5xl font-mono">{formatTime(parseTimeString(alarm.time), timeFormat)}</p>
+          <AlarmClock className="h-16 w-16 sm:h-20 sm:w-20 text-destructive animate-pulse" />
+          <p className="text-xl sm:text-2xl font-semibold text-center">{alarm.label || "Alarm"}</p>
+          <p className="text-4xl sm:text-5xl font-mono">{formatTime(parseTimeString(alarm.time), timeFormat)}</p>
         </div>
         <DialogFooter className="p-4 border-t sm:justify-center">
           <Button onClick={handleDismiss} className="bg-destructive hover:bg-destructive/90 text-destructive-foreground w-full sm:w-auto px-8 py-3 text-lg">
@@ -623,4 +623,5 @@ function RingingAlarmDialog({ alarm, onDismiss, timeFormat }: RingingAlarmDialog
     </Dialog>
   );
 }
+
 

@@ -284,7 +284,7 @@ export default function CalendarFeature() {
 
   return (
     <div className="p-4 md:p-6 space-y-8">
-      <h1 className="text-3xl font-bold text-center md:text-left">
+      <h1 className="text-2xl sm:text-3xl font-bold text-center md:text-left">
         Calendar {calendarViewYear}
       </h1>
 
@@ -314,20 +314,24 @@ export default function CalendarFeature() {
               modifiersClassNames={modifiersClassNames}
               className="p-0 w-full max-w-2xl mx-auto"
               classNames={{
-                caption_label: "text-xl font-semibold",
+                caption_label: "text-lg sm:text-xl md:text-2xl font-semibold",
                 nav_button: cn(
                   buttonVariants({ variant: "outline" }),
-                  "h-9 w-9 bg-transparent p-0 opacity-75 hover:opacity-100"
+                  "h-8 w-8 sm:h-9 sm:w-9 bg-transparent p-0 opacity-75 hover:opacity-100"
                 ),
-                head_cell: "text-muted-foreground rounded-md w-20 font-semibold text-sm",
+                head_row: "flex w-full",
+                head_cell: "text-muted-foreground rounded-md font-semibold text-xs w-10 h-10 sm:w-12 sm:h-12 md:w-16 md:h-16 lg:w-20 lg:h-20 flex items-center justify-center",
+                row: "flex w-full mt-1 sm:mt-2",
                 cell: cn(
-                  "h-20 w-20 text-center text-base p-0 relative",
+                  "text-center p-0 relative",
+                  "h-10 w-10 text-xs sm:h-12 sm:w-12 sm:text-sm md:h-16 md:w-16 md:text-base lg:h-20 lg:w-20",
                   "[&:has([aria-selected].day-outside)]:bg-accent/50 focus-within:relative focus-within:z-20",
                   "[&:has([aria-selected].day-range-end)]:rounded-r-md first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md"
                 ),
                 day: cn(
                   buttonVariants({ variant: "ghost" }),
-                  "h-20 w-20 p-0 font-normal text-base aria-selected:opacity-100"
+                  "p-0 font-normal aria-selected:opacity-100",
+                  "h-10 w-10 text-xs sm:h-12 sm:w-12 sm:text-sm md:h-16 md:w-16 md:text-base lg:h-20 lg:w-20"
                 ),
                 day_selected: selectedHolidayDetail?.type !== 'public' && selectedHolidayDetail?.type !== 'observance' 
                               ? 'ring-2 ring-primary !bg-transparent text-foreground rounded-sm' 
@@ -337,15 +341,15 @@ export default function CalendarFeature() {
               }}
               components={{
                 Caption: ({ displayMonth }) => (
-                  <div className="flex justify-between items-center px-2 py-4 border-b mb-3">
-                    <Button variant="ghost" size="icon" onClick={handlePrevMonth} disabled={isPrevDisabled} aria-label="Previous month" className="h-9 w-9">
-                      <ChevronLeft className="h-6 w-6" />
+                  <div className="flex justify-between items-center px-1 sm:px-2 py-3 sm:py-4 border-b mb-2 sm:mb-3">
+                    <Button variant="ghost" size="icon" onClick={handlePrevMonth} disabled={isPrevDisabled} aria-label="Previous month" className="h-8 w-8 sm:h-9 sm:w-9">
+                      <ChevronLeft className="h-5 w-5 sm:h-6 sm:w-6" />
                     </Button>
-                    <h2 className="text-xl font-semibold">
+                    <h2 className="text-lg sm:text-xl md:text-2xl font-semibold">
                       {format(displayMonth, "MMMM yyyy")}
                     </h2>
-                    <Button variant="ghost" size="icon" onClick={handleNextMonth} disabled={isNextDisabled} aria-label="Next month" className="h-9 w-9">
-                      <ChevronRight className="h-6 w-6" />
+                    <Button variant="ghost" size="icon" onClick={handleNextMonth} disabled={isNextDisabled} aria-label="Next month" className="h-8 w-8 sm:h-9 sm:w-9">
+                      <ChevronRight className="h-5 w-5 sm:h-6 sm:w-6" />
                     </Button>
                   </div>
                 ),
@@ -384,7 +388,7 @@ export default function CalendarFeature() {
           </TabsList>
         </Tabs>
         
-        <h2 className="text-2xl font-semibold">Public Holidays - {selectedTableYear} ({supportedCountries.find(c => c.code === selectedCountry)?.name})</h2>
+        <h2 className="text-xl sm:text-2xl font-semibold">Public Holidays - {selectedTableYear} ({supportedCountries.find(c => c.code === selectedCountry)?.name})</h2>
 
         {isLoadingTable ? (
            <div className="flex flex-col items-center justify-center h-60">
@@ -396,10 +400,10 @@ export default function CalendarFeature() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-[50px]">#</TableHead>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Date</TableHead>
-                  <TableHead className="text-right">Day</TableHead>
+                  <TableHead className="w-[30px] sm:w-[50px] p-2 sm:p-4 text-xs sm:text-sm">#</TableHead>
+                  <TableHead className="p-2 sm:p-4 text-xs sm:text-sm">Name</TableHead>
+                  <TableHead className="p-2 sm:p-4 text-xs sm:text-sm">Date</TableHead>
+                  <TableHead className="text-right p-2 sm:p-4 text-xs sm:text-sm">Day</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -407,10 +411,10 @@ export default function CalendarFeature() {
                   const holidayDate = parseHolidayDate(holiday.date);
                   return (
                     <TableRow key={holiday.date + holiday.name + holiday.countryCode}>
-                      <TableCell>{index + 1}.</TableCell>
-                      <TableCell className="font-medium">{holiday.name}</TableCell>
-                      <TableCell>{holidayDate ? format(holidayDate, "MMMM d, yyyy") : 'Invalid Date'}</TableCell>
-                      <TableCell className="text-right">{holidayDate ? format(holidayDate, "EEE") : '-'}</TableCell>
+                      <TableCell className="p-2 sm:p-4 text-xs sm:text-sm">{index + 1}.</TableCell>
+                      <TableCell className="font-medium p-2 sm:p-4 text-xs sm:text-sm">{holiday.name}</TableCell>
+                      <TableCell className="p-2 sm:p-4 text-xs sm:text-sm">{holidayDate ? format(holidayDate, "MMMM d, yyyy") : 'Invalid Date'}</TableCell>
+                      <TableCell className="text-right p-2 sm:p-4 text-xs sm:text-sm">{holidayDate ? format(holidayDate, "EEE") : '-'}</TableCell>
                     </TableRow>
                   );
                 })}
@@ -473,7 +477,6 @@ export default function CalendarFeature() {
     </div>
   );
 }
-
     
 
     

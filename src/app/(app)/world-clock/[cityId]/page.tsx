@@ -45,7 +45,7 @@ export default function CityClockPage() {
 
   if (!cityDetails || !clientNow) {
     if (!cityDetails && cityIdParam) {
-        console.warn(`City details not found for IANA: ${decodeURIComponent(cityIdParam as string)}`);
+        console.warn(`City details not found for IANA: ${decodeURIComponent(cityIdParam as string)}`)
         if (typeof window !== 'undefined' && !cityDetails) {
              notFound(); 
         }
@@ -72,13 +72,13 @@ export default function CityClockPage() {
 
   return (
     <div className="p-4 md:p-6 space-y-8">
-      <div className="flex items-center justify-between">
-        <Button variant="outline" asChild>
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+        <Button variant="outline" asChild className="w-full sm:w-auto">
           <Link href="/world-clock"> 
             <ArrowLeft className="mr-2 h-4 w-4" /> Back to World Clocks
           </Link>
         </Button>
-         <Button variant="ghost" asChild>
+         <Button variant="ghost" asChild className="w-full sm:w-auto">
           <Link href="/">
             <Home className="mr-2 h-4 w-4" /> Go Home
           </Link>
@@ -87,16 +87,16 @@ export default function CityClockPage() {
 
       <Card className="shadow-xl border-primary ring-1 ring-primary/50">
         <CardHeader className="text-center">
-          <CardTitle className="text-3xl md:text-4xl">{cityName}</CardTitle>
-          <CardDescription className="text-lg">
+          <CardTitle className="text-2xl sm:text-3xl md:text-4xl">{cityName}</CardTitle>
+          <CardDescription className="text-md sm:text-lg">
             {cityDateString}
           </CardDescription>
         </CardHeader>
-        <CardContent className="text-center">
-          <div className="font-mono text-6xl md:text-8xl font-bold text-primary select-none">
+        <CardContent className="text-center py-4 sm:py-6">
+          <div className="font-mono text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold text-primary select-none">
             {currentCityTime}
           </div>
-           <div className="text-md md:text-lg text-muted-foreground select-none mt-2">
+           <div className="text-sm sm:text-md md:text-lg text-muted-foreground select-none mt-2">
             Timezone: {shortTzName} ({offsetDisplay})
           </div>
         </CardContent>
@@ -104,9 +104,9 @@ export default function CityClockPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Current time in {cityName}</CardTitle>
+          <CardTitle className="text-xl sm:text-2xl">Current time in {cityName}</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-2">
+        <CardContent className="space-y-2 text-sm sm:text-base">
           <p className="text-muted-foreground">
             The current time in {cityName} is {currentCityTime} ({shortTzName}, {offsetDisplay}).
           </p>
@@ -116,9 +116,9 @@ export default function CityClockPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>What time is it in {cityName} right now?</CardTitle>
+          <CardTitle className="text-xl sm:text-2xl">What time is it in {cityName} right now?</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-3">
+        <CardContent className="space-y-3 text-sm sm:text-base">
           <p>{timeOfDayMessages.paragraph1}</p>
           <p>{timeOfDayMessages.paragraph2}</p>
         </CardContent>
@@ -126,4 +126,5 @@ export default function CityClockPage() {
     </div>
   );
 }
+
 

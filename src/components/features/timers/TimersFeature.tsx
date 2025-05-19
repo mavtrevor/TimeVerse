@@ -190,19 +190,19 @@ export default function TimersFeature() {
 
   const FullscreenTimerView = ({ timer }: { timer: Timer }) => (
     <div className="fixed inset-0 bg-background flex flex-col items-center justify-center z-50 p-4">
-      <h2 className="text-4xl font-bold mb-4 text-primary">{timer.name}</h2>
-      <p className="text-8xl font-mono mb-8">{formatDuration(timer.remainingTime)}</p>
-      <Progress value={(timer.duration - timer.remainingTime) / timer.duration * 100} className="w-3/4 h-6 mb-8" />
-      <div className="flex space-x-4">
-        <Button onClick={() => toggleTimer(timer.id)} size="lg">
+      <h2 className="text-3xl sm:text-4xl font-bold mb-4 text-primary text-center">{timer.name}</h2>
+      <p className="text-7xl sm:text-8xl font-mono mb-8">{formatDuration(timer.remainingTime)}</p>
+      <Progress value={(timer.duration - timer.remainingTime) / timer.duration * 100} className="w-full max-w-md sm:w-3/4 h-4 sm:h-6 mb-8" />
+      <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4 w-full max-w-xs sm:max-w-none">
+        <Button onClick={() => toggleTimer(timer.id)} size="lg" className="flex-1">
           {timer.isRunning && !timer.isPaused ? <Pause className="mr-2"/> : <Play className="mr-2"/>}
           {timer.isRunning && !timer.isPaused ? 'Pause' : (timer.isPaused || timer.remainingTime === 0 ? 'Resume' : 'Start')}
         </Button>
-        <Button onClick={() => resetTimer(timer.id)} variant="outline" size="lg">
+        <Button onClick={() => resetTimer(timer.id)} variant="outline" size="lg" className="flex-1">
           <RotateCcw className="mr-2"/> Reset
         </Button>
-        <Button onClick={() => toggleFullscreen(timer.id)} variant="ghost" size="lg">
-          <Minimize className="mr-2"/> Exit Fullscreen
+        <Button onClick={() => toggleFullscreen(timer.id)} variant="ghost" size="lg" className="flex-1">
+          <Minimize className="mr-2"/> Exit
         </Button>
       </div>
     </div>
@@ -218,20 +218,20 @@ export default function TimersFeature() {
       {timers.map(timer => (
         <Card key={timer.id} id={`timer-card-${timer.id}`} className="shadow-lg flex flex-col">
           <CardHeader className="pb-2">
-            <CardTitle className="text-xl flex justify-between items-center">
+            <CardTitle className="text-lg sm:text-xl flex justify-between items-center">
               <span className="truncate" title={timer.name}>{timer.name}</span>
               <Button variant="ghost" size="icon" onClick={() => toggleFullscreen(timer.id)} className="text-muted-foreground hover:text-primary -mr-2">
                 <Maximize className="h-4 w-4" />
               </Button>
             </CardTitle>
           </CardHeader>
-          <CardContent className="flex-grow flex flex-col items-center justify-center">
-            <p className="text-5xl font-mono font-bold text-primary">
+          <CardContent className="flex-grow flex flex-col items-center justify-center py-3 sm:py-4">
+            <p className="text-4xl sm:text-5xl font-mono font-bold text-primary">
               {formatDuration(timer.remainingTime)}
             </p>
-            <Progress value={(timer.duration - timer.remainingTime) / timer.duration * 100} className="w-full h-3 mt-2" />
+            <Progress value={(timer.duration - timer.remainingTime) / timer.duration * 100} className="w-full h-2 sm:h-3 mt-2" />
           </CardContent>
-          <CardFooter className="border-t p-4 flex justify-between items-center">
+          <CardFooter className="border-t p-3 sm:p-4 flex justify-between items-center">
             <div className="flex gap-2">
               <Button onClick={() => toggleTimer(timer.id)} size="sm" variant={timer.isRunning && !timer.isPaused ? "outline" : "default"}>
                 {timer.isRunning && !timer.isPaused ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
@@ -261,11 +261,11 @@ export default function TimersFeature() {
 
   const renderTimersContainer = () => {
     if (!mounted) {
-      return <p className="text-center text-muted-foreground">Loading timers...</p>;
+      return <p className="text-center text-muted-foreground py-10">Loading timers...</p>;
     }
     if (timers.length === 0) {
       return (
-        <p className="text-center text-muted-foreground">
+        <p className="text-center text-muted-foreground py-10">
           You have no timers set. Click "Add Timer" or a shortcut to create one.
         </p>
       );
@@ -277,17 +277,17 @@ export default function TimersFeature() {
   return (
     <div className="space-y-6 p-4 md:p-6">
       <div className="flex flex-col items-center justify-center text-center py-4">
-        <div className="font-mono text-7xl md:text-8xl lg:text-9xl font-bold text-primary select-none">
+        <div className="font-mono text-5xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl font-bold text-primary select-none">
           {mounted && elapsedTime !== null ? formatDuration(elapsedTime) : "00:00:00"}
         </div>
-        <div className="text-lg md:text-xl lg:text-2xl text-muted-foreground select-none mt-2">
+        <div className="text-md sm:text-lg md:text-xl text-muted-foreground select-none mt-2">
           Elapsed Time
         </div>
       </div>
 
-      <div className="flex justify-between items-center pt-4">
-        <h2 className="text-2xl font-semibold">Countdown Timers</h2>
-        <Button onClick={openAddForm}>
+      <div className="flex flex-col sm:flex-row justify-between items-center pt-4 gap-4">
+        <h2 className="text-xl sm:text-2xl font-semibold">Countdown Timers</h2>
+        <Button onClick={openAddForm} className="w-full sm:w-auto">
           <PlusCircle className="mr-2 h-4 w-4" /> Add Timer
         </Button>
       </div>
@@ -318,6 +318,7 @@ export default function TimersFeature() {
             <Button
               key={shortcut.label}
               variant="default" 
+              size="sm"
               onClick={() => handleAddTimerFromShortcut(shortcut.duration, shortcut.label)}
             >
               <TimerIconLucide className="mr-2 h-4 w-4" />
@@ -428,4 +429,5 @@ function TimerFormDialog({ isOpen, onOpenChange, onSave, timer }: TimerFormDialo
     </Dialog>
   );
 }
+
 
