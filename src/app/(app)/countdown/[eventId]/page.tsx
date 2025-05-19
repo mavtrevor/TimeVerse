@@ -8,8 +8,10 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { shortcutEvents } from '@/lib/countdownData';
 import type { ShortcutCountdownEvent } from '@/types';
-import { Home, ArrowLeft, Share2 } from 'lucide-react';
+import { Home, ArrowLeft, Share2, CalendarDays } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { format, parse } from 'date-fns';
 
 interface TimeRemaining {
   days: number;
@@ -35,6 +37,20 @@ function calculateTimeRemaining(targetDate: Date): TimeRemaining {
 
   return { days, hours, minutes, seconds, isFinished: false };
 }
+
+const usPublicHolidays2025 = [
+  { name: "New Year's Day", date: "2025-01-01" },
+  { name: "Martin Luther King Jr. Day", date: "2025-01-20" },
+  { name: "Washington's Birthday", date: "2025-02-17" }, // (Presidents' Day)
+  { name: "Memorial Day", date: "2025-05-26" },
+  { name: "Juneteenth National Independence Day", date: "2025-06-19" },
+  { name: "Independence Day", date: "2025-07-04" },
+  { name: "Labor Day", date: "2025-09-01" },
+  { name: "Columbus Day", date: "2025-10-13" },
+  { name: "Veterans Day", date: "2025-11-11" },
+  { name: "Thanksgiving", date: "2025-11-27" },
+  { name: "Christmas Day", date: "2025-12-25" },
+];
 
 export default function ShortcutCountdownPage() {
   const params = useParams();
@@ -121,7 +137,7 @@ export default function ShortcutCountdownPage() {
 
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-[calc(100vh-10rem)] p-4 sm:p-6 bg-background text-foreground">
+    <div className="flex flex-col items-center justify-start min-h-[calc(100vh-10rem)] p-4 sm:p-6 bg-background text-foreground">
       <div className="w-full max-w-4xl">
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6 sm:mb-8">
             <Button variant="outline" asChild className="w-full sm:w-auto">
@@ -190,12 +206,43 @@ export default function ShortcutCountdownPage() {
             </div>
           </CardContent>
         </Card>
+
+        <div className="mt-12">
+          <h2 className="text-xl sm:text-2xl font-semibold mb-4 flex items-center">
+            <CalendarDays className="mr-2 h-6 w-6 text-primary" />
+            Public Holidays 2025
+          </h2>
+          <Card className="shadow-md bg-card text-card-foreground">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-[50px] p-2 sm:p-4 text-xs sm:text-sm text-muted-foreground">#</TableHead>
+                  <TableHead className="p-2 sm:p-4 text-xs sm:text-sm text-muted-foreground">Holiday</TableHead>
+                  <TableHead className="text-right p-2 sm:p-4 text-xs sm:text-sm text-muted-foreground">Date</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {usPublicHolidays2025.map((holiday, index) => {
+                  const holidayDate = parse(holiday.date, 'yyyy-MM-dd', new Date());
+                  return (
+                    <TableRow key={index} className="border-border/50">
+                      <TableCell className="p-2 sm:p-4 text-xs sm:text-sm text-muted-foreground">{index + 1}.</TableCell>
+                      <TableCell className="font-medium p-2 sm:p-4 text-xs sm:text-sm">
+                        <a href="#" className="text-blue-400 hover:text-blue-300 hover:underline">
+                          {holiday.name}
+                        </a>
+                      </TableCell>
+                      <TableCell className="text-right p-2 sm:p-4 text-xs sm:text-sm text-muted-foreground">
+                        {format(holidayDate, "MMMM d, yyyy")}
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </Card>
+        </div>
       </div>
     </div>
   );
 }
-
-// Note: The "Public Holidays" section from the example image is not included here
-// as its relevance to a generic countdown page is unclear and would require
-// additional data fetching logic for holidays based on the countdown's date/year.
-// If specific holiday context is needed, it would be a further enhancement.
