@@ -7,7 +7,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogClose } from '@/components/ui/dialog';
 import { format, addMonths, subMonths, isValid, parse } from 'date-fns';
-import { ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, LoaderCircle } from 'lucide-react';
 import type { Holiday } from '@/types';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -50,7 +50,6 @@ const allSampleHolidays: Holiday[] = [
   { date: '2025-12-26', name: "Boxing Day", type: 'public', countryCode: 'GB', description: "Public holiday celebrated the day after Christmas Day." },
   { date: '2025-03-17', name: "St. Patrick's Day", type: 'observance', countryCode: 'GB', description: "Cultural and religious celebration. Public holiday in Northern Ireland." },
 
-
   // Australia (AU) - 2025 (National Public Holidays)
   { date: '2025-01-01', name: "New Year's Day", type: 'public', countryCode: 'AU', description: "Celebrates the first day of the year." },
   { date: '2025-01-27', name: "Australia Day (Observed)", type: 'public', countryCode: 'AU', description: "Official National Day of Australia. Observed as Jan 26 is a Sunday." },
@@ -62,7 +61,6 @@ const allSampleHolidays: Holiday[] = [
   { date: '2025-06-09', name: "King's Birthday", type: 'public', countryCode: 'AU', description: "Celebrates the monarch's birthday. Date varies by state/territory, this is a common one (second Monday in June for most)." },
   { date: '2025-12-25', name: "Christmas Day", type: 'public', countryCode: 'AU', description: "Celebrates the birth of Jesus Christ." },
   { date: '2025-12-26', name: "Boxing Day", type: 'public', countryCode: 'AU', description: "Public holiday celebrated the day after Christmas Day." },
-
 
   // Canada (CA) - 2025 (National Statutory Holidays)
   { date: '2025-01-01', name: "New Year's Day", type: 'public', countryCode: 'CA', description: "Celebrates the first day of the year." },
@@ -116,7 +114,6 @@ const allSampleHolidays: Holiday[] = [
   { date: '2025-12-30', name: "Rizal Day", type: 'public', countryCode: 'PH', description: "Commemorates the life and works of José Rizal." },
   { date: '2025-12-31', name: "Last Day of the Year", type: 'public', countryCode: 'PH', description: "New Year's Eve. Declared special non-working for 2025." },
 
-
   // South Africa (ZA) - 2025
   { date: '2025-01-01', name: "New Year's Day", type: 'public', countryCode: 'ZA', description: "First day of the new year." },
   { date: '2025-03-21', name: "Human Rights Day", type: 'public', countryCode: 'ZA', description: "Commemorates the Sharpeville massacre." },
@@ -133,7 +130,6 @@ const allSampleHolidays: Holiday[] = [
   { date: '2025-12-26', name: "Day of Goodwill", type: 'public', countryCode: 'ZA', description: "Public holiday after Christmas, formerly Boxing Day." },
 ];
 
-// Simulated fetch for the interactive calendar (fetches for the specific month)
 const fetchHolidaysForMonth = async (year: number, month: number, countryCode: string): Promise<Holiday[]> => {
   console.log(`Simulating fetch for interactive calendar: ${year}-${String(month + 1).padStart(2, '0')}, Country: ${countryCode}`);
   return new Promise(resolve => {
@@ -146,18 +142,16 @@ const fetchHolidaysForMonth = async (year: number, month: number, countryCode: s
                holidayDate.getMonth() === month;
       });
       resolve(filtered);
-    }, 300); // Shorter delay for month view
+    }, 300); 
   });
 };
 
-// Simulated fetch for the holiday list table (fetches for the entire year)
 const fetchHolidaysForYear = async (year: number, countryCode: string): Promise<Holiday[]> => {
   console.log(`Simulating fetch for holiday list table: Year ${year}, Country: ${countryCode}`);
   return new Promise(resolve => {
     setTimeout(() => {
       const filtered = allSampleHolidays.filter(h => {
         const holidayDateParts = h.date.split('-').map(Number);
-        // Ensure we only consider public holidays for the table and match the year and country.
         return holidayDateParts[0] === year && h.countryCode === countryCode && h.type === 'public';
       }).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
       resolve(filtered);
@@ -165,22 +159,20 @@ const fetchHolidaysForYear = async (year: number, countryCode: string): Promise<
   });
 };
 
-
 const parseHolidayDate = (dateStr: string): Date | undefined => {
   const d = parse(dateStr, 'yyyy-MM-dd', new Date());
   return isValid(d) ? d : undefined;
 };
 
 const tableYears = [2025, 2026, 2027, 2028, 2029];
+const defaultInitialYear = 2025;
+const defaultInitialMonth = 0; // January
 
 export default function CalendarFeature() {
-  const defaultInitialYear = 2025;
-  const defaultInitialMonth = 0; 
-
   const [currentDisplayMonth, setCurrentDisplayMonth] = useState(new Date(defaultInitialYear, defaultInitialMonth, 1));
   const [selectedCountry, setSelectedCountry] = useState<string>(supportedCountries[0].code);
-  const [monthlyHolidays, setMonthlyHolidays] = useState<Holiday[]>([]); // For interactive calendar
-  const [yearlyHolidays, setYearlyHolidays] = useState<Holiday[]>([]); // For the new table
+  const [monthlyHolidays, setMonthlyHolidays] = useState<Holiday[]>([]);
+  const [yearlyHolidays, setYearlyHolidays] = useState<Holiday[]>([]);
   const [isLoadingCalendar, setIsLoadingCalendar] = useState(false);
   const [isLoadingTable, setIsLoadingTable] = useState(false);
   const [selectedHolidayDetail, setSelectedHolidayDetail] = useState<Holiday | null>(null);
@@ -190,7 +182,6 @@ export default function CalendarFeature() {
   useEffect(() => {
     setMounted(true);
   }, []);
-
 
   const calendarViewYear = useMemo(() => currentDisplayMonth.getFullYear(), [currentDisplayMonth]);
 
@@ -209,8 +200,11 @@ export default function CalendarFeature() {
         setIsLoadingCalendar(false);
       }
     };
-    loadMonthlyHolidays();
-  }, [currentDisplayMonth, selectedCountry]);
+    if (mounted) { // Only load holidays after mount
+        loadMonthlyHolidays();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentDisplayMonth, selectedCountry, mounted]);
 
   useEffect(() => {
     const loadYearlyHolidays = async () => {
@@ -225,39 +219,30 @@ export default function CalendarFeature() {
         setIsLoadingTable(false);
       }
     };
-    loadYearlyHolidays();
-  }, [selectedTableYear, selectedCountry]);
-
+     if (mounted) { // Only load holidays after mount
+        loadYearlyHolidays();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedTableYear, selectedCountry, mounted]);
 
   const handleCountryChange = (countryCode: string) => {
     setSelectedCountry(countryCode);
-    // Reset display month to January of the current calendar view year when country changes
     setCurrentDisplayMonth(new Date(calendarViewYear, 0, 1)); 
   };
 
-  const handlePrevMonth = () => {
-    setCurrentDisplayMonth(prev => subMonths(prev, 1));
-  };
-
-  const handleNextMonth = () => {
-    setCurrentDisplayMonth(prev => addMonths(prev, 1));
-  };
+  const handlePrevMonth = () => setCurrentDisplayMonth(prev => subMonths(prev, 1));
+  const handleNextMonth = () => setCurrentDisplayMonth(prev => addMonths(prev, 1));
 
   const handleDayClick = (day: Date) => {
     const clickedDateStr = format(day, 'yyyy-MM-dd');
     const holidayOnClickedDay = allSampleHolidays.find(h => h.date === clickedDateStr && h.countryCode === selectedCountry);
-
-    if (holidayOnClickedDay) {
-      setSelectedHolidayDetail(holidayOnClickedDay);
-    } else {
-      setSelectedHolidayDetail({
-        date: clickedDateStr,
-        name: "Selected Day",
-        type: "other",
-        countryCode: selectedCountry,
-        description: format(day, "EEEE, MMMM d, yyyy")
-      });
-    }
+    setSelectedHolidayDetail(holidayOnClickedDay || {
+      date: clickedDateStr,
+      name: "Selected Day",
+      type: "other",
+      countryCode: selectedCountry,
+      description: format(day, "EEEE, MMMM d, yyyy")
+    });
   };
   
   const publicHolidayDatesForCalendar = useMemo(() =>
@@ -268,12 +253,7 @@ export default function CalendarFeature() {
     allSampleHolidays.filter(h => h.countryCode === selectedCountry && h.type === 'observance').map(h => parseHolidayDate(h.date)).filter(Boolean) as Date[],
   [selectedCountry]);
 
-
-  const modifiers = {
-    isPublicHoliday: publicHolidayDatesForCalendar,
-    isObservance: observanceDatesForCalendar,
-  };
-
+  const modifiers = { isPublicHoliday: publicHolidayDatesForCalendar, isObservance: observanceDatesForCalendar };
   const modifiersClassNames = {
     isPublicHoliday: '!bg-pink-500 !text-pink-50 rounded-sm',
     isObservance: '!bg-sky-500 !text-sky-50 rounded-sm',
@@ -281,10 +261,9 @@ export default function CalendarFeature() {
   
   const isPrevDisabled = currentDisplayMonth.getFullYear() === 2023 && currentDisplayMonth.getMonth() === 0;
   const isNextDisabled = currentDisplayMonth.getFullYear() === 2030 && currentDisplayMonth.getMonth() === 11;
-  
   const selectedDateObjectForCalendar = selectedHolidayDetail ? parseHolidayDate(selectedHolidayDetail.date) : undefined;
 
-  // Base classes (mobile-first)
+  // Base classes (applied on server and initial client render)
   const baseTitleClass = "font-bold text-center md:text-left text-2xl";
   const baseCaptionLabelClass = "font-semibold text-lg";
   const baseNavButtonClass = "h-8 w-8";
@@ -294,8 +273,8 @@ export default function CalendarFeature() {
   const baseCellClass = "text-center p-0 relative h-10 w-10 text-xs";
   const baseDayButtonClass = "p-0 font-normal aria-selected:opacity-100 h-10 w-10 text-xs";
   const baseCaptionDivClass = "flex justify-between items-center px-1 py-3 border-b mb-2";
-  
-  // Responsive classes to be applied when mounted
+
+  // Responsive classes (applied only when mounted is true)
   const responsiveTitleClass = "sm:text-3xl";
   const responsiveCaptionLabelClass = "sm:text-xl md:text-2xl";
   const responsiveNavButtonClass = "sm:h-9 sm:w-9";
@@ -306,7 +285,14 @@ export default function CalendarFeature() {
   const responsiveDayButtonClass = "sm:h-12 sm:w-12 sm:text-sm md:h-16 md:w-16 md:text-base lg:h-20 lg:w-20";
   const responsiveCaptionDivClass = "sm:px-2 sm:py-4 sm:mb-3";
 
-
+  // Loader for the main calendar card content
+  const CalendarLoader = () => (
+    <div className="flex flex-col items-center justify-center h-96">
+      <LoaderCircle className="h-10 w-10 animate-spin text-primary" />
+      <p className="ml-2 mt-3 text-lg">Loading calendar...</p>
+    </div>
+  );
+  
   return (
     <div className="p-4 md:p-6 space-y-8">
       <h1 className={cn(baseTitleClass, mounted && responsiveTitleClass)}>
@@ -323,11 +309,8 @@ export default function CalendarFeature() {
 
       <Card className="shadow-lg">
         <CardContent className="pt-6">
-          {isLoadingCalendar || !mounted ? ( // Show loader if not mounted or loading
-            <div className="flex flex-col items-center justify-center h-96">
-              <Loader2 className="h-10 w-10 animate-spin text-primary" />
-              <p className="ml-2 mt-3 text-lg">Loading calendar...</p>
-            </div>
+          {!mounted || isLoadingCalendar ? (
+            <CalendarLoader />
           ) : (
             <Calendar
               mode="single"
@@ -340,28 +323,13 @@ export default function CalendarFeature() {
               className="p-0 w-full max-w-2xl mx-auto"
               classNames={{
                 caption_label: cn(baseCaptionLabelClass, mounted && responsiveCaptionLabelClass),
-                nav_button: cn(
-                  buttonVariants({ variant: "outline" }),
-                  baseNavButtonClass, mounted && responsiveNavButtonClass,
-                  "bg-transparent p-0 opacity-75 hover:opacity-100"
-                ),
+                nav_button: cn(buttonVariants({ variant: "outline" }), baseNavButtonClass, mounted && responsiveNavButtonClass, "bg-transparent p-0 opacity-75 hover:opacity-100"),
                 head_row: "flex w-full",
                 head_cell: cn(baseHeadCellClass, mounted && responsiveHeadCellClass),
                 row: cn("flex w-full", baseRowMarginClass, mounted && responsiveRowMarginClass),
-                cell: cn(
-                  baseCellClass, mounted && responsiveCellClass,
-                  "text-center p-0 relative",
-                  "[&:has([aria-selected].day-outside)]:bg-accent/50 focus-within:relative focus-within:z-20",
-                  "[&:has([aria-selected].day-range-end)]:rounded-r-md first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md"
-                ),
-                day: cn(
-                  buttonVariants({ variant: "ghost" }),
-                  baseDayButtonClass, mounted && responsiveDayButtonClass,
-                  "p-0 font-normal aria-selected:opacity-100"
-                ),
-                day_selected: selectedHolidayDetail?.type !== 'public' && selectedHolidayDetail?.type !== 'observance' 
-                              ? 'ring-2 ring-primary !bg-transparent text-foreground rounded-sm' 
-                              : 'rounded-sm', 
+                cell: cn(baseCellClass, mounted && responsiveCellClass, "[&:has([aria-selected].day-outside)]:bg-accent/50 focus-within:relative focus-within:z-20", "[&:has([aria-selected].day-range-end)]:rounded-r-md first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md"),
+                day: cn(buttonVariants({ variant: "ghost" }), baseDayButtonClass, mounted && responsiveDayButtonClass),
+                day_selected: selectedHolidayDetail?.type !== 'public' && selectedHolidayDetail?.type !== 'observance' ? 'ring-2 ring-primary !bg-transparent text-foreground rounded-sm' : 'rounded-sm', 
                 day_today: "bg-accent text-accent-foreground rounded-sm",
                 day_outside: "text-muted-foreground opacity-50 aria-selected:text-muted-foreground aria-selected:bg-accent/30",
               }}
@@ -386,52 +354,31 @@ export default function CalendarFeature() {
             />
           )}
         </CardContent>
-         {(monthlyHolidays.length > 0 || publicHolidayDatesForCalendar.length > 0 || observanceDatesForCalendar.length > 0) && !isLoadingCalendar && mounted && (
+         {mounted && (monthlyHolidays.length > 0 || publicHolidayDatesForCalendar.length > 0 || observanceDatesForCalendar.length > 0) && !isLoadingCalendar && (
           <CardContent className="border-t pt-4 pb-4">
             <h3 className="text-sm font-semibold mb-2 text-muted-foreground">Legend:</h3>
             <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs">
-              <div className="flex items-center">
-                <span className="h-3 w-3 rounded-sm bg-pink-500 mr-1.5"></span> Public Holiday
-              </div>
-              <div className="flex items-center">
-                <span className="h-3 w-3 rounded-sm bg-sky-500 mr-1.5"></span> Observance
-              </div>
-               <div className="flex items-center">
-                <span className="h-3 w-3 rounded-sm ring-2 ring-primary mr-1.5"></span> Selected Day
-              </div>
+              <div className="flex items-center"><span className="h-3 w-3 rounded-sm bg-pink-500 mr-1.5"></span> Public Holiday</div>
+              <div className="flex items-center"><span className="h-3 w-3 rounded-sm bg-sky-500 mr-1.5"></span> Observance</div>
+              <div className="flex items-center"><span className="h-3 w-3 rounded-sm ring-2 ring-primary mr-1.5"></span> Selected Day</div>
             </div>
           </CardContent>
         )}
       </Card>
 
-      {/* Holiday List Table Section */}
       <div className="space-y-4 mt-8">
         <Tabs value={String(selectedTableYear)} onValueChange={(val) => setSelectedTableYear(Number(val))} className="w-full">
           <TabsList className="mb-4">
-            {tableYears.map(year => (
-              <TabsTrigger key={year} value={String(year)}>{year}</TabsTrigger>
-            ))}
+            {tableYears.map(year => (<TabsTrigger key={year} value={String(year)}>{year}</TabsTrigger>))}
           </TabsList>
         </Tabs>
-        
         <h2 className="text-xl sm:text-2xl font-semibold">Public Holidays - {selectedTableYear} ({supportedCountries.find(c => c.code === selectedCountry)?.name})</h2>
-
         {isLoadingTable ? (
-           <div className="flex flex-col items-center justify-center h-60">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            <p className="mt-2 text-md">Loading holidays for {selectedTableYear}...</p>
-          </div>
+           <div className="flex flex-col items-center justify-center h-60"><LoaderCircle className="h-8 w-8 animate-spin text-primary" /><p className="mt-2 text-md">Loading holidays for {selectedTableYear}...</p></div>
         ) : yearlyHolidays.length > 0 ? (
           <Card className="shadow-md">
             <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-[30px] sm:w-[50px] p-2 sm:p-4 text-xs sm:text-sm">#</TableHead>
-                  <TableHead className="p-2 sm:p-4 text-xs sm:text-sm">Name</TableHead>
-                  <TableHead className="p-2 sm:p-4 text-xs sm:text-sm">Date</TableHead>
-                  <TableHead className="text-right p-2 sm:p-4 text-xs sm:text-sm">Day</TableHead>
-                </TableRow>
-              </TableHeader>
+              <TableHeader><TableRow><TableHead className="w-[30px] sm:w-[50px] p-2 sm:p-4 text-xs sm:text-sm">#</TableHead><TableHead className="p-2 sm:p-4 text-xs sm:text-sm">Name</TableHead><TableHead className="p-2 sm:p-4 text-xs sm:text-sm">Date</TableHead><TableHead className="text-right p-2 sm:p-4 text-xs sm:text-sm">Day</TableHead></TableRow></TableHeader>
               <TableBody>
                 {yearlyHolidays.map((holiday, index) => {
                   const holidayDate = parseHolidayDate(holiday.date);
@@ -448,61 +395,35 @@ export default function CalendarFeature() {
             </Table>
           </Card>
         ) : (
-          <Card className="shadow-md">
-            <CardContent className="pt-6 text-center text-muted-foreground">
-              No public holidays found for {selectedTableYear} in {supportedCountries.find(c => c.code === selectedCountry)?.name}.
-            </CardContent>
-          </Card>
+          <Card className="shadow-md"><CardContent className="pt-6 text-center text-muted-foreground">No public holidays found for {selectedTableYear} in {supportedCountries.find(c => c.code === selectedCountry)?.name}.</CardContent></Card>
         )}
       </div>
 
       <Card className="shadow-lg mt-8">
-        <CardHeader>
-          <CardTitle className="text-xl">Interactive Online Calendar with Global Holidays</CardTitle>
-        </CardHeader>
+        <CardHeader><CardTitle className="text-xl">Interactive Online Calendar with Global Holidays</CardTitle></CardHeader>
         <CardContent className="space-y-4 text-sm">
-          <p>
-            View the entire year's calendar at a glance with our scrollable online calendar. Instantly access public holidays and observance days for countries like the US, UK, Canada, Australia, India, South Africa, and the Philippines. Each date is clearly color-coded, and clicking on a holiday reveals its full details—perfect for event planning, study schedules, or international coordination.
-          </p>
-          <p>
-            Seamless and user-friendly, the calendar lets you navigate months and years without reloading the page. Use it to plan vacations, track special dates, or find what day of the week any date falls on. Whether you're a traveler, student, or professional, our calendar makes it easy to stay organized and informed.
-          </p>
+          <p>View the entire year's calendar at a glance with our scrollable online calendar. Instantly access public holidays and observance days for countries like the US, UK, Canada, Australia, India, South Africa, and the Philippines. Each date is clearly color-coded, and clicking on a holiday reveals its full details—perfect for event planning, study schedules, or international coordination.</p>
+          <p>Seamless and user-friendly, the calendar lets you navigate months and years without reloading the page. Use it to plan vacations, track special dates, or find what day of the week any date falls on. Whether you're a traveler, student, or professional, our calendar makes it easy to stay organized and informed.</p>
         </CardContent>
       </Card>
 
-      <Dialog open={!!selectedHolidayDetail} onOpenChange={(isOpen) => {
-        if (!isOpen) setSelectedHolidayDetail(null);
-      }}>
+      <Dialog open={!!selectedHolidayDetail} onOpenChange={(isOpen) => { if (!isOpen) setSelectedHolidayDetail(null); }}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>{selectedHolidayDetail?.name}</DialogTitle>
             {selectedHolidayDetail && selectedHolidayDetail.date && parseHolidayDate(selectedHolidayDetail.date) && (
               <DialogDescription>
                 {format(parseHolidayDate(selectedHolidayDetail.date) as Date, "EEEE, MMMM d, yyyy")}
-                {selectedHolidayDetail.type !== 'other' && (
-                  <span className={`ml-2 px-2 py-0.5 rounded-full text-xs font-semibold ${
-                    selectedHolidayDetail.type === 'public' ? 'bg-pink-100 text-pink-700' : 'bg-sky-100 text-sky-700'
-                  }`}>
-                    {selectedHolidayDetail.type.charAt(0).toUpperCase() + selectedHolidayDetail.type.slice(1)}
-                  </span>
-                )}
+                {selectedHolidayDetail.type !== 'other' && (<span className={`ml-2 px-2 py-0.5 rounded-full text-xs font-semibold ${selectedHolidayDetail.type === 'public' ? 'bg-pink-100 text-pink-700' : 'bg-sky-100 text-sky-700'}`}>{selectedHolidayDetail.type.charAt(0).toUpperCase() + selectedHolidayDetail.type.slice(1)}</span>)}
               </DialogDescription>
             )}
           </DialogHeader>
-          <div className="py-4">
-            <p className="text-sm text-muted-foreground">
-              {selectedHolidayDetail?.description || (selectedHolidayDetail?.type === 'other' ? 'Standard day.' : 'No additional details available.')}
-            </p>
-          </div>
-          <DialogClose asChild>
-            <Button type="button" variant="outline" className="mt-2 w-full">Close</Button>
-          </DialogClose>
+          <div className="py-4"><p className="text-sm text-muted-foreground">{selectedHolidayDetail?.description || (selectedHolidayDetail?.type === 'other' ? 'Standard day.' : 'No additional details available.')}</p></div>
+          <DialogClose asChild><Button type="button" variant="outline" className="mt-2 w-full">Close</Button></DialogClose>
         </DialogContent>
       </Dialog>
     </div>
   );
 }
-    
 
     
-
