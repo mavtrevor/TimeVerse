@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Separator } from "@/components/ui/separator"
-import { Sheet, SheetContent, SheetTrigger as ShadcnSheetTrigger, SheetTitle } from "@/components/ui/sheet" 
+import { Sheet, SheetContent, SheetTrigger as ShadcnSheetTrigger, SheetTitle } from "@/components/ui/sheet"
 import { Skeleton } from "@/components/ui/skeleton"
 import {
   Tooltip,
@@ -24,22 +24,22 @@ const SIDEBAR_COOKIE_NAME = "sidebar_state"
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7
 const SIDEBAR_WIDTH = "16rem"
 const SIDEBAR_WIDTH_MOBILE = "18rem"
-const SIDEBAR_WIDTH_ICON = "3.5rem" 
+const SIDEBAR_WIDTH_ICON = "3.5rem"
 const SIDEBAR_KEYBOARD_SHORTCUT = "b"
 
-type SidebarContextType = { 
+type SidebarContextType = {
   state: "expanded" | "collapsed"
   open: boolean
   setOpen: (open: boolean) => void
   openMobile: boolean
-  setOpenMobile: (open: boolean | ((prev: boolean) => boolean)) => void; 
+  setOpenMobile: (open: boolean | ((prev: boolean) => boolean)) => void;
   isMobile: boolean | undefined; // Can be undefined initially
   toggleSidebar: () => void
 }
 
 const SidebarContext = React.createContext<SidebarContextType | null>(null)
 
-export function useSidebar() { 
+export function useSidebar() {
   const context = React.useContext(SidebarContext)
   if (!context) {
     throw new Error("useSidebar must be used within a SidebarProvider.")
@@ -221,17 +221,17 @@ const Sidebar = React.forwardRef<
           ref={ref}
           className="group peer hidden md:block text-sidebar-foreground" // Initially hidden on mobile
           data-state={state} // Use state for initial desktop render based on cookie/default
-          data-collapsible={state === "collapsed" ? collapsible : ""} 
+          data-collapsible={state === "collapsed" ? collapsible : ""}
           data-variant={variant}
           data-side={side}
         >
            <div
             className={cn(
               "duration-200 relative h-svh bg-transparent transition-[width] ease-linear",
-               state === "expanded" ? "w-[--sidebar-width]" : 
-               (collapsible === "offcanvas" ? "w-0" : 
-               (collapsible === "icon" ? 
-                 (variant === "floating" || variant === "inset" ? "w-[calc(var(--sidebar-width-icon)_+_theme(spacing.4))]" : "w-[--sidebar-width-icon]") 
+               state === "expanded" ? "w-[--sidebar-width]" :
+               (collapsible === "offcanvas" ? "w-0" :
+               (collapsible === "icon" ?
+                 (variant === "floating" || variant === "inset" ? "w-[calc(var(--sidebar-width-icon)_+_theme(spacing.4))]" : "w-[--sidebar-width-icon]")
                  : "w-[--sidebar-width]")),
               "group-data-[side=right]:rotate-180"
             )}
@@ -239,10 +239,10 @@ const Sidebar = React.forwardRef<
           <div
             className={cn(
               "duration-200 fixed inset-y-0 z-10 flex h-svh transition-[left,right,width] ease-linear", // md:flex removed, handled by !clientReady
-               state === "expanded" ? "w-[--sidebar-width]" : 
-               (collapsible === "offcanvas" ? (side === "left" ? "left-[calc(var(--sidebar-width)*-1)] w-[--sidebar-width]" : "right-[calc(var(--sidebar-width)*-1)] w-[--sidebar-width]") : 
-               (collapsible === "icon" ? 
-                 (variant === "floating" || variant === "inset" ? "w-[calc(var(--sidebar-width-icon)_+_theme(spacing.4)_+2px)] p-2" : "w-[--sidebar-width-icon]") 
+               state === "expanded" ? "w-[--sidebar-width]" :
+               (collapsible === "offcanvas" ? (side === "left" ? "left-[calc(var(--sidebar-width)*-1)] w-[--sidebar-width]" : "right-[calc(var(--sidebar-width)*-1)] w-[--sidebar-width]") :
+               (collapsible === "icon" ?
+                 (variant === "floating" || variant === "inset" ? "w-[calc(var(--sidebar-width-icon)_+_theme(spacing.4)_+2px)] p-2" : "w-[--sidebar-width-icon]")
                  : "w-[--sidebar-width]")),
               side === "left" ? "left-0" : "right-0",
               (variant !== "floating" && variant !== "inset" && state === "expanded") && (side === "left" ? "border-r" : "border-l"),
@@ -265,7 +265,7 @@ const Sidebar = React.forwardRef<
         </div>
       );
     }
-    
+
     if (isMobile) { // This isMobile is now the true client-side value
       return (
         <Sheet open={openMobile} onOpenChange={setOpenMobile}>
@@ -280,13 +280,13 @@ const Sidebar = React.forwardRef<
             }
             side={side}
           >
-            <SheetTitle className="sr-only">Main Menu</SheetTitle>
+             <SheetTitle className="sr-only">Main Menu</SheetTitle>
             <div className="flex h-full w-full flex-col">{children}</div>
           </SheetContent>
         </Sheet>
       )
     }
-    
+
     // Desktop collapsible logic (rendered after clientReady is true)
     if (collapsible === "none") {
       return (
@@ -309,29 +309,29 @@ const Sidebar = React.forwardRef<
         ref={ref}
         className="group peer md:block text-sidebar-foreground" // md:block added here
         data-state={state}
-        data-collapsible={state === "collapsed" ? collapsible : ""} 
+        data-collapsible={state === "collapsed" ? collapsible : ""}
         data-variant={variant}
         data-side={side}
       >
         <div
           className={cn(
             "duration-200 relative h-svh bg-transparent transition-[width] ease-linear",
-            state === "expanded" ? "w-[--sidebar-width]" : 
-            (collapsible === "offcanvas" ? "w-0" : 
-            (collapsible === "icon" ? 
-              (variant === "floating" || variant === "inset" ? "w-[calc(var(--sidebar-width-icon)_+_theme(spacing.4))]" : "w-[--sidebar-width-icon]") 
-              : "w-[--sidebar-width]")), 
+            state === "expanded" ? "w-[--sidebar-width]" :
+            (collapsible === "offcanvas" ? "w-0" :
+            (collapsible === "icon" ?
+              (variant === "floating" || variant === "inset" ? "w-[calc(var(--sidebar-width-icon)_+_theme(spacing.4))]" : "w-[--sidebar-width-icon]")
+              : "w-[--sidebar-width]")),
             "group-data-[side=right]:rotate-180"
           )}
         />
         <div
           className={cn(
             "duration-200 fixed inset-y-0 z-10 flex h-svh transition-[left,right,width] ease-linear", // md:flex removed, handled by clientReady logic
-            state === "expanded" ? "w-[--sidebar-width]" : 
-            (collapsible === "offcanvas" ? (side === "left" ? "left-[calc(var(--sidebar-width)*-1)] w-[--sidebar-width]" : "right-[calc(var(--sidebar-width)*-1)] w-[--sidebar-width]") : 
-            (collapsible === "icon" ? 
-              (variant === "floating" || variant === "inset" ? "w-[calc(var(--sidebar-width-icon)_+_theme(spacing.4)_+2px)] p-2" : "w-[--sidebar-width-icon]") 
-              : "w-[--sidebar-width]")), 
+            state === "expanded" ? "w-[--sidebar-width]" :
+            (collapsible === "offcanvas" ? (side === "left" ? "left-[calc(var(--sidebar-width)*-1)] w-[--sidebar-width]" : "right-[calc(var(--sidebar-width)*-1)] w-[--sidebar-width]") :
+            (collapsible === "icon" ?
+              (variant === "floating" || variant === "inset" ? "w-[calc(var(--sidebar-width-icon)_+_theme(spacing.4)_+2px)] p-2" : "w-[--sidebar-width-icon]")
+              : "w-[--sidebar-width]")),
             side === "left" ? "left-0" : "right-0",
             (variant !== "floating" && variant !== "inset" && state === "expanded") && (side === "left" ? "border-r" : "border-l"),
             (variant !== "floating" && variant !== "inset" && state === "collapsed" && collapsible === "icon") && (side === "left" ? "border-r" : "border-l"),
@@ -412,7 +412,7 @@ const SidebarRail = React.forwardRef<
       className={cn(
         "absolute inset-y-0 z-20 hidden w-4 -translate-x-1/2 transition-all ease-linear after:absolute after:inset-y-0 after:left-1/2 after:w-[2px] hover:after:bg-sidebar-border group-data-[side=left]:-right-4 group-data-[side=right]:left-0 sm:flex",
         "[[data-side=left]_&]:cursor-w-resize [[data-side=right]_&]:cursor-e-resize",
-        state === 'collapsed' && "[[data-side=left]_&]:cursor-e-resize [[data-side=right]_&]:cursor-w-resize", 
+        state === 'collapsed' && "[[data-side=left]_&]:cursor-e-resize [[data-side=right]_&]:cursor-w-resize",
         "group-data-[collapsible=offcanvas]:translate-x-0 group-data-[collapsible=offcanvas]:after:left-full group-data-[collapsible=offcanvas]:hover:bg-sidebar",
         "[[data-side=left][data-collapsible=offcanvas]_&]:-right-2",
         "[[data-side=right][data-collapsible=offcanvas]_&]:-left-2",
@@ -426,17 +426,17 @@ SidebarRail.displayName = "SidebarRail"
 
 const SidebarInset = React.forwardRef<
   HTMLDivElement,
-  React.ComponentProps<"main"> 
+  React.ComponentProps<"main">
 >(({ className, ...props }, ref) => {
   return (
     <main
       ref={ref}
       className={cn(
         "relative flex min-h-svh flex-1 flex-col bg-background",
-        
+
         "md:peer-data-[variant=inset]:m-2 md:peer-data-[variant=inset]:rounded-xl md:peer-data-[variant=inset]:shadow",
         "md:peer-data-[variant=inset][data-state=expanded]:ml-[calc(var(--sidebar-width)_+_theme(spacing.2))]",
-        "md:peer-data-[variant=inset][data-state=collapsed][data-collapsible=icon]:ml-[calc(var(--sidebar-width-icon)_+_theme(spacing.6))]", 
+        "md:peer-data-[variant=inset][data-state=collapsed][data-collapsible=icon]:ml-[calc(var(--sidebar-width-icon)_+_theme(spacing.6))]",
         "md:peer-data-[variant=inset][data-state=collapsed][data-collapsible=offcanvas]:ml-2",
         className
       )}
@@ -457,7 +457,7 @@ const SidebarInput = React.forwardRef<
       data-sidebar="input"
       className={cn(
         "h-8 w-full bg-background shadow-none focus-visible:ring-2 focus-visible:ring-sidebar-ring",
-        "group-data-[collapsible=icon]:hidden", 
+        "group-data-[collapsible=icon]:hidden",
         className
       )}
       {...props}
@@ -474,7 +474,7 @@ const SidebarHeader = React.forwardRef<
     <div
       ref={ref}
       data-sidebar="header"
-      className={cn("flex flex-col gap-2 p-2", className)} 
+      className={cn("flex flex-col gap-2 p-2", className)}
       {...props}
     />
   )
@@ -489,7 +489,7 @@ const SidebarFooter = React.forwardRef<
     <div
       ref={ref}
       data-sidebar="footer"
-      className={cn("flex flex-col gap-2 p-2", className)} 
+      className={cn("flex flex-col gap-2 p-2", className)}
       {...props}
     />
   )
@@ -520,7 +520,7 @@ const SidebarContent = React.forwardRef<
       ref={ref}
       data-sidebar="content"
       className={cn(
-        "flex min-h-0 flex-1 flex-col gap-2 overflow-auto", 
+        "flex min-h-0 flex-1 flex-col gap-2 overflow-auto",
         className
       )}
       {...props}
@@ -537,7 +537,7 @@ const SidebarGroup = React.forwardRef<
     <div
       ref={ref}
       data-sidebar="group"
-      className={cn("relative flex w-full min-w-0 flex-col p-2", className)} 
+      className={cn("relative flex w-full min-w-0 flex-col p-2", className)}
       {...props}
     />
   )
@@ -636,9 +636,9 @@ const sidebarMenuButtonVariants = cva(
           "bg-background shadow-[0_0_0_1px_hsl(var(--sidebar-border))] hover:bg-sidebar-accent hover:text-sidebar-accent-foreground hover:shadow-[0_0_0_1px_hsl(var(--sidebar-accent))]",
       },
       size: {
-        default: "h-10 text-sm", 
+        default: "h-10 text-sm",
         sm: "h-9 text-xs",
-        lg: "h-12 text-sm group-data-[collapsible=icon]:!p-0", 
+        lg: "h-12 text-sm group-data-[collapsible=icon]:!p-0",
       },
     },
     defaultVariants: {
@@ -664,7 +664,7 @@ const SidebarMenuButton = React.forwardRef<
       size = "default",
       tooltip,
       className,
-      children, 
+      children,
       ...props
     },
     ref
@@ -673,6 +673,14 @@ const SidebarMenuButton = React.forwardRef<
     const { isMobile, state } = useSidebar()
     const [clientReady, setClientReady] = React.useState(false);
     React.useEffect(() => { setClientReady(true); }, []);
+
+    // Moved useMemo to be unconditional
+    const tooltipProps = React.useMemo(() => {
+        if (!tooltip) { // Ensure tooltipProps is always an object
+            return {};
+        }
+        return typeof tooltip === "string" ? { children: tooltip } : tooltip;
+    }, [tooltip]);
 
 
     const buttonContent = (
@@ -684,20 +692,15 @@ const SidebarMenuButton = React.forwardRef<
         className={cn(sidebarMenuButtonVariants({ variant, size }), className)}
         {...props}
       >
-        {children} 
+        {children}
       </Comp>
     )
 
-    if (!tooltip || !clientReady) { // Don't render tooltip if not clientReady
+    // Conditional rendering of the Tooltip wrapper
+    if (!tooltip || !clientReady) { // Don't render tooltip if not clientReady or no tooltip prop
       return buttonContent
     }
 
-    const tooltipProps = React.useMemo(() => {
-        return typeof tooltip === "string" ? { children: tooltip } : tooltip;
-    }, [tooltip]);
-
-
-    
     const showTooltipContent = state === "collapsed" && !isMobile;
 
     return (
@@ -707,7 +710,7 @@ const SidebarMenuButton = React.forwardRef<
             <TooltipContent
               side="right"
               align="center"
-              {...tooltipProps}
+              {...tooltipProps} // Safe to spread, tooltipProps is always an object
             />
         )}
       </Tooltip>
@@ -829,14 +832,14 @@ const SidebarMenuSubItem = React.forwardRef<
 SidebarMenuSubItem.displayName = "SidebarMenuSubItem"
 
 const SidebarMenuSubButton = React.forwardRef<
-  HTMLAnchorElement, 
-  React.ComponentProps<"a"> & { 
+  HTMLAnchorElement,
+  React.ComponentProps<"a"> & {
     asChild?: boolean
     size?: "sm" | "md"
     isActive?: boolean
   }
 >(({ asChild = false, size = "md", isActive, className, ...props }, ref) => {
-  const Comp = asChild ? Slot : "a" 
+  const Comp = asChild ? Slot : "a"
 
   return (
     <Comp
@@ -883,6 +886,5 @@ export {
   SidebarRail,
   SidebarSeparator,
   SidebarTrigger,
-  
-}
 
+}
