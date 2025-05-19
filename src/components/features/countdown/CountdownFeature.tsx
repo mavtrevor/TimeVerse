@@ -13,7 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogC
 import { PlusCircle, Trash2, Edit3, CalendarClock, Link2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
-import { shortcutEvents } from '@/lib/countdownData'; // Import shortcuts
+import { shortcutEvents } from '@/lib/countdownData'; 
 import { Separator } from '@/components/ui/separator';
 
 const INITIAL_COUNTDOWNS: EventCountdown[] = [];
@@ -161,9 +161,7 @@ export default function CountdownFeature() {
   };
 
   const renderCustomCountdownsContainer = () => {
-    if (!mounted) {
-      return <p className="text-center text-muted-foreground py-10">Loading your custom countdowns...</p>;
-    }
+    // The !mounted check is handled by the main component return
     if (countdowns.length === 0) {
       return (
         <p className="text-center text-muted-foreground py-10">
@@ -174,13 +172,16 @@ export default function CountdownFeature() {
     return renderCountdownList();
   };
 
+  if (!mounted) {
+    return (
+      <div className="p-4 md:p-6 text-center">
+        <p className="text-muted-foreground py-10">Loading Countdowns...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="p-4 md:p-6 space-y-8">
-      <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-        <h1 className="text-2xl sm:text-3xl font-bold flex items-center"><CalendarClock className="mr-2 sm:mr-3 h-7 w-7 sm:h-8 sm:w-8 text-primary" /> Event Countdowns</h1>
-      </div>
-
       <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
         <h2 className="text-xl sm:text-2xl font-semibold">Your Custom Countdowns</h2>
         <Button onClick={openAddForm} className="w-full sm:w-auto">
@@ -328,3 +329,4 @@ function CountdownFormDialog({ isOpen, onOpenChange, onSave, countdown }: Countd
   );
 }
 
+    
