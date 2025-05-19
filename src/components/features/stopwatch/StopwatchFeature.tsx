@@ -170,7 +170,7 @@ export default function StopwatchFeature() {
           </CardHeader>
           <CardContent className="flex flex-col items-center justify-center py-8">
             <div className={`font-mono font-bold text-primary select-none ${isFullscreen ? 'text-8xl sm:text-9xl md:text-[10rem] lg:text-[12rem]' : 'text-7xl sm:text-8xl'}`}>
-              {displayTime}<span className={` ${isFullscreen ? 'text-5xl sm:text-6xl md:text-7xl lg:text-8xl' : 'text-4xl sm:text-5xl'}`}>.{milliseconds}</span>
+              {displayTime}<span className={` ${isFullscreen ? 'text-5xl sm:text-6xl md:text-7xl lg:text-8xl' : 'text-4xl sm:text-5xl'}`}>{milliseconds}</span>
             </div>
           </CardContent>
           <CardFooter className={`border-t p-4 flex flex-col sm:flex-row justify-between items-center gap-4 ${isFullscreen ? 'sm:pb-8' : ''}`}>
@@ -203,55 +203,22 @@ export default function StopwatchFeature() {
       {!isFullscreen && (
         <Card className="shadow-lg w-full max-w-2xl mx-auto">
           <CardHeader>
-            <CardTitle className="text-xl">⏱️ Online Stopwatch with Laps</CardTitle>
+            <CardTitle className="text-xl">⏱️ TimeVerse Online Stopwatch</CardTitle>
             <CardDescription>Accurate | Simple | Free</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4 text-sm">
             <p>
-              Track time down to the millisecond with our online stopwatch. Great for sports, productivity, and everyday activities.
+              TimeVerse Online Stopwatch offers a precise, user-friendly way to track time for workouts, productivity sessions, or any task requiring accurate measurement. Just click Start, record unlimited laps, and export your lap data when needed—all for free and with no installation required.
             </p>
-            
-            <div className="space-y-2">
-              <h3 className="font-semibold text-md">✅ How to Use the Stopwatch</h3>
-              <ul className="list-disc list-inside pl-4 space-y-1">
-                <li>Click Start to begin timing.</li>
-                <li>Click Lap to mark intervals.</li>
-                <li>Click Pause or Reset as needed.</li>
-                <li>Export lap data to CSV for review or record-keeping.</li>
-              </ul>
-            </div>
-
-            <div className="space-y-2">
-              <h3 className="font-semibold text-md">⚡️ Features</h3>
-              <ul className="list-disc list-inside pl-4 space-y-1">
-                <li>Unlimited lap recordings</li>
-                <li>Real-time updates</li>
-                <li>Exportable lap history</li>
-                <li>Fully responsive UI</li>
-                <li>Fullscreen mode for easy visibility</li>
-                <li>Auto-saves last session</li>
-              </ul>
-            </div>
-            
-            <div className="space-y-2">
-              <h3 className="font-semibold text-md">❓FAQs</h3>
-              <div>
-                <p className="font-medium">Can I leave the page while the stopwatch runs?</p>
-                <p className="pl-4">Yes—it will continue running in the background.</p>
-              </div>
-              <div>
-                <p className="font-medium">What’s the accuracy?</p>
-                <p className="pl-4">The stopwatch records with millisecond accuracy depending on your browser/device.</p>
-              </div>
-              <div>
-                <p className="font-medium">Is it mobile-friendly?</p>
-                <p className="pl-4">Yes—works seamlessly across all screen sizes.</p>
-              </div>
-            </div>
+            <p>
+              The stopwatch runs reliably in background tabs, supports millisecond accuracy, and is fully optimized for mobile and desktop use. With features like auto-saving, fullscreen mode, and real-time updates, it's built for performance and convenience.
+            </p>
           </CardContent>
         </Card>
       )}
     </div>
   );
 }
+    
+
     
