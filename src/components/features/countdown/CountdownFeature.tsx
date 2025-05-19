@@ -5,7 +5,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import type { EventCountdown } from '@/types';
 import useLocalStorage from '@/hooks/useLocalStorage';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardFooter, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose } from '@/components/ui/dialog';
@@ -87,16 +87,6 @@ export default function CountdownFeature() {
   };
   
   const renderCountdownList = () => {
-     if (countdowns.length === 0) {
-      return (
-        <Card className="shadow-sm border-dashed">
-          <CardContent className="pt-6 text-center text-muted-foreground">
-            You have no countdowns set. Click "Add Countdown" to create one.
-          </CardContent>
-        </Card>
-      );
-    }
-
     const sortedCountdowns = [...countdowns].sort((a, b) => {
         const aRemaining = calculateTimeRemaining(a.date).totalSeconds;
         const bRemaining = calculateTimeRemaining(b.date).totalSeconds;
@@ -105,7 +95,6 @@ export default function CountdownFeature() {
         if (aRemaining === 0 && bRemaining === 0) return new Date(a.date).getTime() - new Date(b.date).getTime(); // Sort finished by date
         return aRemaining - bRemaining; // Sort active by remaining time
     });
-
 
     return (
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -190,9 +179,49 @@ export default function CountdownFeature() {
       {/* Render countdowns list or "Loading..." if not mounted, or "No countdowns..." if empty */}
       {!mounted ? (
         <Card className="shadow-sm border-dashed"><CardContent className="pt-6 text-center text-muted-foreground">Loading countdowns...</CardContent></Card>
+      ) : countdowns.length === 0 ? (
+        <Card className="shadow-sm border-dashed">
+          <CardContent className="pt-6 text-center text-muted-foreground">
+            You have no countdowns set. Click "Add Countdown" to create one.
+          </CardContent>
+        </Card>
       ) : (
         renderCountdownList()
       )}
+
+      <Card className="shadow-lg mt-8">
+        <CardHeader>
+          <CardTitle className="text-xl">⏳ Countdown Timer – Track Events & Milestones with TimeVerse</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4 text-sm">
+          <p>
+            Looking forward to a big day? Whether it’s your birthday, a wedding, vacation, baby’s arrival, or an exam, TimeVerse helps you stay excited and organized with our easy-to-use event countdown timer. Create personalized countdowns to keep track of every special moment in your life.
+          </p>
+          <p>Our online countdown tool is perfect for:</p>
+          <ul className="list-disc list-inside pl-4 space-y-1">
+            <li>🎂 Birthday countdowns</li>
+            <li>💍 Wedding countdowns</li>
+            <li>🧳 Travel countdowns</li>
+            <li>🎓 Graduation or exam countdowns</li>
+            <li>🍼 Baby due date tracker</li>
+            <li>🏆 Personal goals & fitness challenge milestones</li>
+          </ul>
+          <p>
+            Each countdown is fully customizable. You can add event names, choose icons and colors, and set reminder notifications. Whether you're on your phone, tablet, or desktop, TimeVerse keeps your important dates just a tap away.
+          </p>
+          <p>With TimeVerse, you can:</p>
+          <ul className="list-disc list-inside pl-4 space-y-1">
+            <li>Add unlimited countdown events</li>
+            <li>Get accurate time tracking down to the second</li>
+            <li>Set reminders so you never miss a thing</li>
+            <li>Share your countdowns with friends or on social media</li>
+            <li>Access everything through our fast, user-friendly PWA app</li>
+          </ul>
+          <p>
+            Start counting down to life’s most exciting moments with TimeVerse — your personal event timer, anywhere, anytime.
+          </p>
+        </CardContent>
+      </Card>
     </div>
   );
 }
