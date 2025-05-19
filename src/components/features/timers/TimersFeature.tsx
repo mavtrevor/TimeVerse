@@ -259,6 +259,21 @@ export default function TimersFeature() {
   );
 
 
+  const renderTimersContainer = () => {
+    if (!mounted) {
+      return <p className="text-center text-muted-foreground">Loading timers...</p>;
+    }
+    if (timers.length === 0) {
+      return (
+        <p className="text-center text-muted-foreground">
+          You have no timers set. Click "Add Timer" or a shortcut to create one.
+        </p>
+      );
+    }
+    return renderTimersList();
+  };
+
+
   return (
     <div className="space-y-6 p-4 md:p-6">
       <div className="flex flex-col items-center justify-center text-center py-4">
@@ -286,20 +301,12 @@ export default function TimersFeature() {
         onSave={handleSaveTimer}
         timer={editingTimer}
       />
-
+      
       <Card className="shadow-lg mt-0">
-          <CardContent className="pt-6">
-            {!mounted ? (
-              <p className="text-center text-muted-foreground">Loading timers...</p>
-            ) : timers.length === 0 ? (
-              <p className="text-center text-muted-foreground">
-                You have no timers set. Click "Add Timer" or a shortcut to create one.
-              </p>
-            ) : (
-              renderTimersList()
-            )}
-          </CardContent>
-        </Card>
+        <CardContent className="pt-6">
+          {renderTimersContainer()}
+        </CardContent>
+      </Card>
 
 
       <Card className="shadow-md">
@@ -327,46 +334,11 @@ export default function TimersFeature() {
         </CardHeader>
         <CardContent className="space-y-4 text-sm">
           <p>
-            Need a countdown for studying, cooking, or productivity? Use our online timer with no login or download required.
+            TimeVerse Online Timer is a simple, free countdown tool perfect for tasks like cooking, studying, or staying focused—no downloads or sign-ups needed. Just set your desired time, add an optional label, and start the timer. When time’s up, you'll hear a sound and see a notification.
           </p>
-
-          <div className="space-y-2">
-            <h3 className="font-semibold text-md">✅ How to Use the Online Timer</h3>
-            <ul className="list-disc list-inside pl-4 space-y-1">
-              <li>Enter your countdown duration (in minutes and seconds).</li>
-              <li>Add an optional label or title (e.g., “Egg Timer”).</li>
-              <li>Click Start Timer.</li>
-              <li>When the timer ends, a sound will play and a message will display.</li>
-            </ul>
-          </div>
-
-          <div className="space-y-2">
-            <h3 className="font-semibold text-md">⏱ Features</h3>
-            <ul className="list-disc list-inside pl-4 space-y-1">
-              <li>Clean, intuitive interface</li>
-              <li>Optional countdown label</li>
-              <li>Works in background tabs</li>
-              <li>Built-in alarm sounds</li>
-              <li>Responsive on all devices</li>
-              <li>Timer auto-pauses if the tab is refreshed or closed</li>
-            </ul>
-          </div>
-
-          <div className="space-y-2">
-            <h3 className="font-semibold text-md">❓FAQs</h3>
-            <div>
-              <p className="font-medium">Can I run multiple timers?</p>
-              <p className="pl-4">Yes—open multiple tabs and set a different timer in each.</p>
-            </div>
-            <div>
-              <p className="font-medium">What happens when the time is up?</p>
-              <p className="pl-4">A sound plays and a message shows on screen.</p>
-            </div>
-            <div>
-              <p className="font-medium">Does the timer work offline?</p>
-              <p className="pl-4">Yes, if the page is already loaded.</p>
-            </div>
-          </div>
+          <p>
+            The timer works seamlessly in background tabs, supports multiple timers via separate tabs, and is fully responsive across devices. Once loaded, it even functions offline, making it a reliable productivity companion wherever you are.
+          </p>
         </CardContent>
       </Card>
 
