@@ -33,8 +33,9 @@ type SidebarContextType = {
   setOpen: (open: boolean) => void
   openMobile: boolean
   setOpenMobile: (open: boolean | ((prev: boolean) => boolean)) => void;
-  isMobile: boolean | undefined; // Can be undefined initially
-  toggleSidebar: () => void
+  isMobile: boolean;
+  toggleSidebar: () => void;
+  clientReady: boolean;
 }
 
 const SidebarContext = React.createContext<SidebarContextType | null>(null)
@@ -68,15 +69,15 @@ const SidebarProvider = React.forwardRef<
     },
     ref
   ) => {
-    const isMobileHookValue = useIsMobile() // This is false initially, then true/false
+    const isMobileHookValue = useIsMobile()
     const [openMobile, setOpenMobile] = React.useState(false)
-    const [clientMounted, setClientMounted] = React.useState(false);
+    const [clientReady, setClientReady] = React.useState(false);
 
     React.useEffect(() => {
-      setClientMounted(true);
+      setClientReady(true);
     }, []);
 
-    const isMobile = clientMounted ? isMobileHookValue : false; // Use hook value only after mount
+    const isMobile = clientReady ? isMobileHookValue : false;
 
 
     const [_open, _setOpen] = React.useState(() => {
@@ -107,7 +108,7 @@ const SidebarProvider = React.forwardRef<
     )
 
     const toggleSidebar = React.useCallback(() => {
-      if (isMobile) { // Use the client-mounted isMobile state
+      if (isMobile) {
         setOpenMobile((currentOpen) => !currentOpen);
       } else {
         setOpen((currentOpen) => !currentOpen);
@@ -136,12 +137,13 @@ const SidebarProvider = React.forwardRef<
         state,
         open,
         setOpen,
-        isMobile: clientMounted ? isMobile : false, // Provide definitive boolean after mount
+        isMobile,
         openMobile,
         setOpenMobile,
         toggleSidebar,
+        clientReady,
       }),
-      [state, open, setOpen, clientMounted, isMobile, openMobile, setOpenMobile, toggleSidebar]
+      [state, open, setOpen, isMobile, openMobile, setOpenMobile, toggleSidebar, clientReady]
     )
 
     return (
@@ -190,22 +192,16 @@ const Sidebar = React.forwardRef<
     },
     ref
   ) => {
-    const { isMobile, state, openMobile, setOpenMobile } = useSidebar()
-    const [clientReady, setClientReady] = React.useState(false);
-
-    React.useEffect(() => {
-      setClientReady(true);
-    }, []);
+    const { isMobile, state, openMobile, setOpenMobile, clientReady } = useSidebar()
 
     if (!clientReady) {
       // Render desktop structure (or a placeholder) for SSR and initial client render
-      // This matches SSR because useSidebar's isMobile is false initially
-      if (collapsible === "none") { // Non-collapsible desktop only
+      if (collapsible === "none") { 
          return (
           <div
             className={cn(
               "flex h-full w-[--sidebar-width] flex-col bg-sidebar text-sidebar-foreground",
-              "hidden md:flex", // Ensure it's hidden on mobile initially
+              "hidden md:flex", 
               className
             )}
             ref={ref}
@@ -215,12 +211,11 @@ const Sidebar = React.forwardRef<
           </div>
         )
       }
-      // For collapsible desktop, render its structure
       return (
          <div
           ref={ref}
-          className="group peer hidden md:block text-sidebar-foreground" // Initially hidden on mobile
-          data-state={state} // Use state for initial desktop render based on cookie/default
+          className="group peer hidden md:block text-sidebar-foreground" 
+          data-state={state} 
           data-collapsible={state === "collapsed" ? collapsible : ""}
           data-variant={variant}
           data-side={side}
@@ -238,7 +233,7 @@ const Sidebar = React.forwardRef<
           />
           <div
             className={cn(
-              "duration-200 fixed inset-y-0 z-10 flex h-svh transition-[left,right,width] ease-linear", // md:flex removed, handled by !clientReady
+              "duration-200 fixed inset-y-0 z-10 flex h-svh transition-[left,right,width] ease-linear", 
                state === "expanded" ? "w-[--sidebar-width]" :
                (collapsible === "offcanvas" ? (side === "left" ? "left-[calc(var(--sidebar-width)*-1)] w-[--sidebar-width]" : "right-[calc(var(--sidebar-width)*-1)] w-[--sidebar-width]") :
                (collapsible === "icon" ?
@@ -266,7 +261,7 @@ const Sidebar = React.forwardRef<
       );
     }
 
-    if (isMobile) { // This isMobile is now the true client-side value
+    if (isMobile) { 
       return (
         <Sheet open={openMobile} onOpenChange={setOpenMobile}>
           <SheetContent
@@ -280,20 +275,19 @@ const Sidebar = React.forwardRef<
             }
             side={side}
           >
-             <SheetTitle className="sr-only">Main Menu</SheetTitle>
+            <SheetTitle className="sr-only">Main Menu</SheetTitle>
             <div className="flex h-full w-full flex-col">{children}</div>
           </SheetContent>
         </Sheet>
       )
     }
 
-    // Desktop collapsible logic (rendered after clientReady is true)
     if (collapsible === "none") {
       return (
         <div
           className={cn(
             "flex h-full w-[--sidebar-width] flex-col bg-sidebar text-sidebar-foreground",
-             "md:flex", // Now explicitly shown on md and up
+             "md:flex", 
             className
           )}
           ref={ref}
@@ -307,7 +301,7 @@ const Sidebar = React.forwardRef<
     return (
       <div
         ref={ref}
-        className="group peer md:block text-sidebar-foreground" // md:block added here
+        className="group peer md:block text-sidebar-foreground" 
         data-state={state}
         data-collapsible={state === "collapsed" ? collapsible : ""}
         data-variant={variant}
@@ -326,7 +320,7 @@ const Sidebar = React.forwardRef<
         />
         <div
           className={cn(
-            "duration-200 fixed inset-y-0 z-10 flex h-svh transition-[left,right,width] ease-linear", // md:flex removed, handled by clientReady logic
+            "duration-200 fixed inset-y-0 z-10 flex h-svh transition-[left,right,width] ease-linear", 
             state === "expanded" ? "w-[--sidebar-width]" :
             (collapsible === "offcanvas" ? (side === "left" ? "left-[calc(var(--sidebar-width)*-1)] w-[--sidebar-width]" : "right-[calc(var(--sidebar-width)*-1)] w-[--sidebar-width]") :
             (collapsible === "icon" ?
@@ -361,14 +355,9 @@ const SidebarTrigger = React.forwardRef<
   React.ElementRef<typeof Button>,
   React.ComponentProps<typeof Button>
 >(({ className, onClick, ...props }, ref) => {
-  const { toggleSidebar, isMobile } = useSidebar()
-  const [clientReady, setClientReady] = React.useState(false);
+  const { toggleSidebar, isMobile, clientReady } = useSidebar()
 
-  React.useEffect(() => {
-    setClientReady(true);
-  }, []);
-
-  if (!clientReady || isMobile) return null; // Render nothing until client ready or if mobile
+  if (!clientReady || isMobile) return null;
 
   return (
     <Button
@@ -394,9 +383,7 @@ const SidebarRail = React.forwardRef<
   HTMLButtonElement,
   React.ComponentProps<"button">
 >(({ className, ...props }, ref) => {
-  const { toggleSidebar, state, isMobile } = useSidebar()
-  const [clientReady, setClientReady] = React.useState(false);
-  React.useEffect(() => { setClientReady(true); }, []);
+  const { toggleSidebar, state, isMobile, clientReady } = useSidebar()
 
   if (!clientReady || isMobile) return null;
 
@@ -665,23 +652,29 @@ const SidebarMenuButton = React.forwardRef<
       tooltip,
       className,
       children,
+      onClick: originalOnClick, // Capture original onClick
       ...props
     },
     ref
   ) => {
     const Comp = asChild ? Slot : "button"
-    const { isMobile, state } = useSidebar()
-    const [clientReady, setClientReady] = React.useState(false);
-    React.useEffect(() => { setClientReady(true); }, []);
+    const { isMobile, state, clientReady, setOpenMobile } = useSidebar()
 
-    // Moved useMemo to be unconditional
     const tooltipProps = React.useMemo(() => {
-        if (!tooltip) { // Ensure tooltipProps is always an object
+        if (!tooltip) {
             return {};
         }
         return typeof tooltip === "string" ? { children: tooltip } : tooltip;
     }, [tooltip]);
 
+    const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+      if (originalOnClick) {
+        originalOnClick(event);
+      }
+      if (clientReady && isMobile) {
+        setOpenMobile(false);
+      }
+    };
 
     const buttonContent = (
       <Comp
@@ -690,14 +683,14 @@ const SidebarMenuButton = React.forwardRef<
         data-size={size}
         data-active={isActive}
         className={cn(sidebarMenuButtonVariants({ variant, size }), className)}
+        onClick={handleClick} // Apply combined onClick handler
         {...props}
       >
         {children}
       </Comp>
     )
 
-    // Conditional rendering of the Tooltip wrapper
-    if (!tooltip || !clientReady) { // Don't render tooltip if not clientReady or no tooltip prop
+    if (!tooltip || !clientReady) { 
       return buttonContent
     }
 
@@ -710,7 +703,7 @@ const SidebarMenuButton = React.forwardRef<
             <TooltipContent
               side="right"
               align="center"
-              {...tooltipProps} // Safe to spread, tooltipProps is always an object
+              {...tooltipProps} 
             />
         )}
       </Tooltip>
@@ -888,3 +881,6 @@ export {
   SidebarTrigger,
 
 }
+
+
+    
