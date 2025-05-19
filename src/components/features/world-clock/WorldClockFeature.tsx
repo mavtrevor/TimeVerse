@@ -130,16 +130,7 @@ export default function WorldClockFeature() {
     );
   };
 
-  const renderUserAddedCities = () => {
-    if (!mounted) {
-      return (
-        <Card className="shadow-sm border-dashed">
-          <CardContent className="pt-6 text-center text-muted-foreground">
-            Loading custom clocks...
-          </CardContent>
-        </Card>
-      );
-    }
+  const renderUserAddedCitiesList = () => {
     if (userAddedCities.length === 0) {
       return (
         <Card className="shadow-sm border-dashed">
@@ -159,7 +150,7 @@ export default function WorldClockFeature() {
 
   return (
     <div className="space-y-8 p-4 md:p-6">
-      {localTimezone && clientNow && (
+      {mounted && localTimezone && clientNow && (
         <Card className="shadow-xl border-primary ring-1 ring-primary/50">
           <CardHeader>
             <CardTitle className="text-2xl md:text-3xl">
@@ -167,7 +158,7 @@ export default function WorldClockFeature() {
                     {localCityName} (Your Local Time)
                 </Link>
             </CardTitle>
-            <CardDescription>{clientNow ? getTimezoneOffset(localTimezone, clientNow) : 'N/A'}</CardDescription>
+            <CardDescription>{getTimezoneOffset(localTimezone, clientNow)}</CardDescription>
           </CardHeader>
           <CardContent className="text-center">
             <div className="font-mono text-5xl md:text-7xl font-bold text-primary select-none">
@@ -221,7 +212,12 @@ export default function WorldClockFeature() {
             </DialogContent>
           </Dialog>
         </div>
-        {renderUserAddedCities()}
+        {/* Render custom cities list or "Loading..." if not mounted, or "No custom clocks..." if empty */}
+        {!mounted ? (
+          <Card className="shadow-sm border-dashed"><CardContent className="pt-6 text-center text-muted-foreground">Loading custom clocks...</CardContent></Card>
+        ) : (
+          renderUserAddedCitiesList()
+        )}
       </div>
       
       <Card className="shadow-lg mt-8">
@@ -274,10 +270,10 @@ function AddCityForm({ onAddCity, onClose }: AddCityFormProps) {
   const [selectedCountryCode, setSelectedCountryCode] = useState<string>('');
   const [selectedTimezoneIana, setSelectedTimezoneIana] = useState<string>('');
   const [customTitle, setCustomTitle] = useState<string>('');
-  const [clientNow, setClientNow] = useState<Date | null>(null);
+  const [clientNowForOffset, setClientNowForOffset] = useState<Date | null>(null);
 
   useEffect(() => {
-    setClientNow(new Date()); // For calculating current offsets in dropdown
+    setClientNowForOffset(new Date()); // For calculating current offsets in dropdown
   }, []);
 
 
@@ -300,7 +296,7 @@ function AddCityForm({ onAddCity, onClose }: AddCityFormProps) {
     }
   };
 
-  const timezonesForSelectedCountry = selectedCountryCode && clientNow
+  const timezonesForSelectedCountry = selectedCountryCode && clientNowForOffset
     ? extendedCommonTimezones.filter(tz => tz.countryCode === selectedCountryCode)
     : [];
 
@@ -329,16 +325,16 @@ function AddCityForm({ onAddCity, onClose }: AddCityFormProps) {
         <Select 
             onValueChange={handleTimezoneChange} 
             value={selectedTimezoneIana} 
-            disabled={!selectedCountryCode || timezonesForSelectedCountry.length === 0 || !clientNow}
+            disabled={!selectedCountryCode || timezonesForSelectedCountry.length === 0 || !clientNowForOffset}
         >
           <SelectTrigger id="timezone" className="w-full mt-1">
-            <SelectValue placeholder={!clientNow ? "Loading timezones..." : (!selectedCountryCode ? "Select country first" : (timezonesForSelectedCountry.length === 0 ? "No timezones available for this country" : "Select a timezone"))} />
+            <SelectValue placeholder={!clientNowForOffset ? "Loading timezones..." : (!selectedCountryCode ? "Select country first" : (timezonesForSelectedCountry.length === 0 ? "No timezones for this country" : "Select a timezone"))} />
           </SelectTrigger>
           <SelectContent>
             <SelectGroup>
-              {clientNow && timezonesForSelectedCountry.map(tz => (
+              {clientNowForOffset && timezonesForSelectedCountry.map(tz => (
                 <SelectItem key={tz.timezone} value={tz.timezone}>
-                  {`(${getTimezoneOffset(tz.timezone, clientNow)}) ${tz.name}`}
+                  {`(${getTimezoneOffset(tz.timezone, clientNowForOffset)}) ${tz.name}`}
                 </SelectItem>
               ))}
             </SelectGroup>
@@ -371,3 +367,4 @@ function AddCityForm({ onAddCity, onClose }: AddCityFormProps) {
     </form>
   );
 }
+

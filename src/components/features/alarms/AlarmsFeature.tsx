@@ -97,6 +97,7 @@ const stopAlarmSound = (audioRef: React.MutableRefObject<HTMLAudioElement | null
         audioRef.current.pause();
     }
     audioRef.current.currentTime = 0; 
+    audioRef.current.src = ""; // Detach source to ensure it stops completely
     audioRef.current.loop = false;
   }
 };
@@ -154,17 +155,17 @@ export default function AlarmsFeature() {
 
 
   useEffect(() => {
-    setMounted(true);
-    setCurrentTime(new Date());
+    setMounted(true); // Indicates client-side mount is complete
+    setCurrentTime(new Date()); // Set initial time on mount
     const timerId = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => {
       clearInterval(timerId);
-      stopAlarmSound(audioRef);
+      stopAlarmSound(audioRef); // Ensure sound stops on component unmount
     };
   }, []);
   
   useEffect(() => {
-    if (!currentTime || !mounted) return;
+    if (!currentTime || !mounted) return; // Don't check alarms until component is mounted and time is set
 
     alarms.forEach(alarm => {
       if (alarm.isActive && ringingAlarmId !== alarm.id && !ringingAlarmModal) { 
@@ -186,8 +187,8 @@ export default function AlarmsFeature() {
             description: alarm.label || `Alarm set for ${formatTime(alarmTime, timeFormat)} is now ringing.`,
             duration: 10000, 
           });
-          setRingingAlarmId(alarm.id);
-          setRingingAlarmModal(alarm); 
+          setRingingAlarmId(alarm.id); // For card UI
+          setRingingAlarmModal(alarm); // For modal
         }
       }
     });
@@ -276,14 +277,7 @@ export default function AlarmsFeature() {
     setIsFormOpen(true);
   };
 
-  const renderAlarmsContent = () => {
-    if (!mounted) {
-      return (
-        <p className="text-center text-muted-foreground">
-          Loading alarms...
-        </p>
-      );
-    }
+  const renderAlarmsList = () => {
     if (alarms.length === 0) {
       return (
         <p className="text-center text-muted-foreground">
@@ -294,7 +288,8 @@ export default function AlarmsFeature() {
     return (
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {alarms.map(alarm => {
-            const isRingingCardUI = ringingAlarmId === alarm.id && !ringingAlarmModal; 
+            // isRingingCardUI is true if the modal is not showing and this specific alarm is the ringingAlarmId.
+            const isRingingCardUI = ringingAlarmId === alarm.id && !ringingAlarmModal;
             const isEffectivelyInactive = !alarm.isActive && !(ringingAlarmId === alarm.id || (ringingAlarmModal && ringingAlarmModal.id === alarm.id));
 
             return (
@@ -362,10 +357,10 @@ export default function AlarmsFeature() {
       {/* Digital Clock Display */}
       <div className="flex-grow flex flex-col items-center justify-center text-center py-4">
         <div className="font-mono text-7xl md:text-8xl lg:text-9xl font-bold text-primary select-none">
-          {currentTime ? formatTime(currentTime, timeFormat) : "00:00:00"}
+          {mounted && currentTime ? formatTime(currentTime, timeFormat) : "00:00:00"}
         </div>
         <div className="text-lg md:text-xl lg:text-2xl text-muted-foreground select-none mt-2">
-          {currentTime ? currentTime.toLocaleDateString(language, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) : "Loading date..."}
+          {mounted && currentTime ? currentTime.toLocaleDateString(language, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) : "Loading date..."}
         </div>
       </div>
 
@@ -400,7 +395,12 @@ export default function AlarmsFeature() {
         
         <Card className="shadow-lg mt-4">
           <CardContent className="pt-6">
-            {renderAlarmsContent()}
+            {/* Render alarms list or "Loading..." if not mounted, or "No alarms..." if empty */}
+            {!mounted ? (
+              <p className="text-center text-muted-foreground">Loading alarms...</p>
+            ) : (
+              renderAlarmsList()
+            )}
           </CardContent>
         </Card>
 
@@ -673,3 +673,4 @@ function RingingAlarmDialog({ alarm, onDismiss, timeFormat }: RingingAlarmDialog
     </Dialog>
   );
 }
+

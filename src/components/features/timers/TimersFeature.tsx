@@ -51,22 +51,21 @@ export default function TimersFeature() {
   const [editingTimer, setEditingTimer] = useState<Timer | null>(null);
   const [fullscreenTimerId, setFullscreenTimerId] = useState<string | null>(null);
   const { toast } = useToast();
-  const [elapsedTime, setElapsedTime] = useState(0);
+  const [elapsedTime, setElapsedTime] = useState<number | null>(null); // Initialize to null for hydration
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
-    const initialElapsedTime = 0; 
-    setElapsedTime(initialElapsedTime);
+    setElapsedTime(0); // Start elapsed time counter after mount
     const intervalId = setInterval(() => {
-      setElapsedTime(prevTime => prevTime + 1);
+      setElapsedTime(prevTime => (prevTime !== null ? prevTime + 1 : 0));
     }, 1000);
     return () => clearInterval(intervalId);
   }, []);
 
 
   useEffect(() => {
-    if (!mounted) return;
+    if (!mounted) return; // Don't run countdown logic until mounted
     const interval = setInterval(() => {
       setTimers(prevTimers =>
         prevTimers.map(timer => {
@@ -214,14 +213,7 @@ export default function TimersFeature() {
     return timer ? <FullscreenTimerView timer={timer} /> : null;
   }
   
-  const renderTimersContent = () => {
-    if (!mounted) {
-      return (
-        <p className="text-center text-muted-foreground">
-          Loading timers...
-        </p>
-      );
-    }
+  const renderTimersList = () => {
     if (timers.length === 0) {
       return (
         <p className="text-center text-muted-foreground">
@@ -280,7 +272,7 @@ export default function TimersFeature() {
     <div className="space-y-6 p-4 md:p-6">
       <div className="flex flex-col items-center justify-center text-center py-4">
         <div className="font-mono text-7xl md:text-8xl lg:text-9xl font-bold text-primary select-none">
-          {mounted ? formatDuration(elapsedTime) : "00:00:00"}
+          {mounted && elapsedTime !== null ? formatDuration(elapsedTime) : "00:00:00"}
         </div>
         <div className="text-lg md:text-xl lg:text-2xl text-muted-foreground select-none mt-2">
           Elapsed Time
@@ -306,7 +298,12 @@ export default function TimersFeature() {
 
       <Card className="shadow-lg mt-0">
         <CardContent className="pt-6">
-          {renderTimersContent()}
+          {/* Render timers list or "Loading..." if not mounted, or "No timers..." if empty */}
+          {!mounted ? (
+            <p className="text-center text-muted-foreground">Loading timers...</p>
+          ) : (
+            renderTimersList()
+          )}
         </CardContent>
       </Card>
 
@@ -464,3 +461,4 @@ function TimerFormDialog({ isOpen, onOpenChange, onSave, timer }: TimerFormDialo
     </Dialog>
   );
 }
+

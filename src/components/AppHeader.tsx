@@ -11,16 +11,18 @@ import { useSidebar } from '@/components/ui/sidebar';
 
 interface AppHeaderProps {
   currentFeatureName: string;
-  onNavigate: (featureKey: string) => void; // Kept for potential future use or specific header actions
+  onNavigate: (featureKey: string) => void; 
 }
 
 export default function AppHeader({ currentFeatureName, onNavigate }: AppHeaderProps) {
   const { theme, setTheme } = useSettings();
   const { toggleSidebar, isMobile } = useSidebar(); 
   const [mounted, setMounted] = useState(false);
+  const [clientReady, setClientReady] = React.useState(false);
 
   useEffect(() => {
     setMounted(true);
+    setClientReady(true);
   }, []);
 
   const toggleTheme = () => {
@@ -47,8 +49,8 @@ export default function AppHeader({ currentFeatureName, onNavigate }: AppHeaderP
 
   return (
     <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6 sm:py-4">
-      {isMobile && (
-        <Button size="icon" variant="outline" className="sm:hidden" onClick={toggleSidebar}> {/* Reverted to sm:hidden */}
+      {clientReady && isMobile && (
+        <Button size="icon" variant="outline" className="sm:hidden" onClick={toggleSidebar}> 
           <Menu className="h-5 w-5" />
           <span className="sr-only">Toggle Menu</span>
         </Button>
@@ -73,3 +75,4 @@ export default function AppHeader({ currentFeatureName, onNavigate }: AppHeaderP
     </header>
   );
 }
+

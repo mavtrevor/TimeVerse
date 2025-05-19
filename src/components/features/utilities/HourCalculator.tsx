@@ -12,14 +12,26 @@ import { useSettings } from '@/hooks/useSettings';
 
 export default function HourCalculator() {
   const { timeFormat } = useSettings();
-  const [initialTime, setInitialTime] = useState(() => formatTimeForInput(new Date()));
+  const [initialTime, setInitialTime] = useState(''); // Initialize as empty for SSR
   const [hours, setHours] = useState(1);
   const [minutes, setMinutes] = useState(0);
   const [operation, setOperation] = useState<'add' | 'subtract'>('add');
   const [resultTime, setResultTime] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
+    setInitialTime(formatTimeForInput(new Date())); // Set after mount
+  }, []);
+
+  useEffect(() => {
+    if (!mounted) return; // Don't calculate until mounted and initialTime is set
+
     try {
+      if (!initialTime) { // Handle case where initialTime might still be empty if effect runs too fast
+        setResultTime(null);
+        return;
+      }
       const [h, m] = initialTime.split(':').map(Number);
       if (isNaN(h) || isNaN(m)) {
         setResultTime('Invalid initial time');
@@ -34,7 +46,7 @@ export default function HourCalculator() {
       setResultTime('Error in calculation');
       console.error("Error in hour calculation:", error);
     }
-  }, [initialTime, hours, minutes, operation, timeFormat]);
+  }, [initialTime, hours, minutes, operation, timeFormat, mounted]);
 
   return (
     <Card className="shadow-md w-full">
@@ -50,6 +62,7 @@ export default function HourCalculator() {
             type="time"
             value={initialTime}
             onChange={e => setInitialTime(e.target.value)}
+            disabled={!mounted} // Disable input until mounted
           />
         </div>
         
@@ -96,14 +109,20 @@ export default function HourCalculator() {
           </RadioGroup>
         </div>
         
-        {resultTime && (
+        {mounted && resultTime && (
           <div className="pt-4 text-center">
             <p className="text-lg font-semibold">
               Result: <span className="text-primary">{resultTime}</span>
             </p>
           </div>
         )}
+        {!mounted && (
+            <div className="pt-4 text-center">
+                <p className="text-lg text-muted-foreground">Calculating...</p>
+            </div>
+        )}
       </CardContent>
     </Card>
   );
 }
+
