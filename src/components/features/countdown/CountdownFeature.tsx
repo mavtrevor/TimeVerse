@@ -9,10 +9,9 @@ import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/componen
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose } from '@/components/ui/dialog';
-import { PlusCircle, Trash2, Edit3, CalendarClock, Sparkles } from 'lucide-react';
+import { PlusCircle, Trash2, Edit3, CalendarClock } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { format, addYears, addDays, set, getYear, isPast } from 'date-fns';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { format } from 'date-fns';
 
 const INITIAL_COUNTDOWNS: EventCountdown[] = [];
 
@@ -41,80 +40,6 @@ function calculateTimeRemaining(targetDate: string): TimeRemaining {
 
   return { days, hours, minutes, seconds, totalSeconds };
 }
-
-// Date calculation helpers
-const getNextOccurrence = (month: number, day: number): Date => {
-  const now = new Date();
-  let nextDate = set(now, { month, date: day, hours: 9, minutes: 0, seconds: 0, milliseconds: 0 });
-  if (isPast(nextDate)) {
-    nextDate = addYears(nextDate, 1);
-  }
-  return nextDate;
-};
-
-const getDateFromNow = ({ days = 0, years = 0 }: { days?: number; years?: number }): Date => {
-  let date = new Date();
-  if (days) date = addDays(date, days);
-  if (years) date = addYears(date, years);
-  return set(date, { hours: 9, minutes: 0, seconds: 0, milliseconds: 0 });
-};
-
-
-interface Shortcut {
-  label: string;
-  defaultEmoji: string;
-  defaultName: string;
-  calculateDate: () => Date;
-}
-
-interface ShortcutCategory {
-  name: string;
-  icon?: React.ElementType;
-  shortcuts: Shortcut[];
-}
-
-const eventShortcuts: ShortcutCategory[] = [
-  {
-    name: "🎉 Life Events",
-    shortcuts: [
-      { label: "Birthday", defaultEmoji: "🎂", defaultName: "Birthday Countdown", calculateDate: () => getDateFromNow({ years: 1 }) },
-      { label: "Wedding Day", defaultEmoji: "💍", defaultName: "Wedding Countdown", calculateDate: () => getDateFromNow({ years: 1 }) },
-      { label: "Baby Due Date", defaultEmoji: "👶", defaultName: "Baby Due Date", calculateDate: () => getDateFromNow({ days: 270 }) }, // Approx 9 months
-      { label: "Retirement", defaultEmoji: "📦", defaultName: "Retirement Countdown", calculateDate: () => getDateFromNow({ years: 5 }) },
-    ],
-  },
-  {
-    name: "📆 Annual Events",
-    shortcuts: [
-      { label: "Christmas", defaultEmoji: "🎄", defaultName: "Christmas Countdown", calculateDate: () => getNextOccurrence(11, 25) }, // Month is 0-indexed for December
-      { label: "New Year's Eve", defaultEmoji: "🌍", defaultName: "New Year's Eve Countdown", calculateDate: () => getNextOccurrence(11, 31) },
-      { label: "Halloween", defaultEmoji: "🎃", defaultName: "Halloween Countdown", calculateDate: () => getNextOccurrence(9, 31) }, // October
-    ],
-  },
-  {
-    name: "❤️ Relationship Events",
-    shortcuts: [
-      { label: "Anniversary", defaultEmoji: "💑", defaultName: "Anniversary Countdown", calculateDate: () => getDateFromNow({ years: 1 }) },
-      { label: "Date Night", defaultEmoji: "📲", defaultName: "Date Night Countdown", calculateDate: () => getDateFromNow({ days: 7 }) },
-    ],
-  },
-  {
-    name: "💼 Career & Productivity",
-    shortcuts: [
-      { label: "Project Deadline", defaultEmoji: "📅", defaultName: "Project Deadline", calculateDate: () => getDateFromNow({ days: 30 }) },
-      { label: "Exam Day", defaultEmoji: "📝", defaultName: "Exam Day Countdown", calculateDate: () => getDateFromNow({ days: 14 }) },
-      { label: "Graduation Day", defaultEmoji: "🎓", defaultName: "Graduation Countdown", calculateDate: () => getDateFromNow({ days: 180 }) },
-    ],
-  },
-  {
-    name: "✈️ Travel & Adventure",
-    shortcuts: [
-      { label: "Next Trip", defaultEmoji: "🌍", defaultName: "Next Trip Countdown", calculateDate: () => getDateFromNow({ days: 60 }) },
-      { label: "Vacation Start", defaultEmoji: "🧳", defaultName: "Vacation Countdown", calculateDate: () => getDateFromNow({ days: 45 }) },
-    ],
-  },
-];
-
 
 export default function CountdownFeature() {
   const [countdowns, setCountdowns] = useLocalStorage<EventCountdown[]>('timeverse-countdowns', INITIAL_COUNTDOWNS);
@@ -160,25 +85,13 @@ export default function CountdownFeature() {
     setEditingCountdown(null);
     setIsFormOpen(true);
   };
-
-  const handleAddFromShortcut = (shortcut: Shortcut) => {
-    const targetDate = shortcut.calculateDate();
-    const newCountdown: EventCountdown = {
-      id: Date.now().toString(),
-      name: shortcut.defaultName,
-      date: targetDate.toISOString(),
-      emoji: shortcut.defaultEmoji,
-    };
-    setCountdowns(prev => [...prev, newCountdown]);
-    toast({ title: "Countdown Added", description: `"${shortcut.defaultName}" added.` });
-  };
-
+  
   const renderCountdownList = () => {
-    if (countdowns.length === 0) {
+     if (countdowns.length === 0) {
       return (
         <Card className="shadow-sm border-dashed">
           <CardContent className="pt-6 text-center text-muted-foreground">
-            You have no active countdowns. Click "Add Countdown" or a shortcut to create one.
+            You have no countdowns set. Click "Add Countdown" to create one.
           </CardContent>
         </Card>
       );
@@ -187,11 +100,12 @@ export default function CountdownFeature() {
     const sortedCountdowns = [...countdowns].sort((a, b) => {
         const aRemaining = calculateTimeRemaining(a.date).totalSeconds;
         const bRemaining = calculateTimeRemaining(b.date).totalSeconds;
-        if (aRemaining === 0 && bRemaining > 0) return 1;
+        if (aRemaining === 0 && bRemaining > 0) return 1; // Finished items to the end
         if (bRemaining === 0 && aRemaining > 0) return -1;
-        if (aRemaining === 0 && bRemaining === 0) return new Date(a.date).getTime() - new Date(b.date).getTime();
-        return aRemaining - bRemaining;
+        if (aRemaining === 0 && bRemaining === 0) return new Date(a.date).getTime() - new Date(b.date).getTime(); // Sort finished by date
+        return aRemaining - bRemaining; // Sort active by remaining time
     });
+
 
     return (
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -215,7 +129,7 @@ export default function CountdownFeature() {
                    )}
                 </div>
                 <p className="text-sm text-muted-foreground pt-1">
-                  {format(targetDate, "PPPPp")}
+                  {format(targetDate, "PPPPp")} {/* e.g., July 10, 2024 at 12:00 PM */}
                 </p>
               </CardHeader>
               <CardContent className="flex-grow flex flex-col items-center justify-center text-center py-6">
@@ -253,54 +167,14 @@ export default function CountdownFeature() {
       </div>
     );
   };
-  
-  const renderEventShortcuts = () => (
-    <Card className="shadow-lg">
-      <CardHeader>
-        <CardTitle className="text-xl flex items-center">
-          <Sparkles className="mr-2 h-5 w-5 text-accent" />
-          Quick Add Event Shortcuts
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <Accordion type="multiple" className="w-full">
-          {eventShortcuts.map((category) => (
-            <AccordionItem value={category.name} key={category.name}>
-              <AccordionTrigger className="text-md font-semibold">
-                {category.icon && <category.icon className="mr-2 h-5 w-5" />}
-                {category.name}
-              </AccordionTrigger>
-              <AccordionContent>
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 pt-2">
-                  {category.shortcuts.map((shortcut) => (
-                    <Button
-                      key={shortcut.label}
-                      variant="outline"
-                      className="flex flex-col h-auto py-3 items-center justify-center text-center"
-                      onClick={() => handleAddFromShortcut(shortcut)}
-                    >
-                      <span className="text-2xl mb-1">{shortcut.defaultEmoji}</span>
-                      <span className="text-xs">{shortcut.label}</span>
-                    </Button>
-                  ))}
-                </div>
-              </AccordionContent>
-            </AccordionItem>
-          ))}
-        </Accordion>
-        <Button onClick={openAddForm} className="w-full mt-6">
-          <PlusCircle className="mr-2 h-4 w-4" /> Create Custom Countdown
-        </Button>
-      </CardContent>
-    </Card>
-  );
-
 
   return (
     <div className="p-4 md:p-6 space-y-8">
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold flex items-center"><CalendarClock className="mr-3 h-8 w-8 text-primary" /> Event Countdowns</h1>
-        {/* Add Countdown button moved to shortcuts section for custom creation */}
+        <Button onClick={openAddForm}>
+          <PlusCircle className="mr-2 h-4 w-4" /> Add Countdown
+        </Button>
       </div>
 
       <CountdownFormDialog
@@ -313,16 +187,12 @@ export default function CountdownFeature() {
         countdown={editingCountdown}
       />
       
-      {renderEventShortcuts()}
-
-      <div className="mt-8">
-        <h2 className="text-2xl font-semibold mb-4">Your Active Countdowns</h2>
-        {!mounted ? (
-          <Card className="shadow-sm border-dashed"><CardContent className="pt-6 text-center text-muted-foreground">Loading countdowns...</CardContent></Card>
-        ) : (
-          renderCountdownList()
-        )}
-      </div>
+      {/* Render countdowns list or "Loading..." if not mounted, or "No countdowns..." if empty */}
+      {!mounted ? (
+        <Card className="shadow-sm border-dashed"><CardContent className="pt-6 text-center text-muted-foreground">Loading countdowns...</CardContent></Card>
+      ) : (
+        renderCountdownList()
+      )}
     </div>
   );
 }
@@ -344,16 +214,19 @@ function CountdownFormDialog({ isOpen, onOpenChange, onSave, countdown }: Countd
     if (isOpen) {
       if (countdown) {
         setName(countdown.name);
+        // Format date for datetime-local input. It expects 'yyyy-MM-ddTHH:mm'
         const localDate = new Date(countdown.date);
-        const tzOffset = localDate.getTimezoneOffset() * 60000;
+        // Adjust for timezone offset to display correctly in user's local time in the input
+        const tzOffset = localDate.getTimezoneOffset() * 60000; //offset in milliseconds
         const localISOTime = (new Date(localDate.getTime() - tzOffset)).toISOString().slice(0,16);
         setDateTime(localISOTime);
         setEmoji(countdown.emoji || '');
       } else {
+        // Default to tomorrow at 9 AM for new countdowns
         setName('');
         const tomorrow = new Date();
         tomorrow.setDate(tomorrow.getDate() + 1);
-        tomorrow.setHours(9,0,0,0);
+        tomorrow.setHours(9,0,0,0); // Set to 9:00 AM
         const tzOffset = tomorrow.getTimezoneOffset() * 60000;
         const localISOTime = (new Date(tomorrow.getTime() - tzOffset)).toISOString().slice(0,16);
         setDateTime(localISOTime);
@@ -372,14 +245,16 @@ function CountdownFormDialog({ isOpen, onOpenChange, onSave, countdown }: Countd
         toast({ title: "Date Required", description: "Please select a date and time for the countdown.", variant: "destructive"});
         return;
     }
-    const targetDate = new Date(dateTime);
+    
+    const targetDate = new Date(dateTime); // This will be in user's local timezone
     if (targetDate.getTime() <= new Date().getTime()) {
         toast({ title: "Invalid Date", description: "Countdown date must be in the future.", variant: "destructive"});
         return;
     }
 
+    // Save date as ISO string (UTC)
     onSave({ name, date: targetDate.toISOString(), emoji });
-    onOpenChange(false);
+    onOpenChange(false); // Close dialog
   };
 
   return (
@@ -413,6 +288,5 @@ function CountdownFormDialog({ isOpen, onOpenChange, onSave, countdown }: Countd
     </Dialog>
   );
 }
-
 
     
