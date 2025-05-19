@@ -44,7 +44,7 @@ export interface AppSettings {
   language: AppLanguage;
 }
 
-export type FeatureKey = "alarms" | "timers" | "stopwatch" | "worldclock" | "utilities" | "calendar" | "settings";
+export type FeatureKey = "alarms" | "timers" | "stopwatch" | "worldclock" | "utilities" | "calendar" | "settings" | "countdown";
 
 export interface NavItem {
   id: FeatureKey;
@@ -60,4 +60,11 @@ export interface Holiday {
   type: 'public' | 'observance' | 'other';
   countryCode: string;
   description?: string;
+}
+
+export interface EventCountdown {
+  id: string;
+  name: string;
+  date: string; // ISO string for date and time
+  emoji?: string;
 }

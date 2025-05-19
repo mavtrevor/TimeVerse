@@ -119,7 +119,7 @@ export default function AppLayout({ children }: { children?: React.ReactNode }) 
           <ActiveComponent />
         </main>
         <footer className="border-t p-4 text-center text-xs text-muted-foreground">
-          <div className="flex justify-center items-center gap-x-4 gap-y-2 flex-wrap">
+           <div className="flex justify-center items-center gap-x-4 gap-y-2 flex-wrap">
             <Link href="/contact" className="hover:text-foreground">Contacts</Link>
             <span className="hidden sm:inline">|</span>
             <Link href="/terms" className="hover:text-foreground">Terms of use</Link>
@@ -133,4 +133,3 @@ export default function AppLayout({ children }: { children?: React.ReactNode }) 
     </SidebarProvider>
   );
 }
-

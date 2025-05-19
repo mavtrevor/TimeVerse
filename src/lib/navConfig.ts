@@ -1,6 +1,6 @@
 
 import type { NavItem, FeatureKey } from '@/types';
-import { AlarmClock, TimerIcon, Watch, Globe, SlidersHorizontal, CalendarDays, Settings as SettingsIcon } from 'lucide-react';
+import { AlarmClock, TimerIcon, Watch, Globe, SlidersHorizontal, CalendarDays, Settings as SettingsIcon, CalendarClock } from 'lucide-react';
 
 // Import feature components
 import AlarmsFeature from '@/components/features/alarms/AlarmsFeature';
@@ -10,6 +10,7 @@ import WorldClockFeature from '@/components/features/world-clock/WorldClockFeatu
 import UtilitiesFeature from '@/components/features/utilities/UtilitiesFeature';
 import CalendarFeature from '@/components/features/calendar/CalendarFeature';
 import SettingsFeature from '@/components/features/settings/SettingsFeature';
+import CountdownFeature from '@/components/features/countdown/CountdownFeature';
 
 
 export const navItemsList: NavItem[] = [
@@ -17,7 +18,8 @@ export const navItemsList: NavItem[] = [
   { id: 'timers', label: 'Timers', icon: TimerIcon, href: '/timers', component: TimersFeature },
   { id: 'stopwatch', label: 'Stopwatch', icon: Watch, href: '/stopwatch', component: StopwatchFeature },
   { id: 'worldclock', label: 'World Clock', icon: Globe, href: '/world-clock', component: WorldClockFeature },
-  { id: 'utilities', label: 'Utilities', icon: SlidersHorizontal, href: '/utilities', component: UtilitiesFeature },
+  { id: 'countdown', label: 'Countdown', icon: CalendarClock, href: '/countdown', component: CountdownFeature },
+  { id: "utilities", label: "Utilities", icon: SlidersHorizontal, href: "/utilities", component: UtilitiesFeature },
   { id: 'calendar', label: 'Calendar', icon: CalendarDays, href: '/calendar', component: CalendarFeature },
 ];
 
