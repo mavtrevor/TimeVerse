@@ -100,7 +100,7 @@ export default function CountdownFeature() {
     });
 
     return (
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {sortedCountdowns.map(countdown => {
           const remaining = calculateTimeRemaining(countdown.date);
           const isFinished = remaining.totalSeconds <= 0;
@@ -110,8 +110,8 @@ export default function CountdownFeature() {
             <Card key={countdown.id} className={`shadow-xl flex flex-col ${isFinished ? 'opacity-70 bg-muted/50' : 'ring-1 ring-primary/30'}`}>
               <CardHeader className="pb-3">
                 <div className="flex justify-between items-start">
-                  <CardTitle className="text-xl sm:text-2xl font-bold flex items-center">
-                    {countdown.emoji && <span className="text-2xl sm:text-3xl mr-2 sm:mr-3">{countdown.emoji}</span>}
+                  <CardTitle className="text-lg sm:text-xl font-bold flex items-center">
+                    {countdown.emoji && <span className="text-xl sm:text-2xl mr-2 sm:mr-3">{countdown.emoji}</span>}
                     <span className="truncate" title={countdown.name}>{countdown.name}</span>
                   </CardTitle>
                    {!isFinished && (
@@ -124,25 +124,25 @@ export default function CountdownFeature() {
                   {format(targetDate, "PPPPp")}
                 </p>
               </CardHeader>
-              <CardContent className="flex-grow flex flex-col items-center justify-center text-center py-4 sm:py-6">
+              <CardContent className="flex-grow flex flex-col items-center justify-center text-center py-3 sm:py-4">
                 {isFinished ? (
-                  <div className="text-destructive text-xl sm:text-2xl md:text-3xl font-bold">EVENT REACHED!</div>
+                  <div className="text-destructive text-lg sm:text-xl md:text-2xl font-bold">EVENT REACHED!</div>
                 ) : (
                   <div className="grid grid-cols-4 gap-x-1 sm:gap-x-2 text-center w-full max-w-xs mx-auto">
                     <div>
-                      <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-primary">{String(remaining.days).padStart(2, '0')}</div>
+                      <div className="text-xl sm:text-2xl md:text-3xl font-bold text-primary">{String(remaining.days).padStart(2, '0')}</div>
                       <div className="text-xs text-muted-foreground">DAYS</div>
                     </div>
                     <div>
-                      <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-primary">{String(remaining.hours).padStart(2, '0')}</div>
+                      <div className="text-xl sm:text-2xl md:text-3xl font-bold text-primary">{String(remaining.hours).padStart(2, '0')}</div>
                       <div className="text-xs text-muted-foreground">HOURS</div>
                     </div>
                     <div>
-                      <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-primary">{String(remaining.minutes).padStart(2, '0')}</div>
+                      <div className="text-xl sm:text-2xl md:text-3xl font-bold text-primary">{String(remaining.minutes).padStart(2, '0')}</div>
                       <div className="text-xs text-muted-foreground">MINS</div>
                     </div>
                     <div>
-                      <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-primary">{String(remaining.seconds).padStart(2, '0')}</div>
+                      <div className="text-xl sm:text-2xl md:text-3xl font-bold text-primary">{String(remaining.seconds).padStart(2, '0')}</div>
                       <div className="text-xs text-muted-foreground">SECS</div>
                     </div>
                   </div>
@@ -181,25 +181,6 @@ export default function CountdownFeature() {
         <h1 className="text-2xl sm:text-3xl font-bold flex items-center"><CalendarClock className="mr-2 sm:mr-3 h-7 w-7 sm:h-8 sm:w-8 text-primary" /> Event Countdowns</h1>
       </div>
 
-      <Card className="shadow-lg">
-        <CardHeader>
-          <CardTitle className="text-xl">Event Shortcuts</CardTitle>
-          <CardDescription>Quickly navigate to a countdown for these common events.</CardDescription>
-        </CardHeader>
-        <CardContent className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-          {shortcutEvents.map(event => (
-            <Button key={event.id} variant="outline" asChild className="h-auto py-3 flex-col items-center justify-center text-center">
-              <Link href={`/countdown/${event.id}`}>
-                {event.defaultEmoji && <span className="text-2xl mb-1">{event.defaultEmoji}</span>}
-                <span className="text-xs sm:text-sm">{event.name}</span>
-              </Link>
-            </Button>
-          ))}
-        </CardContent>
-      </Card>
-
-      <Separator />
-
       <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
         <h2 className="text-xl sm:text-2xl font-semibold">Your Custom Countdowns</h2>
         <Button onClick={openAddForm} className="w-full sm:w-auto">
@@ -220,6 +201,25 @@ export default function CountdownFeature() {
       <Card className="shadow-lg mt-0">
         <CardContent className="pt-6">
           {renderCustomCountdownsContainer()}
+        </CardContent>
+      </Card>
+
+      <Separator />
+
+      <Card className="shadow-lg">
+        <CardHeader>
+          <CardTitle className="text-xl">Event Shortcuts</CardTitle>
+          <CardDescription>Quickly navigate to a countdown for these common events.</CardDescription>
+        </CardHeader>
+        <CardContent className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+          {shortcutEvents.map(event => (
+            <Button key={event.id} variant="outline" asChild className="h-auto py-3 flex-col items-center justify-center text-center">
+              <Link href={`/countdown/${event.id}`}>
+                {event.defaultEmoji && <span className="text-2xl mb-1">{event.defaultEmoji}</span>}
+                <span className="text-xs sm:text-sm">{event.name}</span>
+              </Link>
+            </Button>
+          ))}
         </CardContent>
       </Card>
       
@@ -327,3 +327,4 @@ function CountdownFormDialog({ isOpen, onOpenChange, onSave, countdown }: Countd
     </Dialog>
   );
 }
+
