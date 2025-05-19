@@ -51,12 +51,12 @@ export default function TimersFeature() {
   const [editingTimer, setEditingTimer] = useState<Timer | null>(null);
   const [fullscreenTimerId, setFullscreenTimerId] = useState<string | null>(null);
   const { toast } = useToast();
-  const [elapsedTime, setElapsedTime] = useState<number | null>(null); // Initialize to null for hydration
+  const [elapsedTime, setElapsedTime] = useState<number | null>(null); 
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
-    setElapsedTime(0); // Start elapsed time counter after mount
+    setElapsedTime(0); 
     const intervalId = setInterval(() => {
       setElapsedTime(prevTime => (prevTime !== null ? prevTime + 1 : 0));
     }, 1000);
@@ -65,7 +65,7 @@ export default function TimersFeature() {
 
 
   useEffect(() => {
-    if (!mounted) return; // Don't run countdown logic until mounted
+    if (!mounted) return; 
     const interval = setInterval(() => {
       setTimers(prevTimers =>
         prevTimers.map(timer => {
@@ -213,59 +213,50 @@ export default function TimersFeature() {
     return timer ? <FullscreenTimerView timer={timer} /> : null;
   }
   
-  const renderTimersList = () => {
-    if (timers.length === 0) {
-      return (
-        <p className="text-center text-muted-foreground">
-          You have no timers set. Click "Add Timer" or a shortcut to create one.
-        </p>
-      );
-    }
-    return (
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {timers.map(timer => (
-          <Card key={timer.id} id={`timer-card-${timer.id}`} className="shadow-lg flex flex-col">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-xl flex justify-between items-center">
-                <span className="truncate" title={timer.name}>{timer.name}</span>
-                <Button variant="ghost" size="icon" onClick={() => toggleFullscreen(timer.id)} className="text-muted-foreground hover:text-primary -mr-2">
-                  <Maximize className="h-4 w-4" />
-                </Button>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="flex-grow flex flex-col items-center justify-center">
-              <p className="text-5xl font-mono font-bold text-primary">
-                {formatDuration(timer.remainingTime)}
-              </p>
-              <Progress value={(timer.duration - timer.remainingTime) / timer.duration * 100} className="w-full h-3 mt-2" />
-            </CardContent>
-            <CardFooter className="border-t p-4 flex justify-between items-center">
-              <div className="flex gap-2">
-                <Button onClick={() => toggleTimer(timer.id)} size="sm" variant={timer.isRunning && !timer.isPaused ? "outline" : "default"}>
-                  {timer.isRunning && !timer.isPaused ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
-                   <span className="ml-1 sr-only sm:not-sr-only">
-                      {timer.remainingTime === 0 ? 'Restart' : (timer.isRunning && !timer.isPaused ? 'Pause' : (timer.isPaused ? 'Resume' : 'Start'))}
-                  </span>
-                </Button>
-                <Button onClick={() => resetTimer(timer.id)} variant="outline" size="sm" disabled={timer.remainingTime === timer.duration && !timer.isRunning}>
-                  <RotateCcw className="h-4 w-4" />
-                  <span className="ml-1 sr-only sm:not-sr-only">Reset</span>
-                </Button>
-              </div>
-              <div className="flex gap-1">
-                <Button variant="ghost" size="icon" onClick={() => openEditForm(timer)} aria-label="Edit timer" disabled={timer.isRunning && !timer.isPaused}>
-                  <Edit className="h-4 w-4" />
-                </Button>
-                <Button variant="ghost" size="icon" onClick={() => handleDeleteTimer(timer.id)} aria-label="Delete timer" className="text-destructive hover:text-destructive">
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </div>
-            </CardFooter>
-          </Card>
-        ))}
-      </div>
-    );
-  };
+  const renderTimersList = () => (
+    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      {timers.map(timer => (
+        <Card key={timer.id} id={`timer-card-${timer.id}`} className="shadow-lg flex flex-col">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-xl flex justify-between items-center">
+              <span className="truncate" title={timer.name}>{timer.name}</span>
+              <Button variant="ghost" size="icon" onClick={() => toggleFullscreen(timer.id)} className="text-muted-foreground hover:text-primary -mr-2">
+                <Maximize className="h-4 w-4" />
+              </Button>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="flex-grow flex flex-col items-center justify-center">
+            <p className="text-5xl font-mono font-bold text-primary">
+              {formatDuration(timer.remainingTime)}
+            </p>
+            <Progress value={(timer.duration - timer.remainingTime) / timer.duration * 100} className="w-full h-3 mt-2" />
+          </CardContent>
+          <CardFooter className="border-t p-4 flex justify-between items-center">
+            <div className="flex gap-2">
+              <Button onClick={() => toggleTimer(timer.id)} size="sm" variant={timer.isRunning && !timer.isPaused ? "outline" : "default"}>
+                {timer.isRunning && !timer.isPaused ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+                 <span className="ml-1 sr-only sm:not-sr-only">
+                    {timer.remainingTime === 0 ? 'Restart' : (timer.isRunning && !timer.isPaused ? 'Pause' : (timer.isPaused ? 'Resume' : 'Start'))}
+                </span>
+              </Button>
+              <Button onClick={() => resetTimer(timer.id)} variant="outline" size="sm" disabled={timer.remainingTime === timer.duration && !timer.isRunning}>
+                <RotateCcw className="h-4 w-4" />
+                <span className="ml-1 sr-only sm:not-sr-only">Reset</span>
+              </Button>
+            </div>
+            <div className="flex gap-1">
+              <Button variant="ghost" size="icon" onClick={() => openEditForm(timer)} aria-label="Edit timer" disabled={timer.isRunning && !timer.isPaused}>
+                <Edit className="h-4 w-4" />
+              </Button>
+              <Button variant="ghost" size="icon" onClick={() => handleDeleteTimer(timer.id)} aria-label="Delete timer" className="text-destructive hover:text-destructive">
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </div>
+          </CardFooter>
+        </Card>
+      ))}
+    </div>
+  );
 
 
   return (
@@ -297,15 +288,19 @@ export default function TimersFeature() {
       />
 
       <Card className="shadow-lg mt-0">
-        <CardContent className="pt-6">
-          {/* Render timers list or "Loading..." if not mounted, or "No timers..." if empty */}
-          {!mounted ? (
-            <p className="text-center text-muted-foreground">Loading timers...</p>
-          ) : (
-            renderTimersList()
-          )}
-        </CardContent>
-      </Card>
+          <CardContent className="pt-6">
+            {!mounted ? (
+              <p className="text-center text-muted-foreground">Loading timers...</p>
+            ) : timers.length === 0 ? (
+              <p className="text-center text-muted-foreground">
+                You have no timers set. Click "Add Timer" or a shortcut to create one.
+              </p>
+            ) : (
+              renderTimersList()
+            )}
+          </CardContent>
+        </Card>
+
 
       <Card className="shadow-md">
         <CardHeader>
@@ -439,15 +434,15 @@ function TimerFormDialog({ isOpen, onOpenChange, onSave, timer }: TimerFormDialo
           <div className="grid grid-cols-3 gap-2">
             <div>
               <Label htmlFor="hours">Hours</Label>
-              <Input id="hours" type="number" value={hours} onChange={e => setHours(Math.max(0, parseInt(e.target.value)))} min="0" />
+              <Input id="hours" type="number" value={hours} onChange={e => setHours(Math.max(0, parseInt(e.target.value) || 0))} min="0" />
             </div>
             <div>
               <Label htmlFor="minutes">Minutes</Label>
-              <Input id="minutes" type="number" value={minutes} onChange={e => setMinutes(Math.max(0, parseInt(e.target.value)))} min="0" max="59" />
+              <Input id="minutes" type="number" value={minutes} onChange={e => setMinutes(Math.max(0, parseInt(e.target.value) || 0))} min="0" max="59" />
             </div>
             <div>
               <Label htmlFor="seconds">Seconds</Label>
-              <Input id="seconds" type="number" value={seconds} onChange={e => setSeconds(Math.max(0, parseInt(e.target.value)))} min="0" max="59" />
+              <Input id="seconds" type="number" value={seconds} onChange={e => setSeconds(Math.max(0, parseInt(e.target.value) || 0))} min="0" max="59" />
             </div>
           </div>
           <DialogFooter className="pt-2">
