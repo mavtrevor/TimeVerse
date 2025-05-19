@@ -14,7 +14,6 @@ import { Progress } from '@/components/ui/progress';
 import { formatDuration, secondsToHMS } from '@/lib/timeUtils';
 import { useToast } from '@/hooks/use-toast';
 
-// Placeholder for actual audio playback for timers
 const playTimerSound = () => {
   console.log("Playing timer completion sound");
   try {
@@ -22,7 +21,7 @@ const playTimerSound = () => {
     if (!audioContext) return;
     const oscillator = audioContext.createOscillator();
     oscillator.type = 'triangle';
-    oscillator.frequency.setValueAtTime(660, audioContext.currentTime); // E5 note
+    oscillator.frequency.setValueAtTime(660, audioContext.currentTime); 
     const gainNode = audioContext.createGain();
     gainNode.gain.setValueAtTime(0.5, audioContext.currentTime);
     gainNode.gain.exponentialRampToValueAtTime(0.00001, audioContext.currentTime + 1.5);
@@ -57,7 +56,8 @@ export default function TimersFeature() {
 
   useEffect(() => {
     setMounted(true);
-    setElapsedTime(0); // Reset elapsed time on mount or if component re-initializes
+    const initialElapsedTime = 0; 
+    setElapsedTime(initialElapsedTime);
     const intervalId = setInterval(() => {
       setElapsedTime(prevTime => prevTime + 1);
     }, 1000);
@@ -123,7 +123,7 @@ export default function TimersFeature() {
       name: timerName,
       duration: durationInSeconds,
       remainingTime: durationInSeconds,
-      isRunning: true,
+      isRunning: true, 
       isPaused: false,
       createdAt: Date.now(),
     };
@@ -213,12 +213,74 @@ export default function TimersFeature() {
     const timer = timers.find(t => t.id === fullscreenTimerId);
     return timer ? <FullscreenTimerView timer={timer} /> : null;
   }
+  
+  const renderTimersContent = () => {
+    if (!mounted) {
+      return (
+        <p className="text-center text-muted-foreground">
+          Loading timers...
+        </p>
+      );
+    }
+    if (timers.length === 0) {
+      return (
+        <p className="text-center text-muted-foreground">
+          You have no timers set. Click "Add Timer" or a shortcut to create one.
+        </p>
+      );
+    }
+    return (
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        {timers.map(timer => (
+          <Card key={timer.id} id={`timer-card-${timer.id}`} className="shadow-lg flex flex-col">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-xl flex justify-between items-center">
+                <span className="truncate" title={timer.name}>{timer.name}</span>
+                <Button variant="ghost" size="icon" onClick={() => toggleFullscreen(timer.id)} className="text-muted-foreground hover:text-primary -mr-2">
+                  <Maximize className="h-4 w-4" />
+                </Button>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="flex-grow flex flex-col items-center justify-center">
+              <p className="text-5xl font-mono font-bold text-primary">
+                {formatDuration(timer.remainingTime)}
+              </p>
+              <Progress value={(timer.duration - timer.remainingTime) / timer.duration * 100} className="w-full h-3 mt-2" />
+            </CardContent>
+            <CardFooter className="border-t p-4 flex justify-between items-center">
+              <div className="flex gap-2">
+                <Button onClick={() => toggleTimer(timer.id)} size="sm" variant={timer.isRunning && !timer.isPaused ? "outline" : "default"}>
+                  {timer.isRunning && !timer.isPaused ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+                   <span className="ml-1 sr-only sm:not-sr-only">
+                      {timer.remainingTime === 0 ? 'Restart' : (timer.isRunning && !timer.isPaused ? 'Pause' : (timer.isPaused ? 'Resume' : 'Start'))}
+                  </span>
+                </Button>
+                <Button onClick={() => resetTimer(timer.id)} variant="outline" size="sm" disabled={timer.remainingTime === timer.duration && !timer.isRunning}>
+                  <RotateCcw className="h-4 w-4" />
+                  <span className="ml-1 sr-only sm:not-sr-only">Reset</span>
+                </Button>
+              </div>
+              <div className="flex gap-1">
+                <Button variant="ghost" size="icon" onClick={() => openEditForm(timer)} aria-label="Edit timer" disabled={timer.isRunning && !timer.isPaused}>
+                  <Edit className="h-4 w-4" />
+                </Button>
+                <Button variant="ghost" size="icon" onClick={() => handleDeleteTimer(timer.id)} aria-label="Delete timer" className="text-destructive hover:text-destructive">
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
+            </CardFooter>
+          </Card>
+        ))}
+      </div>
+    );
+  };
+
 
   return (
     <div className="space-y-6 p-4 md:p-6">
       <div className="flex flex-col items-center justify-center text-center py-4">
         <div className="font-mono text-7xl md:text-8xl lg:text-9xl font-bold text-primary select-none">
-          {formatDuration(elapsedTime)}
+          {mounted ? formatDuration(elapsedTime) : "00:00:00"}
         </div>
         <div className="text-lg md:text-xl lg:text-2xl text-muted-foreground select-none mt-2">
           Elapsed Time
@@ -242,56 +304,9 @@ export default function TimersFeature() {
         timer={editingTimer}
       />
 
-      <Card className="shadow-lg mt-0"> {/* Removed mt-4 */}
+      <Card className="shadow-lg mt-0">
         <CardContent className="pt-6">
-          {(!mounted || timers.length === 0) ? (
-            <p className="text-center text-muted-foreground">
-              {!mounted ? "Loading timers..." : "You have no timers set. Click \"Add Timer\" or a shortcut to create one."}
-            </p>
-          ) : (
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {timers.map(timer => (
-                <Card key={timer.id} id={`timer-card-${timer.id}`} className="shadow-lg flex flex-col">
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-xl flex justify-between items-center">
-                      <span className="truncate" title={timer.name}>{timer.name}</span>
-                      <Button variant="ghost" size="icon" onClick={() => toggleFullscreen(timer.id)} className="text-muted-foreground hover:text-primary -mr-2">
-                        <Maximize className="h-4 w-4" />
-                      </Button>
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="flex-grow flex flex-col items-center justify-center">
-                    <p className="text-5xl font-mono font-bold text-primary">
-                      {formatDuration(timer.remainingTime)}
-                    </p>
-                    <Progress value={(timer.duration - timer.remainingTime) / timer.duration * 100} className="w-full h-3 mt-2" />
-                  </CardContent>
-                  <CardFooter className="border-t p-4 flex justify-between items-center">
-                    <div className="flex gap-2">
-                      <Button onClick={() => toggleTimer(timer.id)} size="sm" variant={timer.isRunning && !timer.isPaused ? "outline" : "default"}>
-                        {timer.isRunning && !timer.isPaused ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
-                         <span className="ml-1 sr-only sm:not-sr-only">
-                            {timer.remainingTime === 0 ? 'Restart' : (timer.isRunning && !timer.isPaused ? 'Pause' : (timer.isPaused ? 'Resume' : 'Start'))}
-                        </span>
-                      </Button>
-                      <Button onClick={() => resetTimer(timer.id)} variant="outline" size="sm" disabled={timer.remainingTime === timer.duration && !timer.isRunning}>
-                        <RotateCcw className="h-4 w-4" />
-                        <span className="ml-1 sr-only sm:not-sr-only">Reset</span>
-                      </Button>
-                    </div>
-                    <div className="flex gap-1">
-                      <Button variant="ghost" size="icon" onClick={() => openEditForm(timer)} aria-label="Edit timer" disabled={timer.isRunning && !timer.isPaused}>
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button variant="ghost" size="icon" onClick={() => handleDeleteTimer(timer.id)} aria-label="Delete timer" className="text-destructive hover:text-destructive">
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </CardFooter>
-                </Card>
-              ))}
-            </div>
-          )}
+          {renderTimersContent()}
         </CardContent>
       </Card>
 
@@ -379,7 +394,7 @@ function TimerFormDialog({ isOpen, onOpenChange, onSave, timer }: TimerFormDialo
   const [hours, setHours] = useState(0);
   const [minutes, setMinutes] = useState(5);
   const [seconds, setSeconds] = useState(0);
-  const { toast } = useToast(); // Added useToast here
+  const { toast } = useToast(); 
 
   useEffect(() => {
     if (isOpen) {
@@ -449,5 +464,3 @@ function TimerFormDialog({ isOpen, onOpenChange, onSave, timer }: TimerFormDialo
     </Dialog>
   );
 }
-
-    

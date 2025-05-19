@@ -130,6 +130,32 @@ export default function WorldClockFeature() {
     );
   };
 
+  const renderUserAddedCities = () => {
+    if (!mounted) {
+      return (
+        <Card className="shadow-sm border-dashed">
+          <CardContent className="pt-6 text-center text-muted-foreground">
+            Loading custom clocks...
+          </CardContent>
+        </Card>
+      );
+    }
+    if (userAddedCities.length === 0) {
+      return (
+        <Card className="shadow-sm border-dashed">
+          <CardContent className="pt-6 text-center text-muted-foreground">
+            You haven't added any custom city clocks.
+          </CardContent>
+        </Card>
+      );
+    }
+    return (
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        {userAddedCities.map(city => renderCityCard(city, true))}
+      </div>
+    );
+  };
+
 
   return (
     <div className="space-y-8 p-4 md:p-6">
@@ -158,7 +184,7 @@ export default function WorldClockFeature() {
 
       <div>
         <h2 className="text-2xl font-semibold mb-4">Popular Cities</h2>
-        {!mounted ? (
+        {!mounted || !clientNow ? (
            <Card className="shadow-lg"><CardContent className="pt-6 text-center text-muted-foreground">Loading popular cities...</CardContent></Card>
         ) : popularCityDetails.length === 0 ? (
           <Card className="shadow-lg">
@@ -195,18 +221,7 @@ export default function WorldClockFeature() {
             </DialogContent>
           </Dialog>
         </div>
-
-        {(!mounted || userAddedCities.length === 0) ? (
-          <Card className="shadow-sm border-dashed">
-            <CardContent className="pt-6 text-center text-muted-foreground">
-              {!mounted ? "Loading custom clocks..." : "You haven't added any custom city clocks."}
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {userAddedCities.map(city => renderCityCard(city, true))}
-          </div>
-        )}
+        {renderUserAddedCities()}
       </div>
       
       <Card className="shadow-lg mt-8">
@@ -285,7 +300,7 @@ function AddCityForm({ onAddCity, onClose }: AddCityFormProps) {
     }
   };
 
-  const timezonesForSelectedCountry = selectedCountryCode
+  const timezonesForSelectedCountry = selectedCountryCode && clientNow
     ? extendedCommonTimezones.filter(tz => tz.countryCode === selectedCountryCode)
     : [];
 
@@ -314,14 +329,14 @@ function AddCityForm({ onAddCity, onClose }: AddCityFormProps) {
         <Select 
             onValueChange={handleTimezoneChange} 
             value={selectedTimezoneIana} 
-            disabled={!selectedCountryCode || timezonesForSelectedCountry.length === 0}
+            disabled={!selectedCountryCode || timezonesForSelectedCountry.length === 0 || !clientNow}
         >
           <SelectTrigger id="timezone" className="w-full mt-1">
-            <SelectValue placeholder={!selectedCountryCode ? "Select country first" : (timezonesForSelectedCountry.length === 0 ? "No timezones available for this country" : "Select a timezone")} />
+            <SelectValue placeholder={!clientNow ? "Loading timezones..." : (!selectedCountryCode ? "Select country first" : (timezonesForSelectedCountry.length === 0 ? "No timezones available for this country" : "Select a timezone"))} />
           </SelectTrigger>
           <SelectContent>
             <SelectGroup>
-              {timezonesForSelectedCountry.map(tz => (
+              {clientNow && timezonesForSelectedCountry.map(tz => (
                 <SelectItem key={tz.timezone} value={tz.timezone}>
                   {`(${getTimezoneOffset(tz.timezone, clientNow)}) ${tz.name}`}
                 </SelectItem>
@@ -356,5 +371,3 @@ function AddCityForm({ onAddCity, onClose }: AddCityFormProps) {
     </form>
   );
 }
-
-    
