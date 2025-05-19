@@ -24,7 +24,6 @@ const supportedCountries = [
   { code: 'ZA', name: 'South Africa' },
 ];
 
-// Placeholder for holiday data and fetch function
 const allSampleHolidays: Holiday[] = [
   // United States (US) - 2025
   { date: '2025-01-01', name: "New Year's Day", type: 'public', countryCode: 'US', description: "Celebrates the first day of the Gregorian calendar year." },
@@ -186,11 +185,15 @@ export default function CalendarFeature() {
   const [isLoadingTable, setIsLoadingTable] = useState(false);
   const [selectedHolidayDetail, setSelectedHolidayDetail] = useState<Holiday | null>(null);
   const [selectedTableYear, setSelectedTableYear] = useState<number>(2025);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
 
   const calendarViewYear = useMemo(() => currentDisplayMonth.getFullYear(), [currentDisplayMonth]);
 
-  // Effect for fetching holidays for the interactive calendar (monthly)
   useEffect(() => {
     const loadMonthlyHolidays = async () => {
       setIsLoadingCalendar(true);
@@ -209,7 +212,6 @@ export default function CalendarFeature() {
     loadMonthlyHolidays();
   }, [currentDisplayMonth, selectedCountry]);
 
-  // Effect for fetching holidays for the table (yearly)
   useEffect(() => {
     const loadYearlyHolidays = async () => {
       setIsLoadingTable(true);
@@ -229,7 +231,8 @@ export default function CalendarFeature() {
 
   const handleCountryChange = (countryCode: string) => {
     setSelectedCountry(countryCode);
-    setCurrentDisplayMonth(new Date(calendarViewYear, 0, 1));
+    // Reset display month to January of the current calendar view year when country changes
+    setCurrentDisplayMonth(new Date(calendarViewYear, 0, 1)); 
   };
 
   const handlePrevMonth = () => {
@@ -281,10 +284,32 @@ export default function CalendarFeature() {
   
   const selectedDateObjectForCalendar = selectedHolidayDetail ? parseHolidayDate(selectedHolidayDetail.date) : undefined;
 
+  // Base classes (mobile-first)
+  const baseTitleClass = "font-bold text-center md:text-left text-2xl";
+  const baseCaptionLabelClass = "font-semibold text-lg";
+  const baseNavButtonClass = "h-8 w-8";
+  const baseNavIconClass = "h-5 w-5";
+  const baseHeadCellClass = "text-muted-foreground rounded-md font-semibold text-xs w-10 h-10 flex items-center justify-center";
+  const baseRowMarginClass = "mt-1";
+  const baseCellClass = "text-center p-0 relative h-10 w-10 text-xs";
+  const baseDayButtonClass = "p-0 font-normal aria-selected:opacity-100 h-10 w-10 text-xs";
+  const baseCaptionDivClass = "flex justify-between items-center px-1 py-3 border-b mb-2";
+  
+  // Responsive classes to be applied when mounted
+  const responsiveTitleClass = "sm:text-3xl";
+  const responsiveCaptionLabelClass = "sm:text-xl md:text-2xl";
+  const responsiveNavButtonClass = "sm:h-9 sm:w-9";
+  const responsiveNavIconClass = "sm:h-6 sm:w-6";
+  const responsiveHeadCellClass = "sm:w-12 sm:h-12 md:w-16 md:h-16 lg:w-20 lg:h-20";
+  const responsiveRowMarginClass = "sm:mt-2";
+  const responsiveCellClass = "sm:h-12 sm:w-12 sm:text-sm md:h-16 md:w-16 md:text-base lg:h-20 lg:w-20";
+  const responsiveDayButtonClass = "sm:h-12 sm:w-12 sm:text-sm md:h-16 md:w-16 md:text-base lg:h-20 lg:w-20";
+  const responsiveCaptionDivClass = "sm:px-2 sm:py-4 sm:mb-3";
+
 
   return (
     <div className="p-4 md:p-6 space-y-8">
-      <h1 className="text-2xl sm:text-3xl font-bold text-center md:text-left">
+      <h1 className={cn(baseTitleClass, mounted && responsiveTitleClass)}>
         Calendar {calendarViewYear}
       </h1>
 
@@ -298,7 +323,7 @@ export default function CalendarFeature() {
 
       <Card className="shadow-lg">
         <CardContent className="pt-6">
-          {isLoadingCalendar ? (
+          {isLoadingCalendar || !mounted ? ( // Show loader if not mounted or loading
             <div className="flex flex-col items-center justify-center h-96">
               <Loader2 className="h-10 w-10 animate-spin text-primary" />
               <p className="ml-2 mt-3 text-lg">Loading calendar...</p>
@@ -314,24 +339,25 @@ export default function CalendarFeature() {
               modifiersClassNames={modifiersClassNames}
               className="p-0 w-full max-w-2xl mx-auto"
               classNames={{
-                caption_label: "text-lg sm:text-xl md:text-2xl font-semibold",
+                caption_label: cn(baseCaptionLabelClass, mounted && responsiveCaptionLabelClass),
                 nav_button: cn(
                   buttonVariants({ variant: "outline" }),
-                  "h-8 w-8 sm:h-9 sm:w-9 bg-transparent p-0 opacity-75 hover:opacity-100"
+                  baseNavButtonClass, mounted && responsiveNavButtonClass,
+                  "bg-transparent p-0 opacity-75 hover:opacity-100"
                 ),
                 head_row: "flex w-full",
-                head_cell: "text-muted-foreground rounded-md font-semibold text-xs w-10 h-10 sm:w-12 sm:h-12 md:w-16 md:h-16 lg:w-20 lg:h-20 flex items-center justify-center",
-                row: "flex w-full mt-1 sm:mt-2",
+                head_cell: cn(baseHeadCellClass, mounted && responsiveHeadCellClass),
+                row: cn("flex w-full", baseRowMarginClass, mounted && responsiveRowMarginClass),
                 cell: cn(
+                  baseCellClass, mounted && responsiveCellClass,
                   "text-center p-0 relative",
-                  "h-10 w-10 text-xs sm:h-12 sm:w-12 sm:text-sm md:h-16 md:w-16 md:text-base lg:h-20 lg:w-20",
                   "[&:has([aria-selected].day-outside)]:bg-accent/50 focus-within:relative focus-within:z-20",
                   "[&:has([aria-selected].day-range-end)]:rounded-r-md first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md"
                 ),
                 day: cn(
                   buttonVariants({ variant: "ghost" }),
-                  "p-0 font-normal aria-selected:opacity-100",
-                  "h-10 w-10 text-xs sm:h-12 sm:w-12 sm:text-sm md:h-16 md:w-16 md:text-base lg:h-20 lg:w-20"
+                  baseDayButtonClass, mounted && responsiveDayButtonClass,
+                  "p-0 font-normal aria-selected:opacity-100"
                 ),
                 day_selected: selectedHolidayDetail?.type !== 'public' && selectedHolidayDetail?.type !== 'observance' 
                               ? 'ring-2 ring-primary !bg-transparent text-foreground rounded-sm' 
@@ -341,15 +367,15 @@ export default function CalendarFeature() {
               }}
               components={{
                 Caption: ({ displayMonth }) => (
-                  <div className="flex justify-between items-center px-1 sm:px-2 py-3 sm:py-4 border-b mb-2 sm:mb-3">
-                    <Button variant="ghost" size="icon" onClick={handlePrevMonth} disabled={isPrevDisabled} aria-label="Previous month" className="h-8 w-8 sm:h-9 sm:w-9">
-                      <ChevronLeft className="h-5 w-5 sm:h-6 sm:w-6" />
+                  <div className={cn(baseCaptionDivClass, mounted && responsiveCaptionDivClass)}>
+                    <Button variant="ghost" size="icon" onClick={handlePrevMonth} disabled={isPrevDisabled} aria-label="Previous month" className={cn(baseNavButtonClass, mounted && responsiveNavButtonClass)}>
+                      <ChevronLeft className={cn(baseNavIconClass, mounted && responsiveNavIconClass)} />
                     </Button>
-                    <h2 className="text-lg sm:text-xl md:text-2xl font-semibold">
+                    <h2 className={cn(baseCaptionLabelClass, mounted && responsiveCaptionLabelClass)}>
                       {format(displayMonth, "MMMM yyyy")}
                     </h2>
-                    <Button variant="ghost" size="icon" onClick={handleNextMonth} disabled={isNextDisabled} aria-label="Next month" className="h-8 w-8 sm:h-9 sm:w-9">
-                      <ChevronRight className="h-5 w-5 sm:h-6 sm:w-6" />
+                    <Button variant="ghost" size="icon" onClick={handleNextMonth} disabled={isNextDisabled} aria-label="Next month" className={cn(baseNavButtonClass, mounted && responsiveNavButtonClass)}>
+                      <ChevronRight className={cn(baseNavIconClass, mounted && responsiveNavIconClass)} />
                     </Button>
                   </div>
                 ),
@@ -360,7 +386,7 @@ export default function CalendarFeature() {
             />
           )}
         </CardContent>
-         {(monthlyHolidays.length > 0 || publicHolidayDatesForCalendar.length > 0 || observanceDatesForCalendar.length > 0) && !isLoadingCalendar && (
+         {(monthlyHolidays.length > 0 || publicHolidayDatesForCalendar.length > 0 || observanceDatesForCalendar.length > 0) && !isLoadingCalendar && mounted && (
           <CardContent className="border-t pt-4 pb-4">
             <h3 className="text-sm font-semibold mb-2 text-muted-foreground">Legend:</h3>
             <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs">
@@ -430,7 +456,6 @@ export default function CalendarFeature() {
         )}
       </div>
 
-      {/* New SEO Content Section */}
       <Card className="shadow-lg mt-8">
         <CardHeader>
           <CardTitle className="text-xl">Interactive Online Calendar with Global Holidays</CardTitle>
@@ -480,3 +505,4 @@ export default function CalendarFeature() {
     
 
     
+
