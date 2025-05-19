@@ -2,6 +2,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from 'react';
+import Link from 'next/link';
 import type { EventCountdown } from '@/types';
 import useLocalStorage from '@/hooks/useLocalStorage';
 import { Button } from '@/components/ui/button';
@@ -9,9 +10,11 @@ import { Card, CardContent, CardHeader, CardTitle, CardFooter, CardDescription }
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose } from '@/components/ui/dialog';
-import { PlusCircle, Trash2, Edit3, CalendarClock } from 'lucide-react';
+import { PlusCircle, Trash2, Edit3, CalendarClock, Link2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
+import { shortcutEvents } from '@/lib/countdownData'; // Import shortcuts
+import { Separator } from '@/components/ui/separator';
 
 const INITIAL_COUNTDOWNS: EventCountdown[] = [];
 
@@ -46,7 +49,7 @@ export default function CountdownFeature() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingCountdown, setEditingCountdown] = useState<EventCountdown | null>(null);
   const { toast } = useToast();
-  const [now, setNow] = useState(new Date()); // Used to trigger re-renders for the countdown display
+  const [now, setNow] = useState(new Date()); 
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -90,10 +93,10 @@ export default function CountdownFeature() {
     const sortedCountdowns = [...countdowns].sort((a, b) => {
         const aRemaining = calculateTimeRemaining(a.date).totalSeconds;
         const bRemaining = calculateTimeRemaining(b.date).totalSeconds;
-        if (aRemaining === 0 && bRemaining > 0) return 1; // Finished items to the end
+        if (aRemaining === 0 && bRemaining > 0) return 1; 
         if (bRemaining === 0 && aRemaining > 0) return -1;
-        if (aRemaining === 0 && bRemaining === 0) return new Date(a.date).getTime() - new Date(b.date).getTime(); // Sort finished by date
-        return aRemaining - bRemaining; // Sort active by remaining time
+        if (aRemaining === 0 && bRemaining === 0) return new Date(a.date).getTime() - new Date(b.date).getTime(); 
+        return aRemaining - bRemaining; 
     });
 
     return (
@@ -118,12 +121,12 @@ export default function CountdownFeature() {
                    )}
                 </div>
                 <p className="text-xs sm:text-sm text-muted-foreground pt-1">
-                  {format(targetDate, "PPPPp")} {/* e.g., July 10, 2024 at 12:00 PM */}
+                  {format(targetDate, "PPPPp")}
                 </p>
               </CardHeader>
               <CardContent className="flex-grow flex flex-col items-center justify-center text-center py-4 sm:py-6">
                 {isFinished ? (
-                  <div className="text-destructive text-2xl sm:text-3xl font-bold">EVENT REACHED!</div>
+                  <div className="text-destructive text-xl sm:text-2xl md:text-3xl font-bold">EVENT REACHED!</div>
                 ) : (
                   <div className="grid grid-cols-4 gap-x-1 sm:gap-x-2 text-center w-full max-w-xs mx-auto">
                     <div>
@@ -157,14 +160,14 @@ export default function CountdownFeature() {
     );
   };
 
-  const renderCountdownsContainer = () => {
+  const renderCustomCountdownsContainer = () => {
     if (!mounted) {
-      return <p className="text-center text-muted-foreground py-10">Loading countdowns...</p>;
+      return <p className="text-center text-muted-foreground py-10">Loading your custom countdowns...</p>;
     }
     if (countdowns.length === 0) {
       return (
         <p className="text-center text-muted-foreground py-10">
-          You have no countdowns set. Click "Add Countdown" to create one.
+          You have no custom countdowns set. Click "Add Custom Countdown" to create one.
         </p>
       );
     }
@@ -176,11 +179,34 @@ export default function CountdownFeature() {
     <div className="p-4 md:p-6 space-y-8">
       <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
         <h1 className="text-2xl sm:text-3xl font-bold flex items-center"><CalendarClock className="mr-2 sm:mr-3 h-7 w-7 sm:h-8 sm:w-8 text-primary" /> Event Countdowns</h1>
-        <Button onClick={openAddForm} className="w-full sm:w-auto">
-          <PlusCircle className="mr-2 h-4 w-4" /> Add Countdown
-        </Button>
       </div>
 
+      <Card className="shadow-lg">
+        <CardHeader>
+          <CardTitle className="text-xl">Event Shortcuts</CardTitle>
+          <CardDescription>Quickly navigate to a countdown for these common events.</CardDescription>
+        </CardHeader>
+        <CardContent className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+          {shortcutEvents.map(event => (
+            <Button key={event.id} variant="outline" asChild className="h-auto py-3 flex-col items-center justify-center text-center">
+              <Link href={`/countdown/${event.id}`}>
+                {event.defaultEmoji && <span className="text-2xl mb-1">{event.defaultEmoji}</span>}
+                <span className="text-xs sm:text-sm">{event.name}</span>
+              </Link>
+            </Button>
+          ))}
+        </CardContent>
+      </Card>
+
+      <Separator />
+
+      <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+        <h2 className="text-xl sm:text-2xl font-semibold">Your Custom Countdowns</h2>
+        <Button onClick={openAddForm} className="w-full sm:w-auto">
+          <PlusCircle className="mr-2 h-4 w-4" /> Add Custom Countdown
+        </Button>
+      </div>
+      
       <CountdownFormDialog
         isOpen={isFormOpen}
         onOpenChange={(open) => {
@@ -193,11 +219,11 @@ export default function CountdownFeature() {
       
       <Card className="shadow-lg mt-0">
         <CardContent className="pt-6">
-          {renderCountdownsContainer()}
+          {renderCustomCountdownsContainer()}
         </CardContent>
       </Card>
-
-      <Card className="shadow-lg mt-8">
+      
+      <Card className="shadow-lg">
         <CardHeader>
           <CardTitle className="text-xl">TimeVerse Countdown Timer</CardTitle>
         </CardHeader>
@@ -231,19 +257,16 @@ function CountdownFormDialog({ isOpen, onOpenChange, onSave, countdown }: Countd
     if (isOpen) {
       if (countdown) {
         setName(countdown.name);
-        // Format date for datetime-local input. It expects 'yyyy-MM-ddTHH:mm'
         const localDate = new Date(countdown.date);
-        // Adjust for timezone offset to display correctly in user's local time in the input
-        const tzOffset = localDate.getTimezoneOffset() * 60000; //offset in milliseconds
+        const tzOffset = localDate.getTimezoneOffset() * 60000; 
         const localISOTime = (new Date(localDate.getTime() - tzOffset)).toISOString().slice(0,16);
         setDateTime(localISOTime);
         setEmoji(countdown.emoji || '');
       } else {
-        // Default to tomorrow at 9 AM for new countdowns
         setName('');
         const tomorrow = new Date();
         tomorrow.setDate(tomorrow.getDate() + 1);
-        tomorrow.setHours(9,0,0,0); // Set to 9:00 AM
+        tomorrow.setHours(9,0,0,0);
         const tzOffset = tomorrow.getTimezoneOffset() * 60000;
         const localISOTime = (new Date(tomorrow.getTime() - tzOffset)).toISOString().slice(0,16);
         setDateTime(localISOTime);
@@ -263,22 +286,21 @@ function CountdownFormDialog({ isOpen, onOpenChange, onSave, countdown }: Countd
         return;
     }
     
-    const targetDate = new Date(dateTime); // This will be in user's local timezone
+    const targetDate = new Date(dateTime); 
     if (targetDate.getTime() <= new Date().getTime()) {
         toast({ title: "Invalid Date", description: "Countdown date must be in the future.", variant: "destructive"});
         return;
     }
 
-    // Save date as ISO string (UTC)
     onSave({ name, date: targetDate.toISOString(), emoji });
-    onOpenChange(false); // Close dialog
+    onOpenChange(false); 
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>{countdown ? 'Edit Countdown' : 'Add New Countdown'}</DialogTitle>
+          <DialogTitle>{countdown ? 'Edit Countdown' : 'Add Custom Countdown'}</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 pt-4">
           <div>
@@ -305,5 +327,3 @@ function CountdownFormDialog({ isOpen, onOpenChange, onSave, countdown }: Countd
     </Dialog>
   );
 }
-
-    

@@ -50,8 +50,8 @@ export interface NavItem {
   id: FeatureKey;
   label: string;
   icon: React.ElementType;
-  component: React.ElementType; 
-  href: string; 
+  component?: React.ElementType; // Optional as pages handle component rendering in (app) layout
+  href: string;
 }
 
 export interface Holiday {
@@ -67,4 +67,13 @@ export interface EventCountdown {
   name: string;
   date: string; // ISO string for date and time
   emoji?: string;
+}
+
+export interface ShortcutCountdownEvent {
+  id: string; // URL-friendly slug
+  name: string; // Display name
+  category: string;
+  defaultEmoji?: string;
+  targetDateLogic: () => Date; // Function to calculate the target Date object
+  description?: string; // Optional short description for the shortcut
 }
