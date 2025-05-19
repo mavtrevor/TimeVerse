@@ -157,6 +157,21 @@ export default function CountdownFeature() {
     );
   };
 
+  const renderCountdownsContainer = () => {
+    if (!mounted) {
+      return <p className="text-center text-muted-foreground">Loading countdowns...</p>;
+    }
+    if (countdowns.length === 0) {
+      return (
+        <p className="text-center text-muted-foreground">
+          You have no countdowns set. Click "Add Countdown" to create one.
+        </p>
+      );
+    }
+    return renderCountdownList();
+  };
+
+
   return (
     <div className="p-4 md:p-6 space-y-8">
       <div className="flex justify-between items-center">
@@ -176,49 +191,22 @@ export default function CountdownFeature() {
         countdown={editingCountdown}
       />
       
-      {/* Render countdowns list or "Loading..." if not mounted, or "No countdowns..." if empty */}
-      {!mounted ? (
-        <Card className="shadow-sm border-dashed"><CardContent className="pt-6 text-center text-muted-foreground">Loading countdowns...</CardContent></Card>
-      ) : countdowns.length === 0 ? (
-        <Card className="shadow-sm border-dashed">
-          <CardContent className="pt-6 text-center text-muted-foreground">
-            You have no countdowns set. Click "Add Countdown" to create one.
-          </CardContent>
-        </Card>
-      ) : (
-        renderCountdownList()
-      )}
+      <Card className="shadow-lg mt-0">
+        <CardContent className="pt-6">
+          {renderCountdownsContainer()}
+        </CardContent>
+      </Card>
 
       <Card className="shadow-lg mt-8">
         <CardHeader>
-          <CardTitle className="text-xl">⏳ Countdown Timer – Track Events & Milestones with TimeVerse</CardTitle>
+          <CardTitle className="text-xl">TimeVerse Countdown Timer</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4 text-sm">
           <p>
-            Looking forward to a big day? Whether it’s your birthday, a wedding, vacation, baby’s arrival, or an exam, TimeVerse helps you stay excited and organized with our easy-to-use event countdown timer. Create personalized countdowns to keep track of every special moment in your life.
+            TimeVerse Countdown Timer helps you stay on top of life’s biggest moments—whether it's a birthday, wedding, vacation, or due date. Create customized countdowns for any event and track the days, hours, and seconds leading up to it on any device.
           </p>
-          <p>Our online countdown tool is perfect for:</p>
-          <ul className="list-disc list-inside pl-4 space-y-1">
-            <li>🎂 Birthday countdowns</li>
-            <li>💍 Wedding countdowns</li>
-            <li>🧳 Travel countdowns</li>
-            <li>🎓 Graduation or exam countdowns</li>
-            <li>🍼 Baby due date tracker</li>
-            <li>🏆 Personal goals & fitness challenge milestones</li>
-          </ul>
           <p>
-            Each countdown is fully customizable. You can add event names, choose icons and colors, and set reminder notifications. Whether you're on your phone, tablet, or desktop, TimeVerse keeps your important dates just a tap away.
-          </p>
-          <p>With TimeVerse, you can:</p>
-          <ul className="list-disc list-inside pl-4 space-y-1">
-            <li>Add unlimited countdown events</li>
-            <li>Get accurate time tracking down to the second</li>
-            <li>Set reminders so you never miss a thing</li>
-            <li>Share your countdowns with friends or on social media</li>
-            <li>Access everything through our fast, user-friendly PWA app</li>
-          </ul>
-          <p>
-            Start counting down to life’s most exciting moments with TimeVerse — your personal event timer, anywhere, anytime.
+            Add unlimited countdowns with personalized names, icons, and colors. Get reminders, share events with friends, and access everything from our fast, mobile-friendly PWA app. With TimeVerse, every milestone is just a tap away.
           </p>
         </CardContent>
       </Card>
