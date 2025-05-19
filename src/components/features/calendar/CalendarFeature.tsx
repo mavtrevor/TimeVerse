@@ -168,6 +168,36 @@ const tableYears = [2025, 2026, 2027, 2028, 2029];
 const defaultInitialYear = 2025;
 const defaultInitialMonth = 0; // January
 
+// Base classes (applied on server and initial client render)
+const baseTitleClass = "font-bold text-center md:text-left text-2xl";
+const baseCaptionLabelClass = "font-semibold text-lg";
+const baseNavButtonClass = "h-8 w-8";
+const baseNavIconClass = "h-5 w-5";
+const baseHeadCellClass = "text-muted-foreground rounded-md font-semibold text-xs w-10 h-10 flex items-center justify-center";
+const baseRowMarginClass = "mt-1";
+const baseCellClass = "text-center p-0 relative h-10 w-10 text-xs";
+const baseDayButtonClass = "p-0 font-normal aria-selected:opacity-100 h-10 w-10 text-xs";
+const baseCaptionDivClass = "flex justify-between items-center px-1 py-3 border-b mb-2";
+
+// Responsive classes (applied only when mounted is true)
+const responsiveTitleClass = "sm:text-3xl";
+const responsiveCaptionLabelClass = "sm:text-xl md:text-2xl";
+const responsiveNavButtonClass = "sm:h-9 sm:w-9";
+const responsiveNavIconClass = "sm:h-6 sm:w-6";
+const responsiveHeadCellClass = "sm:w-12 sm:h-12 md:w-16 md:h-16 lg:w-20 lg:h-20";
+const responsiveRowMarginClass = "sm:mt-2";
+const responsiveCellClass = "sm:h-12 sm:w-12 sm:text-sm md:h-16 md:w-16 md:text-base lg:h-20 lg:h-20";
+const responsiveDayButtonClass = "sm:h-12 sm:w-12 sm:text-sm md:h-16 md:w-16 md:text-base lg:h-20 lg:h-20";
+const responsiveCaptionDivClass = "sm:px-2 sm:py-4 sm:mb-3";
+
+// Loader for the main calendar card content
+const CalendarLoader = () => (
+  <div className="flex flex-col items-center justify-center h-96">
+    <LoaderCircle className="h-10 w-10 animate-spin text-primary" />
+    <p className="ml-2 mt-3 text-lg">Loading calendar...</p>
+  </div>
+);
+
 export default function CalendarFeature() {
   const [currentDisplayMonth, setCurrentDisplayMonth] = useState(new Date(defaultInitialYear, defaultInitialMonth, 1));
   const [selectedCountry, setSelectedCountry] = useState<string>(supportedCountries[0].code);
@@ -187,6 +217,7 @@ export default function CalendarFeature() {
 
   useEffect(() => {
     const loadMonthlyHolidays = async () => {
+      if (!mounted) return;
       setIsLoadingCalendar(true);
       const year = currentDisplayMonth.getFullYear();
       const month = currentDisplayMonth.getMonth();
@@ -200,14 +231,12 @@ export default function CalendarFeature() {
         setIsLoadingCalendar(false);
       }
     };
-    if (mounted) { // Only load holidays after mount
-        loadMonthlyHolidays();
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    loadMonthlyHolidays();
   }, [currentDisplayMonth, selectedCountry, mounted]);
 
   useEffect(() => {
     const loadYearlyHolidays = async () => {
+      if (!mounted) return;
       setIsLoadingTable(true);
       try {
         const fetchedHolidays = await fetchHolidaysForYear(selectedTableYear, selectedCountry);
@@ -219,15 +248,11 @@ export default function CalendarFeature() {
         setIsLoadingTable(false);
       }
     };
-     if (mounted) { // Only load holidays after mount
-        loadYearlyHolidays();
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    loadYearlyHolidays();
   }, [selectedTableYear, selectedCountry, mounted]);
 
   const handleCountryChange = (countryCode: string) => {
     setSelectedCountry(countryCode);
-    setCurrentDisplayMonth(new Date(calendarViewYear, 0, 1)); 
   };
 
   const handlePrevMonth = () => setCurrentDisplayMonth(prev => subMonths(prev, 1));
@@ -262,37 +287,32 @@ export default function CalendarFeature() {
   const isPrevDisabled = currentDisplayMonth.getFullYear() === 2023 && currentDisplayMonth.getMonth() === 0;
   const isNextDisabled = currentDisplayMonth.getFullYear() === 2030 && currentDisplayMonth.getMonth() === 11;
   const selectedDateObjectForCalendar = selectedHolidayDetail ? parseHolidayDate(selectedHolidayDetail.date) : undefined;
-
-  // Base classes (applied on server and initial client render)
-  const baseTitleClass = "font-bold text-center md:text-left text-2xl";
-  const baseCaptionLabelClass = "font-semibold text-lg";
-  const baseNavButtonClass = "h-8 w-8";
-  const baseNavIconClass = "h-5 w-5";
-  const baseHeadCellClass = "text-muted-foreground rounded-md font-semibold text-xs w-10 h-10 flex items-center justify-center";
-  const baseRowMarginClass = "mt-1";
-  const baseCellClass = "text-center p-0 relative h-10 w-10 text-xs";
-  const baseDayButtonClass = "p-0 font-normal aria-selected:opacity-100 h-10 w-10 text-xs";
-  const baseCaptionDivClass = "flex justify-between items-center px-1 py-3 border-b mb-2";
-
-  // Responsive classes (applied only when mounted is true)
-  const responsiveTitleClass = "sm:text-3xl";
-  const responsiveCaptionLabelClass = "sm:text-xl md:text-2xl";
-  const responsiveNavButtonClass = "sm:h-9 sm:w-9";
-  const responsiveNavIconClass = "sm:h-6 sm:w-6";
-  const responsiveHeadCellClass = "sm:w-12 sm:h-12 md:w-16 md:h-16 lg:w-20 lg:h-20";
-  const responsiveRowMarginClass = "sm:mt-2";
-  const responsiveCellClass = "sm:h-12 sm:w-12 sm:text-sm md:h-16 md:w-16 md:text-base lg:h-20 lg:w-20";
-  const responsiveDayButtonClass = "sm:h-12 sm:w-12 sm:text-sm md:h-16 md:w-16 md:text-base lg:h-20 lg:w-20";
-  const responsiveCaptionDivClass = "sm:px-2 sm:py-4 sm:mb-3";
-
-  // Loader for the main calendar card content
-  const CalendarLoader = () => (
-    <div className="flex flex-col items-center justify-center h-96">
-      <LoaderCircle className="h-10 w-10 animate-spin text-primary" />
-      <p className="ml-2 mt-3 text-lg">Loading calendar...</p>
-    </div>
-  );
   
+  if (!mounted) {
+    return (
+      <div className="p-4 md:p-6 space-y-8">
+        <h1 className={cn(baseTitleClass)}>Calendar {defaultInitialYear}</h1>
+        <Tabs value={supportedCountries[0].code} className="w-full">
+          <TabsList className="grid w-full grid-cols-3 sm:grid-cols-4 md:grid-cols-7 gap-1 h-auto">
+            {supportedCountries.map(country => (
+              <TabsTrigger key={country.code} value={country.code}>{country.name === "United States" ? "USA" : country.name === "United Kingdom" ? "UK" : country.name}</TabsTrigger>
+            ))}
+          </TabsList>
+        </Tabs>
+        <Card className="shadow-lg">
+          <CardContent className="pt-6">
+            <CalendarLoader />
+          </CardContent>
+        </Card>
+        {/* Placeholder for yearly holidays table loader */}
+        <div className="space-y-4 mt-8">
+          <h2 className="text-xl sm:text-2xl font-semibold">Public Holidays - {defaultInitialYear} ({supportedCountries.find(c => c.code === selectedCountry)?.name})</h2>
+          <div className="flex flex-col items-center justify-center h-60"><LoaderCircle className="h-8 w-8 animate-spin text-primary" /><p className="mt-2 text-md">Loading holidays...</p></div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="p-4 md:p-6 space-y-8">
       <h1 className={cn(baseTitleClass, mounted && responsiveTitleClass)}>
@@ -300,7 +320,7 @@ export default function CalendarFeature() {
       </h1>
 
       <Tabs value={selectedCountry} onValueChange={handleCountryChange} className="w-full">
-        <TabsList className="grid w-full grid-cols-3 sm:grid-cols-4 md:grid-cols-7 gap-1">
+        <TabsList className="grid w-full grid-cols-3 sm:grid-cols-4 md:grid-cols-7 gap-1 h-auto">
           {supportedCountries.map(country => (
             <TabsTrigger key={country.code} value={country.code}>{country.name === "United States" ? "USA" : country.name === "United Kingdom" ? "UK" : country.name}</TabsTrigger>
           ))}
@@ -309,7 +329,7 @@ export default function CalendarFeature() {
 
       <Card className="shadow-lg">
         <CardContent className="pt-6">
-          {!mounted || isLoadingCalendar ? (
+          {isLoadingCalendar ? (
             <CalendarLoader />
           ) : (
             <Calendar
@@ -324,7 +344,7 @@ export default function CalendarFeature() {
               classNames={{
                 caption_label: cn(baseCaptionLabelClass, mounted && responsiveCaptionLabelClass),
                 nav_button: cn(buttonVariants({ variant: "outline" }), baseNavButtonClass, mounted && responsiveNavButtonClass, "bg-transparent p-0 opacity-75 hover:opacity-100"),
-                head_row: "flex w-full",
+                head_row: cn("flex w-full"),
                 head_cell: cn(baseHeadCellClass, mounted && responsiveHeadCellClass),
                 row: cn("flex w-full", baseRowMarginClass, mounted && responsiveRowMarginClass),
                 cell: cn(baseCellClass, mounted && responsiveCellClass, "[&:has([aria-selected].day-outside)]:bg-accent/50 focus-within:relative focus-within:z-20", "[&:has([aria-selected].day-range-end)]:rounded-r-md first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md"),
