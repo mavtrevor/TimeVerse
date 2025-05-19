@@ -131,6 +131,9 @@ export default function WorldClockFeature() {
   };
 
   const renderUserAddedCitiesList = () => {
+    if (!mounted) {
+      return <Card className="shadow-sm border-dashed"><CardContent className="pt-6 text-center text-muted-foreground">Loading custom clocks...</CardContent></Card>;
+    }
     if (userAddedCities.length === 0) {
       return (
         <Card className="shadow-sm border-dashed">
@@ -212,47 +215,20 @@ export default function WorldClockFeature() {
             </DialogContent>
           </Dialog>
         </div>
-        {/* Render custom cities list or "Loading..." if not mounted, or "No custom clocks..." if empty */}
-        {!mounted ? (
-          <Card className="shadow-sm border-dashed"><CardContent className="pt-6 text-center text-muted-foreground">Loading custom clocks...</CardContent></Card>
-        ) : (
-          renderUserAddedCitiesList()
-        )}
+        {renderUserAddedCitiesList()}
       </div>
       
       <Card className="shadow-lg mt-8">
         <CardHeader>
-          <CardTitle className="text-xl">🕒 How to Use the World Clock on Our Website</CardTitle>
+          <CardTitle className="text-xl">TimeVerse World Clock</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4 text-sm">
           <p>
-            Our online world clock makes it easy to check the current time and date in any city or country worldwide. Whether you're coordinating meetings across time zones or just curious about the local time in another region, our tool gives you real-time, accurate results instantly.
+            TimeVerse World Clock lets you instantly view the current time and date in any city or country around the globe. Whether you're scheduling international meetings or checking the time back home while traveling, our tool gives you real-time accuracy with a clean, mobile-friendly interface.
           </p>
-          
-          <h3 className="font-semibold text-md">🌐 Explore Global Time Zones</h3>
-          <p>The homepage shows:</p>
-          <ul className="list-disc list-inside pl-4 space-y-1">
-            <li>The exact local time based on your current location.</li>
-            <li>A customizable list of clocks for major global cities like New York, London, Tokyo, and more.</li>
-          </ul>
-          <p>You can add, remove, or reorder cities in this list to suit your preferences. Each city clock is clickable — simply tap the city name to open a dedicated full-page clock view for that location.</p>
-
-          <h3 className="font-semibold text-md">🎨 Personalize Your Clock Display</h3>
-          <p>Make the clock your own! You can:</p>
-          <ul className="list-disc list-inside pl-4 space-y-1">
-            <li>Adjust the text color</li>
-            <li>Change the font style and size</li>
-          </ul>
-          <p>All customization settings are saved automatically in your browser, so your preferences stay in place the next time you visit.</p>
-
-          <h3 className="font-semibold text-md">✅ Why Use Our Online Clock?</h3>
-          <ul className="list-disc list-inside pl-4 space-y-1">
-            <li>Check the current time across multiple time zones</li>
-            <li>Quickly view the time difference between your city and others</li>
-            <li>Access a clean, mobile-friendly interface that works across devices</li>
-            <li>Enjoy real-time synchronization with no manual refreshing</li>
-          </ul>
-          <p>Our world clock is ideal for remote teams, travelers, students, and anyone who needs a reliable global timekeeping tool.</p>
+          <p>
+            Customize your clock list, explore time differences, and personalize the look with adjustable fonts and colors. With auto-saved settings and dedicated full-screen views for each city, our world clock is perfect for remote workers, frequent travelers, and anyone managing life across time zones.
+          </p>
         </CardContent>
       </Card>
 
