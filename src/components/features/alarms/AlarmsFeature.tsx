@@ -278,6 +278,9 @@ export default function AlarmsFeature() {
   };
 
   const renderAlarmsList = () => {
+    if (!mounted) {
+      return <p className="text-center text-muted-foreground">Loading alarms...</p>;
+    }
     if (alarms.length === 0) {
       return (
         <p className="text-center text-muted-foreground">
@@ -395,12 +398,7 @@ export default function AlarmsFeature() {
         
         <Card className="shadow-lg mt-4">
           <CardContent className="pt-6">
-            {/* Render alarms list or "Loading..." if not mounted, or "No alarms..." if empty */}
-            {!mounted ? (
-              <p className="text-center text-muted-foreground">Loading alarms...</p>
-            ) : (
-              renderAlarmsList()
-            )}
+            {renderAlarmsList()}
           </CardContent>
         </Card>
 
@@ -423,63 +421,15 @@ export default function AlarmsFeature() {
 
         <Card className="shadow-lg mt-4">
           <CardHeader>
-            <CardTitle className="text-xl">🔔 Online Alarm Clock</CardTitle>
-            <CardDescription>Free | Reliable | No Download Needed</CardDescription>
+            <CardTitle className="text-xl">🔔 TimeVerse Online Alarm Clock</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4 text-sm">
             <p>
-              Need a simple and reliable online alarm clock? Our web-based alarm clock helps you wake up on time, stay focused, or set reminders—all without downloading anything.
+              TimeVerse Online Alarm Clock is a free, no-download-needed tool designed to help you wake up, stay on schedule, or set reminders from any device. Simply choose the time, pick an alarm sound, add a label if you like, and hit "Set Alarm." The alarm will ring even if you switch tabs, and your settings are saved for next time.
             </p>
-            
-            <div className="space-y-2">
-              <h3 className="font-semibold text-md">✅ How to Set an Online Alarm</h3>
-              <ul className="list-disc list-inside pl-4 space-y-1">
-                <li>Select the hour and minute you want the alarm to go off.</li>
-                <li>Choose from a variety of alarm sounds—loud, soft, or ambient.</li>
-                <li>Optionally, add a label (e.g., “Meeting” or “Time to Stretch”).</li>
-                <li>Set a snooze duration (optional).</li>
-                <li>Click Set Alarm to activate it.</li>
-              </ul>
-              <p>When your alarm goes off, a message will appear and your selected sound will play.</p>
-            </div>
-
-            <div className="space-y-2">
-              <h3 className="font-semibold text-md">🔊 Features</h3>
-              <ul className="list-disc list-inside pl-4 space-y-1">
-                <li>Multiple alarm sounds</li>
-                <li>Optional alarm labels</li>
-                <li>Snooze option</li>
-                <li>Test alarm before setting</li>
-                <li>Auto-save of previous settings</li>
-                <li>Works in background tabs</li>
-                <li>Responsive on mobile & desktop</li>
-              </ul>
-            </div>
-
-            <div className="space-y-2">
-              <h3 className="font-semibold text-md">⚠️ Important Notes</h3>
-              <ul className="list-disc list-inside pl-4 space-y-1">
-                <li>Alarm won’t ring if you close your browser or shut down your device.</li>
-                <li>Make sure your volume is on.</li>
-                <li>The alarm will work even if you switch tabs or apps.</li>
-              </ul>
-            </div>
-            
-            <div className="space-y-2">
-              <h3 className="font-semibold text-md">❓FAQs</h3>
-              <div>
-                <p className="font-medium">Can I set multiple alarms?</p>
-                <p className="pl-4">Yes—just open multiple tabs and set separate alarms on each.</p>
-              </div>
-              <div>
-                <p className="font-medium">Does it work offline?</p>
-                <p className="pl-4">Yes, once loaded, it works offline in most browsers.</p>
-              </div>
-              <div>
-                <p className="font-medium">Will it work if the screen is off?</p>
-                <p className="pl-4">Yes, but not in sleep mode or if the device is powered off.</p>
-              </div>
-            </div>
+            <p>
+              With features like multiple alarm sounds, snooze options, test mode, and mobile responsiveness, TimeVerse makes time management simple and reliable. Just keep your browser open and volume on—your alarm will do the rest!
+            </p>
           </CardContent>
         </Card>
 
