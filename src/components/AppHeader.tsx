@@ -42,9 +42,33 @@ export default function AppHeader({ currentFeatureName, onNavigate }: AppHeaderP
     try {
       await signInWithPopup(auth, googleProvider);
       toast({ title: "Signed In", description: "Successfully signed in with Google."});
-    } catch (error) {
-      console.error("Error signing in with Google:", error);
-      toast({ title: "Sign In Failed", description: "Could not sign in with Google. Please try again.", variant: "destructive"});
+    } catch (error: any) {
+      console.error("Google Sign-In Error Details:", error); // Log the full error object
+      let errorMessage = "Could not sign in with Google. Please try again.";
+      if (error.code) {
+        switch (error.code) {
+          case 'auth/popup-closed-by-user':
+            errorMessage = "Sign-in popup was closed before completion. Please try again.";
+            break;
+          case 'auth/popup-blocked':
+            errorMessage = "Sign-in popup was blocked by the browser. Please disable your popup blocker and try again.";
+            break;
+          case 'auth/cancelled-popup-request':
+            errorMessage = "Multiple sign-in popups were opened. Please try again.";
+            break;
+          case 'auth/operation-not-allowed':
+            errorMessage = "Google Sign-In is not enabled for this project in the Firebase console.";
+            break;
+          case 'auth/unauthorized-domain':
+            errorMessage = "This domain is not authorized for OAuth operations for this project. Check your Firebase console's authorized domains.";
+            break;
+          // Add more specific Firebase error codes as needed
+          // e.g. https://firebase.google.com/docs/reference/js/firebase.auth.Auth#error-codes_1_
+          default:
+            errorMessage = `Google Sign-In failed: ${error.message} (Code: ${error.code})`;
+        }
+      }
+      toast({ title: "Sign In Failed", description: errorMessage, variant: "destructive"});
     }
   };
 
@@ -52,7 +76,7 @@ export default function AppHeader({ currentFeatureName, onNavigate }: AppHeaderP
     try {
       await firebaseSignOut(auth);
       toast({ title: "Signed Out", description: "You have been successfully signed out."});
-    } catch (error) {
+    } catch (error) { // Added opening brace here
       console.error("Error signing out:", error);
       toast({ title: "Sign Out Failed", description: "Could not sign out. Please try again.", variant: "destructive"});
     }
@@ -74,7 +98,7 @@ export default function AppHeader({ currentFeatureName, onNavigate }: AppHeaderP
   };
   
   let displayTheme = theme;
-  if (mounted && theme === 'system') {
+  if (mounted && theme === 'system' && typeof window !== 'undefined') {
     displayTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
   } else if (!mounted && theme === 'system') {
     displayTheme = 'light'; 
