@@ -47,7 +47,7 @@ export interface AppSettings {
   language: AppLanguage;
 }
 
-export type FeatureKey = "alarms" | "timers" | "stopwatch" | "worldclock" | "utilities" | "calendar" | "settings" | "countdown" | "teams";
+export type FeatureKey = "alarms" | "timers" | "stopwatch" | "worldclock" | "utilities" | "calendar" | "settings" | "countdown" | "teams" | "schedule";
 
 export interface NavItem {
   id: FeatureKey;
@@ -79,4 +79,11 @@ export interface ShortcutCountdownEvent {
   defaultEmoji?: string;
   targetDateLogic: () => Date; 
   description?: string; 
+}
+
+export interface ScheduleItem {
+  id: string;
+  text: string;
+  completed: boolean;
+  date: string; // YYYY-MM-DD format
 }
