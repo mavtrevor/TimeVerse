@@ -9,7 +9,6 @@ import { Button } from '@/components/ui/button';
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -20,6 +19,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { Send } from 'lucide-react';
+import { sendContactMessage, type ContactFormInput } from '@/ai/flows/contact-flow'; // Import the flow
 
 const formSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters." }).max(100, { message: "Name must not exceed 100 characters."}),
@@ -28,12 +28,14 @@ const formSchema = z.object({
   message: z.string().min(10, { message: "Message must be at least 10 characters." }).max(2000, { message: "Message must not exceed 2000 characters."}),
 });
 
-type ContactFormValues = z.infer<typeof formSchema>;
+// Use ContactFormInput from the flow to ensure consistency
+// type ContactFormValues = z.infer<typeof formSchema>; // This is still fine for client-side validation
+// but we'll pass ContactFormInput to the flow
 
 export default function ContactFeature() {
   const { toast } = useToast();
-  const form = useForm<ContactFormValues>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<ContactFormInput>({ // Use ContactFormInput here
+    resolver: zodResolver(formSchema), // formSchema is still good for client-side validation messages
     defaultValues: {
       name: '',
       email: '',
@@ -44,18 +46,33 @@ export default function ContactFeature() {
 
   const [isSubmitting, setIsSubmitting] = React.useState(false);
 
-  async function onSubmit(values: ContactFormValues) {
+  async function onSubmit(values: ContactFormInput) {
     setIsSubmitting(true);
-    // Simulate API call
-    console.log('Contact form submitted:', values);
-    await new Promise(resolve => setTimeout(resolve, 1500)); 
-
-    toast({
-      title: "Message Sent!",
-      description: "Thank you for contacting us. We'll get back to you soon.",
-    });
-    form.reset();
-    setIsSubmitting(false);
+    try {
+      const result = await sendContactMessage(values);
+      if (result.status === 'Success') {
+        toast({
+          title: "Message Sent!",
+          description: result.message,
+        });
+        form.reset();
+      } else {
+        toast({
+          title: "Submission Error",
+          description: result.message || "Could not send the message. Please try again.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error('Contact form submission error:', error);
+      toast({
+        title: "Submission Failed",
+        description: "An unexpected error occurred. Please try again later.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   return (
