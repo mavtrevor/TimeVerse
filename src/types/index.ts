@@ -8,9 +8,9 @@ export interface Alarm {
   snoozeDuration: number; // in minutes
   isActive: boolean;
   days?: number[]; // 0 for Sunday, 1 for Monday, etc. Optional for recurring alarms
-  type: 'personal' | 'team'; // New: Type of alarm
-  teamId?: string; // New: Optional team ID if type is 'team'
-  creatorName?: string; // New: Optional name of the alarm creator for team alarms
+  type: 'personal' | 'team';
+  teamId?: string; 
+  creatorName?: string; 
 }
 
 export interface Timer {
@@ -32,7 +32,7 @@ export interface WorldClockCity {
 export interface CityDetail {
   iana: string;
   name: string;
-  displayName?: string; // Optional display name, e.g., "Beijing (Shanghai Time)"
+  displayName?: string; 
   description: string;
   hemisphere: 'Northern' | 'Southern' | 'Equatorial';
 }
@@ -47,7 +47,7 @@ export interface AppSettings {
   language: AppLanguage;
 }
 
-export type FeatureKey = "alarms" | "timers" | "stopwatch" | "worldclock" | "utilities" | "calendar" | "settings" | "countdown";
+export type FeatureKey = "alarms" | "timers" | "stopwatch" | "worldclock" | "utilities" | "calendar" | "settings" | "countdown" | "teams";
 
 export interface NavItem {
   id: FeatureKey;
@@ -77,6 +77,6 @@ export interface ShortcutCountdownEvent {
   name: string; // Display name
   category: string;
   defaultEmoji?: string;
-  targetDateLogic: () => Date; // Function to calculate the target Date object
-  description?: string; // Optional short description for the shortcut
+  targetDateLogic: () => Date; 
+  description?: string; 
 }

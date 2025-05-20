@@ -1,6 +1,6 @@
 
 import type { NavItem, FeatureKey } from '@/types';
-import { AlarmClock, TimerIcon, Watch, Globe, SlidersHorizontal, CalendarDays, Settings as SettingsIcon, CalendarClock } from 'lucide-react';
+import { AlarmClock, TimerIcon, Watch, Globe, SlidersHorizontal, CalendarDays, Settings as SettingsIcon, CalendarClock, Users } from 'lucide-react';
 
 // Import feature components
 import AlarmsFeature from '@/components/features/alarms/AlarmsFeature';
@@ -11,6 +11,7 @@ import UtilitiesFeature from '@/components/features/utilities/UtilitiesFeature';
 import CalendarFeature from '@/components/features/calendar/CalendarFeature';
 import SettingsFeature from '@/components/features/settings/SettingsFeature';
 import CountdownFeature from '@/components/features/countdown/CountdownFeature';
+import TeamsFeature from '@/components/features/teams/TeamsFeature';
 
 
 export const navItemsList: NavItem[] = [
@@ -21,6 +22,7 @@ export const navItemsList: NavItem[] = [
   { id: 'countdown', label: 'Countdown', icon: CalendarClock, href: '/countdown', component: CountdownFeature },
   { id: "utilities", label: "Utilities", icon: SlidersHorizontal, href: "/utilities", component: UtilitiesFeature },
   { id: 'calendar', label: 'Calendar', icon: CalendarDays, href: '/calendar', component: CalendarFeature },
+  { id: 'teams', label: 'Teams', icon: Users, href: '/teams', component: TeamsFeature },
 ];
 
 export const settingsItem: NavItem = { id: 'settings', label: 'Settings', icon: SettingsIcon, href: '/settings', component: SettingsFeature };
@@ -30,7 +32,7 @@ export const getFeatureComponent = (key: FeatureKey | null): React.ElementType =
   if (!key) return AlarmsFeature; // Default
   const allItems = [...navItemsList, settingsItem];
   const item = allItems.find(i => i.id === key);
-  return item ? item.component : AlarmsFeature; // Default to AlarmsFeature if not found
+  return item ? item.component : AlarmsFeature; 
 };
 
 export const getFeatureLabel = (key: FeatureKey | null): string => {
@@ -45,5 +47,5 @@ export const getActiveFeatureKeyFromPathname = (pathname: string): FeatureKey =>
   const mainSegment = pathname.split('/')[1] as FeatureKey;
   if (navItemsList.some(item => item.id === mainSegment)) return mainSegment;
   if (mainSegment === 'settings') return 'settings';
-  return 'alarms'; // Default or handle as needed
+  return 'alarms'; 
 };
