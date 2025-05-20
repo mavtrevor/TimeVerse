@@ -4,6 +4,7 @@ import { GeistSans } from 'geist/font/sans';
 import { GeistMono } from 'geist/font/mono';
 import './globals.css';
 import { SettingsProvider } from '@/contexts/SettingsContext';
+import { AuthProvider } from '@/contexts/AuthContext'; // Import AuthProvider
 import { Toaster } from "@/components/ui/toaster"
 
 const geistSans = GeistSans;
@@ -23,8 +24,10 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased`} suppressHydrationWarning={true}>
         <SettingsProvider>
-          {children}
-          <Toaster />
+          <AuthProvider> {/* Wrap with AuthProvider */}
+            {children}
+            <Toaster />
+          </AuthProvider>
         </SettingsProvider>
       </body>
     </html>
