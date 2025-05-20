@@ -110,7 +110,7 @@ const triggerDesktopNotification = (alarm: Alarm) => {
   const notificationBody = alarm.label || "Your alarm is ringing!";
   const notificationOptions = {
     body: notificationBody,
-    icon: "/logo.png",
+    icon: "/logo.png", // Ensure you have a logo.png in your public folder
   };
 
   if (!("Notification" in window)) {
@@ -162,6 +162,7 @@ export default function AlarmsFeature() {
 
   useEffect(() => {
     setMounted(true);
+    // Initialize currentTime after mount to ensure client-side Date object
     setCurrentTime(new Date());
     const timerId = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => {
@@ -170,7 +171,6 @@ export default function AlarmsFeature() {
       if (wakeLockRef.current && !wakeLockRef.current.released) {
         wakeLockRef.current.release().then(() => {
           wakeLockRef.current = null;
-          console.log("Screen Wake Lock released on unmount.");
         });
       }
     };
@@ -185,12 +185,18 @@ export default function AlarmsFeature() {
           if (!wakeLockRef.current || wakeLockRef.current.released) {
             wakeLockRef.current = await navigator.wakeLock.request('screen');
             wakeLockRef.current.addEventListener('release', () => {
+              // This can happen if visibility changes, or OS revokes it.
+              // No need to re-request immediately here; visibility change handles it.
               console.log('Screen Wake Lock was released (e.g., page visibility changed).');
             });
             console.log('Screen Wake Lock acquired.');
           }
         } catch (err: any) {
-          console.error(`Failed to acquire Screen Wake Lock: ${err.name}, ${err.message}`);
+          if (err.name === 'NotAllowedError') {
+            console.warn(`Screen Wake Lock permission denied or not allowed by policy: ${err.message}. Ensure the 'screen-wake-lock' permissions policy is enabled for this origin if you expect it to work.`);
+          } else {
+            console.error(`Failed to acquire Screen Wake Lock: ${err.name}, ${err.message}`);
+          }
         }
       }
     };
@@ -199,19 +205,19 @@ export default function AlarmsFeature() {
       if (wakeLockRef.current && !wakeLockRef.current.released) {
         try {
           await wakeLockRef.current.release();
-          wakeLockRef.current = null;
-          console.log('Screen Wake Lock released (no active alarms or page not visible).');
+          wakeLockRef.current = null; // Important to nullify after release
+          console.log('Screen Wake Lock released.');
         } catch (err: any) {
            console.error(`Failed to release Screen Wake Lock: ${err.name}, ${err.message}`);
         }
       }
     };
 
-    if (mounted) {
+    if (mounted) { // Only run wake lock logic on client
       if (hasActiveAlarms && document.visibilityState === 'visible') {
         requestWakeLock();
       } else {
-        releaseWakeLock();
+        releaseWakeLock(); // Release if no active alarms or page not visible
       }
     }
 
@@ -349,8 +355,11 @@ export default function AlarmsFeature() {
   };
 
   const AlarmsContainer = () => {
-    if (!mounted) {
-      return <p className="text-center text-muted-foreground py-10">Loading alarms...</p>;
+    // This check can be simpler now if useLocalStorage initializes with INITIAL_ALARMS
+    // and only updates from localStorage after mount.
+    // However, for initial "no alarms" message before localStorage read, it's fine.
+    if (!mounted && alarms.length === 0) { // Show loading/empty before client-side data load
+        return <p className="text-center text-muted-foreground py-10">Loading alarms...</p>;
     }
     if (alarms.length === 0) {
       return (
@@ -428,7 +437,7 @@ export default function AlarmsFeature() {
   return (
     <div className="flex flex-col flex-1 p-4 md:p-6 space-y-6">
       <div className="flex-grow flex flex-col items-center justify-center text-center py-4">
-         <div className="font-mono font-bold text-primary select-none text-5xl sm:text-6xl md:text-7xl lg:text-8xl">
+         <div className="font-mono text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold text-primary select-none">
           {mounted && currentTime ? formatTime(currentTime, timeFormat) : "00:00:00"}
         </div>
         <div className="text-md sm:text-lg md:text-xl text-muted-foreground select-none mt-2">
@@ -487,7 +496,7 @@ export default function AlarmsFeature() {
             ))}
           </CardContent>
         </Card>
-        
+
         {mounted && isMobile && (
           <Card className="shadow-md border-amber-500/50 bg-amber-50/50 dark:bg-amber-900/10">
             <CardHeader className="flex flex-row items-center gap-2">
@@ -556,6 +565,7 @@ function AlarmFormDialog({ isOpen, onOpenChange, onSave, alarm, initialData }: A
         setSnoozeDuration(initialData.snoozeDuration || 5);
         setDays(initialData.days || []);
       } else { 
+        // Default for new alarm
         setTime('07:00');
         setLabel('');
         setSound(defaultAlarmSound);
@@ -569,18 +579,18 @@ function AlarmFormDialog({ isOpen, onOpenChange, onSave, alarm, initialData }: A
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSave({ time, label, sound, snoozeEnabled, snoozeDuration, days });
-    onOpenChange(false); 
+    onOpenChange(false); // Close dialog on save
   };
 
   const toggleDay = (dayIndex: number) => {
     setDays(prevDays =>
       prevDays.includes(dayIndex)
         ? prevDays.filter(d => d !== dayIndex)
-        : [...prevDays, dayIndex].sort((a,b) => a-b) 
+        : [...prevDays, dayIndex].sort((a,b) => a-b) // Keep sorted
     );
   };
 
-  const dayLabels = ['S', 'M', 'T', 'W', 'T', 'F', 'S']; 
+  const dayLabels = ['S', 'M', 'T', 'W', 'T', 'F', 'S']; // Sunday to Saturday
 
 
   return (
@@ -616,10 +626,10 @@ function AlarmFormDialog({ isOpen, onOpenChange, onSave, alarm, initialData }: A
               {dayLabels.map((dayLabel, index) => (
                 <Button
                   key={index}
-                  type="button" 
+                  type="button" // Important: prevent form submission
                   variant={days.includes(index) ? "default" : "outline"}
                   size="icon"
-                  className="h-8 w-8 rounded-full" 
+                  className="h-8 w-8 rounded-full" // Smaller, rounder buttons
                   onClick={() => toggleDay(index)}
                 >
                   {dayLabel}
@@ -672,9 +682,10 @@ function RingingAlarmDialog({ alarm, onDismiss, timeFormat }: RingingAlarmDialog
     }
   };
 
+  // Handle closing dialog via Esc or 'x' button
   const handleOpenChange = (open: boolean) => {
     setIsOpen(open);
-    if (!open && alarm) { 
+    if (!open && alarm) { // If dialog is closed and there was an alarm
       onDismiss(alarm);
     }
   };
@@ -685,13 +696,14 @@ function RingingAlarmDialog({ alarm, onDismiss, timeFormat }: RingingAlarmDialog
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogContent
         className="sm:max-w-md p-0"
-        onInteractOutside={(e) => e.preventDefault()} 
-        onEscapeKeyDown={(e) => e.preventDefault()} 
+        onInteractOutside={(e) => e.preventDefault()} // Prevent closing by clicking outside
+        onEscapeKeyDown={(e) => e.preventDefault()} // Prevent closing with Esc key initially
       >
         <DialogHeader className="bg-destructive text-destructive-foreground p-4 rounded-t-md flex flex-row justify-between items-center">
           <DialogTitle>
-            Alarm 
+            Alarm {/* Could be dynamic if needed */}
           </DialogTitle>
+          {/* No explicit close 'x' button here to force user interaction with 'OK' */}
         </DialogHeader>
         <div className="p-6 flex flex-col items-center space-y-4">
           <AlarmClock className="h-16 w-16 sm:h-20 sm:w-20 text-destructive animate-pulse" />
@@ -708,3 +720,4 @@ function RingingAlarmDialog({ alarm, onDismiss, timeFormat }: RingingAlarmDialog
   );
 }
 
+    
