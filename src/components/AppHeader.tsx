@@ -43,29 +43,31 @@ export default function AppHeader({ currentFeatureName, onNavigate }: AppHeaderP
       await signInWithPopup(auth, googleProvider);
       toast({ title: "Signed In", description: "Successfully signed in with Google."});
     } catch (error: any) {
-      console.error("Google Sign-In Error Details:", error); // Log the full error object
       let errorMessage = "Could not sign in with Google. Please try again.";
-      if (error.code) {
-        switch (error.code) {
-          case 'auth/popup-closed-by-user':
-            errorMessage = "Sign-in popup was closed before completion. Please try again.";
-            break;
-          case 'auth/popup-blocked':
-            errorMessage = "Sign-in popup was blocked by the browser. Please disable your popup blocker and try again.";
-            break;
-          case 'auth/cancelled-popup-request':
-            errorMessage = "Multiple sign-in popups were opened. Please try again.";
-            break;
-          case 'auth/operation-not-allowed':
-            errorMessage = "Google Sign-In is not enabled for this project in the Firebase console.";
-            break;
-          case 'auth/unauthorized-domain':
-            errorMessage = "This domain is not authorized for OAuth operations for this project. Check your Firebase console's authorized domains.";
-            break;
-          // Add more specific Firebase error codes as needed
-          // e.g. https://firebase.google.com/docs/reference/js/firebase.auth.Auth#error-codes_1_
-          default:
-            errorMessage = `Google Sign-In failed: ${error.message} (Code: ${error.code})`;
+      
+      if (error.code === 'auth/popup-closed-by-user') {
+        console.warn("Google Sign-In: Popup closed by user.", error); // Specific log for this case
+        errorMessage = "Sign-in popup was closed before completion. Please try again.";
+      } else {
+        console.error("Google Sign-In Error Details:", error); // General log for other errors
+        if (error.code) {
+          switch (error.code) {
+            // 'auth/popup-closed-by-user' is handled above
+            case 'auth/popup-blocked':
+              errorMessage = "Sign-in popup was blocked by the browser. Please disable your popup blocker and try again.";
+              break;
+            case 'auth/cancelled-popup-request':
+              errorMessage = "Multiple sign-in popups were opened. Please try again.";
+              break;
+            case 'auth/operation-not-allowed':
+              errorMessage = "Google Sign-In is not enabled for this project in the Firebase console.";
+              break;
+            case 'auth/unauthorized-domain':
+              errorMessage = "This domain is not authorized for OAuth operations for this project. Check your Firebase console's authorized domains.";
+              break;
+            default:
+              errorMessage = `Google Sign-In failed: ${error.message} (Code: ${error.code})`;
+          }
         }
       }
       toast({ title: "Sign In Failed", description: errorMessage, variant: "destructive"});
@@ -76,7 +78,7 @@ export default function AppHeader({ currentFeatureName, onNavigate }: AppHeaderP
     try {
       await firebaseSignOut(auth);
       toast({ title: "Signed Out", description: "You have been successfully signed out."});
-    } catch (error) { // Added opening brace here
+    } catch (error) { 
       console.error("Error signing out:", error);
       toast({ title: "Sign Out Failed", description: "Could not sign out. Please try again.", variant: "destructive"});
     }
@@ -109,6 +111,12 @@ export default function AppHeader({ currentFeatureName, onNavigate }: AppHeaderP
     return email.substring(0, 2).toUpperCase();
   };
 
+  // Determine if the component is ready on the client to avoid hydration issues with theme/auth rendering
+  const [clientReady, setClientReady] = useState(false);
+  useEffect(() => {
+    setClientReady(true);
+  }, []);
+
 
   return (
     <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6 sm:py-4">
@@ -120,7 +128,7 @@ export default function AppHeader({ currentFeatureName, onNavigate }: AppHeaderP
       )}
       <h1 className="text-xl font-semibold grow">{currentFeatureName}</h1>
       <div className="flex items-center gap-2">
-        {mounted ? (
+        {clientReady ? (
             <Button variant="ghost" size="icon" onClick={toggleTheme} aria-label="Toggle theme">
                 {displayTheme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
             </Button>
@@ -135,7 +143,7 @@ export default function AppHeader({ currentFeatureName, onNavigate }: AppHeaderP
           </Button>
         </Link>
 
-        {authLoading ? (
+        {!clientReady || authLoading ? (
           <Button variant="ghost" size="icon" disabled>
             <UserIcon className="h-5 w-5 animate-pulse" />
           </Button>
