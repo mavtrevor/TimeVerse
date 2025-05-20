@@ -8,6 +8,9 @@ export interface Alarm {
   snoozeDuration: number; // in minutes
   isActive: boolean;
   days?: number[]; // 0 for Sunday, 1 for Monday, etc. Optional for recurring alarms
+  type: 'personal' | 'team'; // New: Type of alarm
+  teamId?: string; // New: Optional team ID if type is 'team'
+  creatorName?: string; // New: Optional name of the alarm creator for team alarms
 }
 
 export interface Timer {
@@ -50,7 +53,7 @@ export interface NavItem {
   id: FeatureKey;
   label: string;
   icon: React.ElementType;
-  component?: React.ElementType; // Optional as pages handle component rendering in (app) layout
+  component: React.ElementType;
   href: string;
 }
 

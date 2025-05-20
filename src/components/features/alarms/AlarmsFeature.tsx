@@ -6,7 +6,7 @@ import type { Alarm } from '@/types';
 import useLocalStorage from '@/hooks/useLocalStorage';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter, CardDescription } from '@/components/ui/card';
-import { PlusCircle, Edit, Trash2, BellRing, AlarmClock, AlertTriangle } from 'lucide-react';
+import { PlusCircle, Edit, Trash2, BellRing, AlarmClock, AlertTriangle, Users, User } from 'lucide-react';
 import { useSettings } from '@/hooks/useSettings';
 import { formatTime, parseTimeString } from '@/lib/timeUtils';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose } from '@/components/ui/dialog';
@@ -110,7 +110,7 @@ const triggerDesktopNotification = (alarm: Alarm) => {
   const notificationBody = alarm.label || "Your alarm is ringing!";
   const notificationOptions = {
     body: notificationBody,
-    icon: "/logo.png", // Ensure you have a logo.png in your public folder
+    icon: "/logo.png",
   };
 
   if (!("Notification" in window)) {
@@ -154,7 +154,7 @@ export default function AlarmsFeature() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [ringingAlarmId, setRingingAlarmId] = useState<string | null>(null);
   const [ringingAlarmModal, setRingingAlarmModal] = useState<Alarm | null>(null);
-  const [shortcutInitialData, setShortcutInitialData] = useState<Partial<Omit<Alarm, 'id' | 'isActive'>> | null>(null);
+  const [shortcutInitialData, setShortcutInitialData] = useState<Partial<Omit<Alarm, 'id' | 'isActive' | 'type'>> | null>(null);
   const [mounted, setMounted] = useState(false);
   const wakeLockRef = useRef<WakeLockSentinel | null>(null);
   const isMobile = useIsMobile();
@@ -162,7 +162,6 @@ export default function AlarmsFeature() {
 
   useEffect(() => {
     setMounted(true);
-    // Initialize currentTime after mount to ensure client-side Date object
     setCurrentTime(new Date());
     const timerId = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => {
@@ -185,9 +184,7 @@ export default function AlarmsFeature() {
           if (!wakeLockRef.current || wakeLockRef.current.released) {
             wakeLockRef.current = await navigator.wakeLock.request('screen');
             wakeLockRef.current.addEventListener('release', () => {
-              // This can happen if visibility changes, or OS revokes it.
-              // No need to re-request immediately here; visibility change handles it.
-              console.log('Screen Wake Lock was released (e.g., page visibility changed).');
+              console.log('Screen Wake Lock was released.');
             });
             console.log('Screen Wake Lock acquired.');
           }
@@ -205,7 +202,7 @@ export default function AlarmsFeature() {
       if (wakeLockRef.current && !wakeLockRef.current.released) {
         try {
           await wakeLockRef.current.release();
-          wakeLockRef.current = null; // Important to nullify after release
+          wakeLockRef.current = null; 
           console.log('Screen Wake Lock released.');
         } catch (err: any) {
            console.error(`Failed to release Screen Wake Lock: ${err.name}, ${err.message}`);
@@ -213,11 +210,11 @@ export default function AlarmsFeature() {
       }
     };
 
-    if (mounted) { // Only run wake lock logic on client
+    if (mounted) { 
       if (hasActiveAlarms && document.visibilityState === 'visible') {
         requestWakeLock();
       } else {
-        releaseWakeLock(); // Release if no active alarms or page not visible
+        releaseWakeLock(); 
       }
     }
 
@@ -274,13 +271,19 @@ export default function AlarmsFeature() {
 
 
   const handleSaveAlarm = (alarmData: Omit<Alarm, 'id' | 'isActive'>) => {
+    // For conceptual team alarms, set a placeholder creatorName if it's a team alarm
+    const fullAlarmData = {
+      ...alarmData,
+      creatorName: alarmData.type === 'team' ? 'You (Team)' : undefined,
+    };
+
     if (editingAlarm) {
-      setAlarms(alarms.map(a => a.id === editingAlarm.id ? { ...editingAlarm, ...alarmData } : a));
-      toast({ title: "Alarm Updated", description: `Alarm "${alarmData.label || 'Alarm'}" has been updated.` });
+      setAlarms(alarms.map(a => a.id === editingAlarm.id ? { ...editingAlarm, ...fullAlarmData } : a));
+      toast({ title: "Alarm Updated", description: `Alarm "${fullAlarmData.label || 'Alarm'}" has been updated.` });
     } else {
-      const newAlarm: Alarm = { ...alarmData, id: Date.now().toString(), isActive: true };
+      const newAlarm: Alarm = { ...fullAlarmData, id: Date.now().toString(), isActive: true };
       setAlarms([...alarms, newAlarm]);
-      toast({ title: "Alarm Added", description: `Alarm "${alarmData.label || 'Alarm'}" has been set.` });
+      toast({ title: "Alarm Added", description: `Alarm "${fullAlarmData.label || 'Alarm'}" has been set.` });
     }
     setEditingAlarm(null);
     setIsFormOpen(false);
@@ -355,10 +358,7 @@ export default function AlarmsFeature() {
   };
 
   const AlarmsContainer = () => {
-    // This check can be simpler now if useLocalStorage initializes with INITIAL_ALARMS
-    // and only updates from localStorage after mount.
-    // However, for initial "no alarms" message before localStorage read, it's fine.
-    if (!mounted && alarms.length === 0) { // Show loading/empty before client-side data load
+    if (!mounted) {
         return <p className="text-center text-muted-foreground py-10">Loading alarms...</p>;
     }
     if (alarms.length === 0) {
@@ -377,7 +377,16 @@ export default function AlarmsFeature() {
             return (
             <Card key={alarm.id} className={`shadow-lg flex flex-col ${isEffectivelyInactive ? 'opacity-60' : ''} ${isRingingCardUI ? 'border-destructive ring-2 ring-destructive' : ''}`}>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-lg sm:text-xl truncate" title={alarm.label || "Alarm"}>{alarm.label || "Alarm"}</CardTitle>
+                <div className="flex flex-col">
+                    <CardTitle className="text-lg sm:text-xl truncate flex items-center" title={alarm.label || "Alarm"}>
+                      {alarm.type === 'team' && <Users className="h-4 w-4 mr-2 text-muted-foreground" />}
+                      {alarm.type === 'personal' && <User className="h-4 w-4 mr-2 text-muted-foreground" />}
+                      {alarm.label || "Alarm"}
+                    </CardTitle>
+                    {alarm.type === 'team' && alarm.creatorName && (
+                      <CardDescription className="text-xs text-muted-foreground">Set by {alarm.creatorName}</CardDescription>
+                    )}
+                </div>
                 {!isRingingCardUI && !(ringingAlarmModal && ringingAlarmModal.id === alarm.id) && (
                 <Switch
                     checked={alarm.isActive}
@@ -537,7 +546,7 @@ interface AlarmFormDialogProps {
   onOpenChange: (isOpen: boolean) => void;
   onSave: (alarmData: Omit<Alarm, 'id' | 'isActive'>) => void;
   alarm: Alarm | null;
-  initialData?: Partial<Omit<Alarm, 'id' | 'isActive'>> | null; 
+  initialData?: Partial<Omit<Alarm, 'id' | 'isActive' | 'type'>> | null; 
 }
 
 function AlarmFormDialog({ isOpen, onOpenChange, onSave, alarm, initialData }: AlarmFormDialogProps) {
@@ -547,6 +556,10 @@ function AlarmFormDialog({ isOpen, onOpenChange, onSave, alarm, initialData }: A
   const [snoozeEnabled, setSnoozeEnabled] = useState(true);
   const [snoozeDuration, setSnoozeDuration] = useState(5);
   const [days, setDays] = useState<number[]>([]); 
+  const [alarmType, setAlarmType] = useState<Alarm['type']>('personal');
+  // Placeholder for actual team data - in a real app this would come from user's teams
+  const [selectedTeamId, setSelectedTeamId] = useState<string | undefined>(undefined);
+
 
   useEffect(() => {
     if (isOpen) {
@@ -557,6 +570,8 @@ function AlarmFormDialog({ isOpen, onOpenChange, onSave, alarm, initialData }: A
         setSnoozeEnabled(alarm.snoozeEnabled);
         setSnoozeDuration(alarm.snoozeDuration);
         setDays(alarm.days || []);
+        setAlarmType(alarm.type || 'personal');
+        setSelectedTeamId(alarm.teamId);
       } else if (initialData) { 
         setTime(initialData.time || '07:00');
         setLabel(initialData.label || '');
@@ -564,6 +579,8 @@ function AlarmFormDialog({ isOpen, onOpenChange, onSave, alarm, initialData }: A
         setSnoozeEnabled(initialData.snoozeEnabled !== undefined ? initialData.snoozeEnabled : true);
         setSnoozeDuration(initialData.snoozeDuration || 5);
         setDays(initialData.days || []);
+        setAlarmType('personal'); // Shortcuts are personal by default
+        setSelectedTeamId(undefined);
       } else { 
         // Default for new alarm
         setTime('07:00');
@@ -572,13 +589,25 @@ function AlarmFormDialog({ isOpen, onOpenChange, onSave, alarm, initialData }: A
         setSnoozeEnabled(true);
         setSnoozeDuration(5);
         setDays([]);
+        setAlarmType('personal');
+        setSelectedTeamId(undefined);
       }
     }
   }, [alarm, isOpen, initialData]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSave({ time, label, sound, snoozeEnabled, snoozeDuration, days });
+    onSave({ 
+      time, 
+      label, 
+      sound, 
+      snoozeEnabled, 
+      snoozeDuration, 
+      days, 
+      type: alarmType, 
+      teamId: alarmType === 'team' ? (selectedTeamId || 'placeholder_team_1') : undefined,
+      // creatorName would be set by backend if user is logged in
+    });
     onOpenChange(false); // Close dialog on save
   };
 
@@ -592,6 +621,11 @@ function AlarmFormDialog({ isOpen, onOpenChange, onSave, alarm, initialData }: A
 
   const dayLabels = ['S', 'M', 'T', 'W', 'T', 'F', 'S']; // Sunday to Saturday
 
+  // Placeholder teams - in a real app, this would be fetched for the logged-in user
+  const userTeams = [
+    { id: 'placeholder_team_1', name: 'My Family' },
+    { id: 'placeholder_team_2', name: 'Work Project X' },
+  ];
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
@@ -600,6 +634,37 @@ function AlarmFormDialog({ isOpen, onOpenChange, onSave, alarm, initialData }: A
           <DialogTitle>{alarm ? 'Edit Alarm' : (initialData ? 'Add Preset Alarm' : 'Add Alarm')}</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 pt-4">
+          <div>
+            <Label htmlFor="alarmType">Alarm Type</Label>
+            <Select value={alarmType} onValueChange={(value: Alarm['type']) => setAlarmType(value)}>
+              <SelectTrigger id="alarmType" className="mt-1">
+                <SelectValue placeholder="Select type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="personal">Personal</SelectItem>
+                <SelectItem value="team">Team (Conceptual)</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {alarmType === 'team' && (
+            <div>
+              <Label htmlFor="teamSelect">Select Team (Conceptual)</Label>
+              <Select value={selectedTeamId} onValueChange={setSelectedTeamId}>
+                <SelectTrigger id="teamSelect" className="mt-1">
+                  <SelectValue placeholder="Select a team" />
+                </SelectTrigger>
+                <SelectContent>
+                  {userTeams.map(team => (
+                    <SelectItem key={team.id} value={team.id}>{team.name}</SelectItem>
+                  ))}
+                   <SelectItem value="new_team" disabled>+ Create New Team (Not Implemented)</SelectItem>
+                </SelectContent>
+              </Select>
+               <p className="text-xs text-muted-foreground mt-1">Note: Team functionality requires backend setup.</p>
+            </div>
+          )}
+
           <div>
             <Label htmlFor="time">Time</Label>
             <Input id="time" type="time" value={time} onChange={e => setTime(e.target.value)} required className="mt-1"/>
@@ -626,10 +691,10 @@ function AlarmFormDialog({ isOpen, onOpenChange, onSave, alarm, initialData }: A
               {dayLabels.map((dayLabel, index) => (
                 <Button
                   key={index}
-                  type="button" // Important: prevent form submission
+                  type="button" 
                   variant={days.includes(index) ? "default" : "outline"}
                   size="icon"
-                  className="h-8 w-8 rounded-full" // Smaller, rounder buttons
+                  className="h-8 w-8 rounded-full" 
                   onClick={() => toggleDay(index)}
                 >
                   {dayLabel}
@@ -648,7 +713,7 @@ function AlarmFormDialog({ isOpen, onOpenChange, onSave, alarm, initialData }: A
           {snoozeEnabled && (
             <div>
               <Label htmlFor="snoozeDuration">Snooze Duration (minutes)</Label>
-              <Input id="snoozeDuration" type="number" value={snoozeDuration} onChange={e => setSnoozeDuration(Math.max(1, parseInt(e.target.value, 10)))} min="1" className="mt-1"/>
+              <Input id="snoozeDuration" type="number" value={snoozeDuration} onChange={e => setSnoozeDuration(Math.max(1, parseInt(e.target.value, 10)) || 0)} min="1" className="mt-1"/>
             </div>
           )}
           <DialogFooter className="pt-4">
@@ -682,10 +747,9 @@ function RingingAlarmDialog({ alarm, onDismiss, timeFormat }: RingingAlarmDialog
     }
   };
 
-  // Handle closing dialog via Esc or 'x' button
   const handleOpenChange = (open: boolean) => {
     setIsOpen(open);
-    if (!open && alarm) { // If dialog is closed and there was an alarm
+    if (!open && alarm) { 
       onDismiss(alarm);
     }
   };
@@ -696,19 +760,21 @@ function RingingAlarmDialog({ alarm, onDismiss, timeFormat }: RingingAlarmDialog
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogContent
         className="sm:max-w-md p-0"
-        onInteractOutside={(e) => e.preventDefault()} // Prevent closing by clicking outside
-        onEscapeKeyDown={(e) => e.preventDefault()} // Prevent closing with Esc key initially
+        onInteractOutside={(e) => e.preventDefault()} 
+        onEscapeKeyDown={(e) => e.preventDefault()} 
       >
         <DialogHeader className="bg-destructive text-destructive-foreground p-4 rounded-t-md flex flex-row justify-between items-center">
           <DialogTitle>
-            Alarm {/* Could be dynamic if needed */}
+            Alarm {alarm.type === 'team' ? '(Team)' : ''}
           </DialogTitle>
-          {/* No explicit close 'x' button here to force user interaction with 'OK' */}
         </DialogHeader>
         <div className="p-6 flex flex-col items-center space-y-4">
           <AlarmClock className="h-16 w-16 sm:h-20 sm:w-20 text-destructive animate-pulse" />
           <p className="text-xl sm:text-2xl font-semibold text-center">{alarm.label || "Alarm"}</p>
           <p className="text-4xl sm:text-5xl font-mono">{formatTime(parseTimeString(alarm.time), timeFormat)}</p>
+          {alarm.type === 'team' && alarm.creatorName && (
+             <p className="text-sm text-muted-foreground">Set by: {alarm.creatorName}</p>
+          )}
         </div>
         <DialogFooter className="p-4 border-t sm:justify-center">
           <Button onClick={handleDismiss} className="bg-destructive hover:bg-destructive/90 text-destructive-foreground w-full sm:w-auto px-8 py-3 text-lg">
@@ -719,5 +785,3 @@ function RingingAlarmDialog({ alarm, onDismiss, timeFormat }: RingingAlarmDialog
     </Dialog>
   );
 }
-
-    
