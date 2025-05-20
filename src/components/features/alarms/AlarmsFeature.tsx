@@ -16,6 +16,7 @@ import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import type { TimeFormat } from '@/types';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const defaultAlarmSound = "default_alarm";
 const alarmSounds = [
@@ -74,8 +75,6 @@ const playAlarmSound = (soundId: string, audioRef: React.MutableRefObject<HTMLAu
       audioRef.current.loop = true;
       audioRef.current.play().catch(error => {
         if (error.name === 'AbortError') {
-          // This is common if pause() is called quickly after play().
-          // Usually not a critical issue, but log it for awareness.
           console.warn(`Play request for '${soundId}' was interrupted (AbortError). This might be normal if the sound was stopped quickly.`);
         } else {
           console.warn(`Error playing sound '${soundId}':`, error);
@@ -98,7 +97,7 @@ const stopAlarmSound = (audioRef: React.MutableRefObject<HTMLAudioElement | null
         audioRef.current.pause();
     }
     audioRef.current.currentTime = 0;
-    audioRef.current.src = ""; // Release the audio source
+    audioRef.current.src = ""; 
     audioRef.current.loop = false;
   }
 };
@@ -111,7 +110,7 @@ const triggerDesktopNotification = (alarm: Alarm) => {
   const notificationBody = alarm.label || "Your alarm is ringing!";
   const notificationOptions = {
     body: notificationBody,
-    icon: "/logo.png", // Ensure you have a logo.png in your public folder
+    icon: "/logo.png",
   };
 
   if (!("Notification" in window)) {
@@ -158,15 +157,16 @@ export default function AlarmsFeature() {
   const [shortcutInitialData, setShortcutInitialData] = useState<Partial<Omit<Alarm, 'id' | 'isActive'>> | null>(null);
   const [mounted, setMounted] = useState(false);
   const wakeLockRef = useRef<WakeLockSentinel | null>(null);
+  const isMobile = useIsMobile();
+
 
   useEffect(() => {
     setMounted(true);
-    setCurrentTime(new Date()); // Initialize once on mount
+    setCurrentTime(new Date());
     const timerId = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => {
       clearInterval(timerId);
-      stopAlarmSound(audioRef); // Stop sound on component unmount
-      // Release wake lock on component unmount
+      stopAlarmSound(audioRef); 
       if (wakeLockRef.current && !wakeLockRef.current.released) {
         wakeLockRef.current.release().then(() => {
           wakeLockRef.current = null;
@@ -176,7 +176,6 @@ export default function AlarmsFeature() {
     };
   }, []);
 
-  // Screen Wake Lock management
   useEffect(() => {
     const hasActiveAlarms = alarms.some(alarm => alarm.isActive);
 
@@ -186,12 +185,7 @@ export default function AlarmsFeature() {
           if (!wakeLockRef.current || wakeLockRef.current.released) {
             wakeLockRef.current = await navigator.wakeLock.request('screen');
             wakeLockRef.current.addEventListener('release', () => {
-              // This event listener is useful if the lock is released by the system
               console.log('Screen Wake Lock was released (e.g., page visibility changed).');
-              // Optionally, re-request if still needed and page is visible:
-              // if (document.visibilityState === 'visible' && alarms.some(a => a.isActive)) {
-              //   requestWakeLock();
-              // }
             });
             console.log('Screen Wake Lock acquired.');
           }
@@ -206,7 +200,7 @@ export default function AlarmsFeature() {
         try {
           await wakeLockRef.current.release();
           wakeLockRef.current = null;
-          console.log('Screen Wake Lock released (no active alarms).');
+          console.log('Screen Wake Lock released (no active alarms or page not visible).');
         } catch (err: any) {
            console.error(`Failed to release Screen Wake Lock: ${err.name}, ${err.message}`);
         }
@@ -233,7 +227,6 @@ export default function AlarmsFeature() {
 
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
-      // Release on cleanup, even if not explicitly released by logic above
       if (wakeLockRef.current && !wakeLockRef.current.released) {
         wakeLockRef.current.release().then(() => {
           wakeLockRef.current = null;
@@ -257,21 +250,20 @@ export default function AlarmsFeature() {
           alarmIsToday &&
           alarmTime.getHours() === now.getHours() &&
           alarmTime.getMinutes() === now.getMinutes() &&
-          now.getSeconds() === 0 // Check only at the start of the minute
+          now.getSeconds() === 0 
         ) {
           playAlarmSound(alarm.sound, audioRef);
           triggerDesktopNotification(alarm);
           toast({
             title: "Alarm Ringing!",
             description: alarm.label || `Alarm set for ${formatTime(alarmTime, timeFormat)} is now ringing.`,
-            duration: 10000, // Show toast for 10 seconds
+            duration: 10000, 
           });
           setRingingAlarmId(alarm.id);
           setRingingAlarmModal(alarm);
         }
       }
     });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentTime, alarms, timeFormat, toast, ringingAlarmId, mounted, ringingAlarmModal]);
 
 
@@ -318,10 +310,9 @@ export default function AlarmsFeature() {
   const handleDismissModalAndDeactivateIfNotRecurring = (alarmToDismiss: Alarm) => {
     stopAlarmSound(audioRef);
     setRingingAlarmModal(null);
-    setRingingAlarmId(null); // Also reset the card UI state
+    setRingingAlarmId(null); 
 
     if (!isRecurringAlarm(alarmToDismiss) && alarmToDismiss.isActive) {
-      // Deactivate non-recurring alarms after they've rung and been dismissed
       setAlarms(prevAlarms => prevAlarms.map(a =>
         a.id === alarmToDismiss.id ? { ...a, isActive: false } : a
       ));
@@ -333,26 +324,26 @@ export default function AlarmsFeature() {
 
 
   const openEditForm = (alarm: Alarm) => {
-    setShortcutInitialData(null); // Clear shortcut data if opening for edit
+    setShortcutInitialData(null); 
     setEditingAlarm(alarm);
     setIsFormOpen(true);
   };
 
   const openAddForm = () => {
-    setShortcutInitialData(null); // Clear shortcut data if opening for new alarm
+    setShortcutInitialData(null); 
     setEditingAlarm(null);
     setIsFormOpen(true);
   };
 
   const handleShortcutClick = (time: string, label: string) => {
-    setEditingAlarm(null); // Ensure not in edit mode
+    setEditingAlarm(null); 
     setShortcutInitialData({
       time,
-      label: '', // Keep label empty for shortcuts
+      label: '', 
       sound: defaultAlarmSound,
       snoozeEnabled: true,
       snoozeDuration: 5,
-      days: [] // Shortcuts are for one-time alarms by default
+      days: [] 
     });
     setIsFormOpen(true);
   };
@@ -371,8 +362,6 @@ export default function AlarmsFeature() {
     return (
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {alarms.map(alarm => {
-            // Determine if this specific card should be in the "ringing" UI state
-            // This means the modal is NOT open for this alarm, but its ID matches ringingAlarmId
             const isRingingCardUI = ringingAlarmId === alarm.id && (!ringingAlarmModal || ringingAlarmModal.id !== alarm.id);
             const isEffectivelyInactive = !alarm.isActive && !(ringingAlarmId === alarm.id || (ringingAlarmModal && ringingAlarmModal.id === alarm.id));
 
@@ -380,13 +369,12 @@ export default function AlarmsFeature() {
             <Card key={alarm.id} className={`shadow-lg flex flex-col ${isEffectivelyInactive ? 'opacity-60' : ''} ${isRingingCardUI ? 'border-destructive ring-2 ring-destructive' : ''}`}>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-lg sm:text-xl truncate" title={alarm.label || "Alarm"}>{alarm.label || "Alarm"}</CardTitle>
-                {/* Show switch only if NOT in ringing card UI state and modal is not for this alarm */}
                 {!isRingingCardUI && !(ringingAlarmModal && ringingAlarmModal.id === alarm.id) && (
                 <Switch
                     checked={alarm.isActive}
                     onCheckedChange={(checked) => toggleAlarmActive(alarm.id, checked)}
                     aria-label={alarm.isActive ? "Deactivate alarm" : "Activate alarm"}
-                    disabled={ringingAlarmId === alarm.id || (ringingAlarmModal && ringingAlarmModal.id === alarm.id)} // Disable if ringing or modal open for this alarm
+                    disabled={ringingAlarmId === alarm.id || (ringingAlarmModal && ringingAlarmModal.id === alarm.id)} 
                 />
                 )}
             </CardHeader>
@@ -417,12 +405,10 @@ export default function AlarmsFeature() {
             </CardContent>
             <CardFooter className="p-3 sm:p-4 border-t flex justify-end gap-2">
                 {isRingingCardUI ? (
-                // If card is in ringing UI state, show only dismiss (which triggers modal handler)
                 <Button variant="destructive" onClick={() => handleDismissModalAndDeactivateIfNotRecurring(alarm)} className="w-full">
                     Dismiss
                 </Button>
                 ) : (
-                // Standard Edit/Delete buttons
                 <>
                     <Button variant="ghost" size="icon" onClick={() => openEditForm(alarm)} aria-label="Edit alarm" disabled={ringingAlarmId === alarm.id || (ringingAlarmModal && ringingAlarmModal.id === alarm.id)}>
                     <Edit className="h-4 w-4" />
@@ -441,9 +427,8 @@ export default function AlarmsFeature() {
 
   return (
     <div className="flex flex-col flex-1 p-4 md:p-6 space-y-6">
-      {/* Digital Clock Display */}
       <div className="flex-grow flex flex-col items-center justify-center text-center py-4">
-         <div className={`font-mono font-bold text-primary select-none text-5xl sm:text-6xl md:text-7xl lg:text-8xl`}>
+         <div className="font-mono font-bold text-primary select-none text-5xl sm:text-6xl md:text-7xl lg:text-8xl">
           {mounted && currentTime ? formatTime(currentTime, timeFormat) : "00:00:00"}
         </div>
         <div className="text-md sm:text-lg md:text-xl text-muted-foreground select-none mt-2">
@@ -463,14 +448,14 @@ export default function AlarmsFeature() {
           isOpen={isFormOpen}
           onOpenChange={(open) => {
             setIsFormOpen(open);
-            if (!open) { // Reset states when dialog is closed
+            if (!open) { 
                 setEditingAlarm(null);
                 setShortcutInitialData(null);
             }
           }}
           onSave={handleSaveAlarm}
           alarm={editingAlarm}
-          initialData={shortcutInitialData} // Pass shortcut data here
+          initialData={shortcutInitialData} 
         />
 
         <RingingAlarmDialog
@@ -502,21 +487,23 @@ export default function AlarmsFeature() {
             ))}
           </CardContent>
         </Card>
-
-        <Card className="shadow-md border-amber-500/50 bg-amber-50/50 dark:bg-amber-900/10">
-          <CardHeader className="flex flex-row items-center gap-2">
-            <AlertTriangle className="h-5 w-5 text-amber-600 dark:text-amber-500" />
-            <CardTitle className="text-md text-amber-700 dark:text-amber-400">Important Note for Mobile Users</CardTitle>
-          </CardHeader>
-          <CardContent className="text-sm text-amber-700 dark:text-amber-300 space-y-2">
-            <p>
-              For alarms to ring reliably, especially when your phone screen is locked or the browser is in the background, please keep this TimeVerse page open and active in your browser.
-            </p>
-            <p>
-              Mobile operating systems (iOS and Android) often restrict background activity and audio playback from web pages to save battery. While we try to keep the screen awake if an alarm is active and this page is visible, these OS-level restrictions can sometimes prevent alarms from sounding as expected.
-            </p>
-          </CardContent>
-        </Card>
+        
+        {mounted && isMobile && (
+          <Card className="shadow-md border-amber-500/50 bg-amber-50/50 dark:bg-amber-900/10">
+            <CardHeader className="flex flex-row items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-amber-600 dark:text-amber-500" />
+              <CardTitle className="text-md text-amber-700 dark:text-amber-400">Important Note for Mobile Users</CardTitle>
+            </CardHeader>
+            <CardContent className="text-sm text-amber-700 dark:text-amber-300 space-y-2">
+              <p>
+                For alarms to ring reliably, especially when your phone screen is locked or the browser is in the background, please keep this TimeVerse page open and active in your browser.
+              </p>
+              <p>
+                Mobile operating systems (iOS and Android) often restrict background activity and audio playback from web pages to save battery. While we try to keep the screen awake if an alarm is active and this page is visible, these OS-level restrictions can sometimes prevent alarms from sounding as expected.
+              </p>
+            </CardContent>
+          </Card>
+        )}
 
         <Card className="shadow-lg">
           <CardHeader>
@@ -541,7 +528,7 @@ interface AlarmFormDialogProps {
   onOpenChange: (isOpen: boolean) => void;
   onSave: (alarmData: Omit<Alarm, 'id' | 'isActive'>) => void;
   alarm: Alarm | null;
-  initialData?: Partial<Omit<Alarm, 'id' | 'isActive'>> | null; // For pre-filling from shortcuts
+  initialData?: Partial<Omit<Alarm, 'id' | 'isActive'>> | null; 
 }
 
 function AlarmFormDialog({ isOpen, onOpenChange, onSave, alarm, initialData }: AlarmFormDialogProps) {
@@ -550,26 +537,25 @@ function AlarmFormDialog({ isOpen, onOpenChange, onSave, alarm, initialData }: A
   const [sound, setSound] = useState(defaultAlarmSound);
   const [snoozeEnabled, setSnoozeEnabled] = useState(true);
   const [snoozeDuration, setSnoozeDuration] = useState(5);
-  const [days, setDays] = useState<number[]>([]); // For recurring alarms
+  const [days, setDays] = useState<number[]>([]); 
 
-  // Effect to populate form when dialog opens for editing or with initialData
   useEffect(() => {
     if (isOpen) {
-      if (alarm) { // Editing existing alarm
+      if (alarm) { 
         setTime(alarm.time);
         setLabel(alarm.label);
         setSound(alarm.sound);
         setSnoozeEnabled(alarm.snoozeEnabled);
         setSnoozeDuration(alarm.snoozeDuration);
         setDays(alarm.days || []);
-      } else if (initialData) { // Creating new alarm from shortcut/initial data
+      } else if (initialData) { 
         setTime(initialData.time || '07:00');
         setLabel(initialData.label || '');
         setSound(initialData.sound || defaultAlarmSound);
         setSnoozeEnabled(initialData.snoozeEnabled !== undefined ? initialData.snoozeEnabled : true);
         setSnoozeDuration(initialData.snoozeDuration || 5);
         setDays(initialData.days || []);
-      } else { // Creating new alarm from scratch
+      } else { 
         setTime('07:00');
         setLabel('');
         setSound(defaultAlarmSound);
@@ -583,18 +569,18 @@ function AlarmFormDialog({ isOpen, onOpenChange, onSave, alarm, initialData }: A
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onSave({ time, label, sound, snoozeEnabled, snoozeDuration, days });
-    onOpenChange(false); // Close dialog after save
+    onOpenChange(false); 
   };
 
   const toggleDay = (dayIndex: number) => {
     setDays(prevDays =>
       prevDays.includes(dayIndex)
         ? prevDays.filter(d => d !== dayIndex)
-        : [...prevDays, dayIndex].sort((a,b) => a-b) // Keep days sorted
+        : [...prevDays, dayIndex].sort((a,b) => a-b) 
     );
   };
 
-  const dayLabels = ['S', 'M', 'T', 'W', 'T', 'F', 'S']; // Sun, Mon, ...
+  const dayLabels = ['S', 'M', 'T', 'W', 'T', 'F', 'S']; 
 
 
   return (
@@ -624,17 +610,16 @@ function AlarmFormDialog({ isOpen, onOpenChange, onSave, alarm, initialData }: A
             </Select>
           </div>
 
-          {/* Day selection for recurring alarms */}
           <div>
             <Label>Repeat (Optional)</Label>
             <div className="flex space-x-1 mt-1">
               {dayLabels.map((dayLabel, index) => (
                 <Button
                   key={index}
-                  type="button" // Important: prevent form submission
+                  type="button" 
                   variant={days.includes(index) ? "default" : "outline"}
                   size="icon"
-                  className="h-8 w-8 rounded-full" // Make them circular for days
+                  className="h-8 w-8 rounded-full" 
                   onClick={() => toggleDay(index)}
                 >
                   {dayLabel}
@@ -688,12 +673,8 @@ function RingingAlarmDialog({ alarm, onDismiss, timeFormat }: RingingAlarmDialog
   };
 
   const handleOpenChange = (open: boolean) => {
-    // This function is called when the dialog's open state attempts to change
-    // (e.g., by pressing Esc or clicking outside).
-    // We want to ensure our `onDismiss` logic (which includes stopping sound)
-    // is called if the dialog is closed this way.
     setIsOpen(open);
-    if (!open && alarm) { // If dialog is being closed and there was an alarm
+    if (!open && alarm) { 
       onDismiss(alarm);
     }
   };
@@ -704,14 +685,13 @@ function RingingAlarmDialog({ alarm, onDismiss, timeFormat }: RingingAlarmDialog
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogContent
         className="sm:max-w-md p-0"
-        onInteractOutside={(e) => e.preventDefault()} // Prevent closing by clicking outside
-        onEscapeKeyDown={(e) => e.preventDefault()} // Prevent closing with Esc key for this specific dialog
+        onInteractOutside={(e) => e.preventDefault()} 
+        onEscapeKeyDown={(e) => e.preventDefault()} 
       >
         <DialogHeader className="bg-destructive text-destructive-foreground p-4 rounded-t-md flex flex-row justify-between items-center">
           <DialogTitle>
-            Alarm {/* Using a generic title as the label is shown below */}
+            Alarm 
           </DialogTitle>
-          {/* No close button 'X' in this specific dialog style based on common alarm patterns */}
         </DialogHeader>
         <div className="p-6 flex flex-col items-center space-y-4">
           <AlarmClock className="h-16 w-16 sm:h-20 sm:w-20 text-destructive animate-pulse" />
@@ -728,4 +708,3 @@ function RingingAlarmDialog({ alarm, onDismiss, timeFormat }: RingingAlarmDialog
   );
 }
 
-      
