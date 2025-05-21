@@ -15,6 +15,7 @@ import { navItemsList } from '@/lib/navConfig';
 import type { FeatureKey } from '@/types';
 import { useSettings } from '@/hooks/useSettings';
 import { Moon, Sun } from 'lucide-react';
+import { AuthProvider } from '@/contexts/AuthContext'; // Added import
 
 export default function AppShellLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -59,7 +60,7 @@ export default function AppShellLayout({ children }: { children: React.ReactNode
   };
   const activeKey = getActiveFeatureKey();
 
-  let currentFeatureLabel = "TimeVerse"; // Default
+  let currentFeatureLabel = "TimeVerse – The Ultimate Online Clock Suite"; // Default
   if (activeKey) {
     const activeItem = [...navItemsList].find(item => item.id === activeKey);
     if (activeItem) {
@@ -74,7 +75,10 @@ export default function AppShellLayout({ children }: { children: React.ReactNode
         <SidebarHeader className="p-4 items-center justify-between">
           <Link href="/" className="flex items-center gap-2 font-semibold text-lg">
             <Logo />
-            <span className="group-data-[collapsible=icon]:hidden">TimeVerse</span>
+            <span className="group-data-[collapsible=icon]:hidden">
+              TimeVerse
+              <span className="hidden sm:inline"> – The Ultimate Online Clock Suite</span>
+            </span>
           </Link>
         </SidebarHeader>
         <SidebarContent className="p-2">
@@ -102,6 +106,7 @@ export default function AppShellLayout({ children }: { children: React.ReactNode
         </SidebarFooter>
       </Sidebar>
     <AuthProvider> {/* Wrap main content with AuthProvider */}
+      <SidebarInset className="flex flex-col">
         {/* AppHeader's onNavigate is now for specific actions within header, not main feature nav */}
         <AppHeader currentFeatureName={currentFeatureLabel} onNavigate={(featureKey) => {
             // If 'settings' is clicked in AppHeader, it should navigate.
@@ -110,6 +115,18 @@ export default function AppShellLayout({ children }: { children: React.ReactNode
         <main className="flex-1 overflow-auto">
           {children}
         </main>
+        <footer className="border-t p-4 text-center text-xs text-muted-foreground">
+           <div className="flex justify-center items-center gap-x-4 gap-y-2 flex-wrap">
+            <Link href="/contact" className="hover:text-foreground">Contacts</Link>
+            <span className="hidden sm:inline">|</span>
+            <Link href="/terms" className="hover:text-foreground">Terms of use</Link>
+            <span className="hidden sm:inline">|</span>
+            <Link href="/privacy" className="hover:text-foreground">Privacy</Link>
+            <span className="hidden sm:inline">|</span>
+            <span>© 2025 TimeVerse – The Ultimate Online Clock Suite</span>
+          </div>
+        </footer>
+      </SidebarInset>
     </AuthProvider>
     </SidebarProvider>
   );
