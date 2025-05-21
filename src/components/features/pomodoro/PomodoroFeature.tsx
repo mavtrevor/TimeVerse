@@ -5,9 +5,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { useAuth } from '@/hooks/useAuth';
-import { db } from '@/lib/firebase'; 
-import { doc, updateDoc, increment, setDoc } from 'firebase/firestore';
+// useAuth and Firestore imports removed
+
 type TimerType = 'focus' | 'short-break' | 'long-break';
 
 const POMODORO_DURATIONS: Record<TimerType, number> = {
@@ -19,17 +18,17 @@ const POMODORO_DURATIONS: Record<TimerType, number> = {
 const PomodoroFeature: React.FC = () => {
   const [timerType, setTimerType] = useState<TimerType>('focus');
   const [remainingTime, setRemainingTime] = useState(POMODORO_DURATIONS['focus']);
-  const [pomodoroCycles, setPomodoroCycles] = useState(0); // Track completed focus sessions before updating Firestore
+  const [pomodoroCycles, setPomodoroCycles] = useState(0); 
   const [isRunning, setIsRunning] = useState(false);
   const [progress, setProgress] = useState(100);
 
   const timerRef = useRef<NodeJS.Timeout | null>(null);
-  const { user } = useAuth();
+  // user state removed
 
   useEffect(() => {
     setRemainingTime(POMODORO_DURATIONS[timerType]);
     setProgress(100);
-    setIsRunning(false); // Stop timer when type changes
+    setIsRunning(false); 
   }, [timerType]);
 
   useEffect(() => {
@@ -42,14 +41,13 @@ const PomodoroFeature: React.FC = () => {
             
             if (timerType === 'focus') {
               setPomodoroCycles(prev => prev + 1);
-              // Automatically switch to short break or long break
-              if ((pomodoroCycles + 1) % 4 === 0) { // After 4 focus sessions
+              if ((pomodoroCycles + 1) % 4 === 0) { 
                 setTimerType('long-break');
               } else {
                 setTimerType('short-break');
               }
-            } else { // Break ended
-              setTimerType('focus'); // Switch back to focus
+            } else { 
+              setTimerType('focus'); 
             }
             return 0;
           }
@@ -64,29 +62,15 @@ const PomodoroFeature: React.FC = () => {
         clearInterval(timerRef.current);
       }
     };
-  }, [isRunning, remainingTime, timerType, pomodoroCycles]); // Added pomodoroCycles
+  }, [isRunning, remainingTime, timerType, pomodoroCycles]); 
   
-  useEffect(() => {
-    if (user && pomodoroCycles > 0 && timerType === 'focus') { // Update Firestore when a focus cycle is completed and we are about to start a new one or break
-      const userStatsRef = doc(db, 'userStats', user.id);
-      // Using setDoc with merge to create if not exists, or update.
-      setDoc(userStatsRef, { pomodorosCompleted: increment(pomodoroCycles) }, { merge: true })
-        .then(() => {
-          // console.log(`Pomodoro count updated in Firestore for user ${user.id}`);
-        })
-        .catch(error => {
-          console.error("Error updating pomodoro count in Firestore:", error);
-        });
-      setPomodoroCycles(0); // Reset cycle count after updating Firestore
-    }
-  }, [pomodoroCycles, user, timerType]);
+  // Removed useEffect for Firestore updates
 
   useEffect(() => {
     const totalDuration = POMODORO_DURATIONS[timerType];
     const percentage = (remainingTime / totalDuration) * 100;
     setProgress(percentage);
 
-    // Update document title
     if (isRunning) {
       document.title = `${formatTime(remainingTime)} - ${timerType.charAt(0).toUpperCase() + timerType.slice(1)} - TimeVerse`;
     } else {
@@ -109,7 +93,7 @@ const PomodoroFeature: React.FC = () => {
     setTimerType('focus');
     setRemainingTime(POMODORO_DURATIONS['focus']);
     setProgress(100);
-    setPomodoroCycles(0); // Also reset pomodoro cycle count
+    setPomodoroCycles(0);
   };
 
   const formatTime = (timeInSeconds: number) => {

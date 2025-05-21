@@ -5,20 +5,11 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { Menu, Settings, Sun, Moon, LogIn, LogOut, User as UserIcon } from 'lucide-react';
+import { Menu, Settings, Sun, Moon } from 'lucide-react'; // LogIn, LogOut, UserIcon removed
 import { useSettings } from '@/hooks/useSettings';
 import { useSidebar } from '@/components/ui/sidebar'; 
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { useToast } from '@/hooks/use-toast';
-
+// Avatar and DropdownMenu related imports removed
+// useToast import removed as it was only used for auth feedback
 
 interface AppHeaderProps {
   currentFeatureName: string;
@@ -29,7 +20,7 @@ export default function AppHeader({ currentFeatureName, onNavigate }: AppHeaderP
   const { theme, setTheme } = useSettings();
   const { toggleSidebar, isMobile, clientReady: sidebarClientReady } = useSidebar(); 
   const [mounted, setMounted] = useState(false);
-  const { toast } = useToast();
+  // toast and user-related state removed
 
   useEffect(() => {
     setMounted(true);
@@ -57,16 +48,8 @@ export default function AppHeader({ currentFeatureName, onNavigate }: AppHeaderP
     displayTheme = 'light'; 
   }
 
-  const getInitials = (email?: string | null) => {
-    if (!email) return 'U';
-    return email.substring(0, 2).toUpperCase();
-  };
-
-  // Determine if the component is ready on the client to avoid hydration issues with theme/auth rendering
-  const [clientReady, setClientReady] = useState(false);
-  useEffect(() => {
-    setClientReady(true);
-  }, []);
+  // getInitials function removed
+  // clientReady state for auth rendering removed
 
   return (
     <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6 sm:py-4">
@@ -78,7 +61,7 @@ export default function AppHeader({ currentFeatureName, onNavigate }: AppHeaderP
       )}
       <h1 className="text-xl font-semibold grow">{currentFeatureName}</h1>
       <div className="flex items-center gap-2">
-        {clientReady ? (
+        {mounted ? ( // Changed clientReady to mounted for theme toggle
             <Button variant="ghost" size="icon" onClick={toggleTheme} aria-label="Toggle theme">
                 {displayTheme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
             </Button>
@@ -92,7 +75,7 @@ export default function AppHeader({ currentFeatureName, onNavigate }: AppHeaderP
              <Settings className="h-5 w-5" />
           </Button>
         </Link>
-
+        {/* User Avatar and DropdownMenu removed */}
       </div>
     </header>
   );

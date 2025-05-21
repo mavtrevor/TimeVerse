@@ -15,15 +15,12 @@ import { navItemsList } from '@/lib/navConfig';
 import type { FeatureKey } from '@/types';
 import { useSettings } from '@/hooks/useSettings';
 import { Moon, Sun } from 'lucide-react';
-import { AuthProvider } from '@/contexts/AuthContext'; // Added import
+// AuthProvider import removed
 
 export default function AppShellLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { theme, setTheme } = useSettings();
   const [mounted, setMounted] = React.useState(false);
-  // For mobile sidebar state, ensure SidebarProvider is at the root or useSidebar here.
-  // SidebarProvider is used, so useSidebar() hook can be used to control mobile menu if needed from here.
-  // However, AppHeader usually handles its own mobile menu trigger via useSidebar().
 
   React.useEffect(() => {
     setMounted(true);
@@ -52,7 +49,7 @@ export default function AppShellLayout({ children }: { children: React.ReactNode
 
     const mainSegment = segments[0] as FeatureKey;
     
-    if (mainSegment === 'world-clock' && segments.length > 0) return 'worldclock'; // Handles /world-clock and /world-clock/city
+    if (mainSegment === 'world-clock' && segments.length > 0) return 'worldclock';
     if (navItemsList.some(item => item.id === mainSegment)) return mainSegment;
     if (mainSegment === 'settings') return 'settings';
     
@@ -70,7 +67,7 @@ export default function AppShellLayout({ children }: { children: React.ReactNode
 
 
   return (
-    <SidebarProvider> {/* Moved SidebarProvider here to wrap Sidebar and SidebarInset */}
+    <SidebarProvider>
       <Sidebar collapsible="icon">
         <SidebarHeader className="p-4 items-center justify-between">
           <Link href="/" className="flex items-center gap-2 font-semibold text-lg">
@@ -101,16 +98,13 @@ export default function AppShellLayout({ children }: { children: React.ReactNode
           </SidebarMenu>
         </SidebarContent>
         <SidebarFooter className="p-2 mt-auto border-t">
-          <SidebarMenu> {/* SidebarFooter can contain other items if needed later */}
+          <SidebarMenu>
           </SidebarMenu>
         </SidebarFooter>
       </Sidebar>
-    <AuthProvider> {/* Wrap main content with AuthProvider */}
+    {/* AuthProvider wrapper removed */}
       <SidebarInset className="flex flex-col">
-        {/* AppHeader's onNavigate is now for specific actions within header, not main feature nav */}
         <AppHeader currentFeatureName={currentFeatureLabel} onNavigate={(featureKey) => {
-            // If 'settings' is clicked in AppHeader, it should navigate.
-            // This is now handled by Link in AppHeader itself.
         }} />
         <main className="flex-1 overflow-auto">
           {children}
@@ -127,7 +121,7 @@ export default function AppShellLayout({ children }: { children: React.ReactNode
           </div>
         </footer>
       </SidebarInset>
-    </AuthProvider>
+    {/* AuthProvider wrapper removed */}
     </SidebarProvider>
   );
 }

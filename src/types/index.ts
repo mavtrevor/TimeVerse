@@ -8,9 +8,7 @@ export interface Alarm {
   snoozeDuration: number; // in minutes
   isActive: boolean;
   days?: number[]; // 0 for Sunday, 1 for Monday, etc. Optional for recurring alarms
-  type: 'personal' | 'team';
-  teamId?: string; 
-  creatorName?: string; 
+  // type, teamId, creatorName removed
 }
 
 export interface Timer {
@@ -24,9 +22,9 @@ export interface Timer {
 }
 
 export interface WorldClockCity {
-  id: string; // User-defined ID or 'local'
+  id: string; 
   name: string;
-  timezone: string; // e.g., "America/New_York"
+  timezone: string; 
 }
 
 export interface CityDetail {
@@ -39,7 +37,7 @@ export interface CityDetail {
 
 export type TimeFormat = "12h" | "24h";
 export type AppTheme = "light" | "dark" | "system";
-export type AppLanguage = "en" | "ar" | "fr"; // Add more as needed
+export type AppLanguage = "en" | "ar" | "fr"; 
 
 export interface AppSettings {
   timeFormat: TimeFormat;
@@ -47,18 +45,20 @@ export interface AppSettings {
   language: AppLanguage;
 }
 
-export type FeatureKey = "alarms" | "timers" | "stopwatch" | "worldclock" | "utilities" | "calendar" | "settings" | "countdown" | "teams" | "schedule";
+// "teams" and "dashboard" removed from FeatureKey
+export type FeatureKey = "alarms" | "timers" | "stopwatch" | "worldclock" | "utilities" | "calendar" | "settings" | "countdown" | "schedule" | "pomodoro" | "timezone";
+
 
 export interface NavItem {
   id: FeatureKey;
   label: string;
   icon: React.ElementType;
-  component: React.ElementType;
+  component: React.ElementType; // Made mandatory again as AppLayout is back to rendering components
   href: string;
 }
 
 export interface Holiday {
-  date: string; // YYYY-MM-DD format
+  date: string; 
   name: string;
   type: 'public' | 'observance' | 'other';
   countryCode: string;
@@ -68,32 +68,33 @@ export interface Holiday {
 export interface EventCountdown {
   id: string;
   name: string;
-  date: string; // ISO string for date and time
+  date: string; 
   emoji?: string;
-  userId?: string;
+  // userId removed
 }
 
 export interface ShortcutCountdownEvent {
-  id: string; // URL-friendly slug
-  name: string; // Display name
+  id: string; 
+  name: string; 
   category: string;
   defaultEmoji?: string;
   targetDateLogic: () => Date; 
   description?: string; 
+  color?: string; // Added for shortcut button styling
 }
 
 export type RecurrenceType = 'none' | 'daily' | 'weekly';
-export type TaskDifficulty = 'easy' | 'medium' | 'hard'; // New type for task difficulty
+export type TaskDifficulty = 'easy' | 'medium' | 'hard';
 
 export interface ScheduleItem {
   id: string;
   text: string;
   completed: boolean;
-  date: string; // YYYY-MM-DD format (This will be the start date for recurring tasks)
-  time?: string; // Optional time in HH:mm format
-  notes?: string; // Optional notes/details for the task
+  date: string; 
+  time?: string; 
+  notes?: string; 
   recurrenceType?: RecurrenceType;
-  recurrenceDays?: number[]; // For weekly recurrence (0 = Sunday, 6 = Saturday)
-  recurrenceEndDate?: string; // YYYY-MM-DD format (Optional end date for recurrence)
-  difficulty?: TaskDifficulty; // Optional task difficulty
+  recurrenceDays?: number[]; 
+  recurrenceEndDate?: string; 
+  difficulty?: TaskDifficulty; 
 }

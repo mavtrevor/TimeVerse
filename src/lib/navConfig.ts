@@ -1,21 +1,21 @@
 
 import type { NavItem, FeatureKey } from '@/types';
-import { AlarmClock, TimerIcon, Watch, Globe, SlidersHorizontal, CalendarDays, Settings as SettingsIcon, CalendarClock, Users, ListChecks, Timer, LayoutDashboard } from 'lucide-react';
+import { AlarmClock, TimerIcon, Watch, Globe, SlidersHorizontal, CalendarDays, Settings as SettingsIcon, CalendarClock, ListChecks, Timer } from 'lucide-react'; // Users, LayoutDashboard removed
 
 // Import feature components
 import AlarmsFeature from '@/components/features/alarms/AlarmsFeature';
 import TimersFeature from '@/components/features/timers/TimersFeature';
-import StopwatchFeature from '@/components/features/stopwatch/StopwatchFeature'; // Corrected import path
+import StopwatchFeature from '@/components/features/stopwatch/StopwatchFeature'; 
 import WorldClockFeature from '@/components/features/world-clock/WorldClockFeature';
 import UtilitiesFeature from '@/components/features/utilities/UtilitiesFeature';
 import CalendarFeature from '@/components/features/calendar/CalendarFeature';
 import SettingsFeature from '@/components/features/settings/SettingsFeature';
 import CountdownFeature from '@/components/features/countdown/CountdownFeature';
-import TeamsFeature from '@/components/features/teams/TeamsFeature';
+// TeamsFeature import removed
 import ScheduleFeature from '@/components/features/schedule/ScheduleFeature';
 import PomodoroFeature from '@/components/features/pomodoro/PomodoroFeature';
-import TimeZoneMeetingPlannerFeature from '@/components/features/timezone/TimeZoneMeetingPlannerFeature'; // Import the new component
-import UserDashboardFeature from '@/components/features/dashboard/UserDashboardFeature';
+import TimeZoneMeetingPlannerFeature from '@/components/features/timezone/TimeZoneMeetingPlannerFeature';
+// UserDashboardFeature import removed
 
 
 export const navItemsList: NavItem[] = [
@@ -28,11 +28,11 @@ export const navItemsList: NavItem[] = [
   { id: "pomodoro", label: "Pomodoro", icon: Timer, href: "/pomodoro", component: PomodoroFeature },
   { id: "utilities", label: "Utilities", icon: SlidersHorizontal, href: "/utilities", component: UtilitiesFeature },
   { id: 'calendar', label: 'Calendar', icon: CalendarDays, href: '/calendar', component: CalendarFeature },
+  // "Teams" and "User Dashboard" items removed
 ];
 
 export const getFeatureComponent = (key: FeatureKey | null): React.ElementType => {
-  if (!key) return AlarmsFeature; // Default
-  // Find the component in the navItemsList
+  if (!key) return AlarmsFeature; 
   const allItems = navItemsList;
   const item = allItems.find(i => i.id === key);
   return item ? item.component : AlarmsFeature; 
@@ -41,13 +41,11 @@ export const getFeatureComponent = (key: FeatureKey | null): React.ElementType =
 export const getFeatureLabel = (key: FeatureKey | null): string => {
   if (!key) return "TimeVerse";
   const allItems = [...navItemsList];
-  // Find the label in the navItemsList
   const item = allItems.find(i => i.id === key);
   return item ? item.label : "TimeVerse";
 }
 
 export const getActiveFeatureKeyFromPathname = (pathname: string): FeatureKey => {
   if (pathname === '/') return 'alarms';
-  // Find the active feature key in the navItemsList
   return (navItemsList.find(item => item.href === pathname)?.id || 'alarms') as FeatureKey;
 };

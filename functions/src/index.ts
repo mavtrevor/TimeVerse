@@ -1,3 +1,4 @@
+
 /**
  * Import function triggers from their respective submodules:
  *
@@ -9,8 +10,8 @@
 
 import {onRequest} from "firebase-functions/v2/https";
 import * as logger from "firebase-functions/logger";
-import * as functions from 'firebase-functions';
-export { joinTeam } from './joinTeam'; // Export your new function
+// import * as functions from 'firebase-functions'; // This line can be removed if not used elsewhere
+// export { joinTeam } from './joinTeam'; // Export of joinTeam removed
 
 
 // Start writing functions

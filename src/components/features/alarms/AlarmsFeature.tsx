@@ -1,13 +1,13 @@
 
 "use client";
 
-import { useAuth } from '@/hooks/useAuth';
+// useAuth import removed
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import type { Alarm } from '@/types';
 import useLocalStorage from '@/hooks/useLocalStorage';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter, CardDescription } from '@/components/ui/card';
-import { PlusCircle, Edit, Trash2, BellRing, AlarmClock, AlertTriangle, Users, User } from 'lucide-react';
+import { PlusCircle, Edit, Trash2, BellRing, AlarmClock, AlertTriangle } from 'lucide-react'; // Users, User icons removed
 import { useSettings } from '@/hooks/useSettings';
 import { formatTime, parseTimeString } from '@/lib/timeUtils';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose } from '@/components/ui/dialog';
@@ -19,7 +19,8 @@ import { useToast } from '@/hooks/use-toast';
 import type { TimeFormat } from '@/types';
 import { useIsMobile } from '@/hooks/use-mobile';
 
-import { db } from '@/lib/firebase';
+// db and Firestore imports removed as user stats are no longer tracked here
+
 const defaultAlarmSound = "default_alarm";
 const alarmSounds = [
   { id: "default_alarm", name: "Default Alarm" },
@@ -156,8 +157,8 @@ export default function AlarmsFeature() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [ringingAlarmId, setRingingAlarmId] = useState<string | null>(null);
   const [ringingAlarmModal, setRingingAlarmModal] = useState<Alarm | null>(null);
-  const { user } = useAuth();
-  const [shortcutInitialData, setShortcutInitialData] = useState<Partial<Omit<Alarm, 'id' | 'isActive' | 'type'>> | null>(null);
+  // user state removed
+  const [shortcutInitialData, setShortcutInitialData] = useState<Partial<Omit<Alarm, 'id' | 'isActive'>> | null>(null); // type field removed
   const [mounted, setMounted] = useState(false);
   const wakeLockRef = useRef<WakeLockSentinel | null>(null);
   const isMobile = useIsMobile();
@@ -273,29 +274,16 @@ export default function AlarmsFeature() {
   }, [currentTime, alarms, timeFormat, toast, ringingAlarmId, mounted, ringingAlarmModal]);
 
   
-  const handleSaveAlarm = (alarmData: Omit<Alarm, 'id' | 'isActive'>) => {
-    // For conceptual team alarms, set a placeholder creatorName if it's a team alarm
-    const fullAlarmData = {
-      ...alarmData,
-      creatorName: alarmData.type === 'team' ? 'You (Team)' : undefined,
-    };
-
+  const handleSaveAlarm = (alarmData: Omit<Alarm, 'id' | 'isActive'>) => { // type removed from signature
     if (editingAlarm) {
-      setAlarms(alarms.map(a => a.id === editingAlarm.id ? { ...editingAlarm, ...fullAlarmData } : a));
-      toast({ title: "Alarm Updated", description: `Alarm "${fullAlarmData.label || 'Alarm'}" has been updated.` });
+      setAlarms(alarms.map(a => a.id === editingAlarm.id ? { ...editingAlarm, ...alarmData } : a));
+      toast({ title: "Alarm Updated", description: `Alarm "${alarmData.label || 'Alarm'}" has been updated.` });
     } else {
-      const newAlarm: Alarm = { ...fullAlarmData, id: Date.now().toString(), isActive: true };
+      const newAlarm: Alarm = { ...alarmData, id: Date.now().toString(), isActive: true };
       setAlarms([...alarms, newAlarm]);
-      toast({ title: "Alarm Added", description: `Alarm "${fullAlarmData.label || 'Alarm'}" has been set.` });
+      toast({ title: "Alarm Added", description: `Alarm "${alarmData.label || 'Alarm'}" has been set.` });
 
-      if (user) {
-        // Increment alarmsSet stat for the user
-        try {
-          updateDoc(doc(db, 'userStats', user.id), { alarmsSet: increment(1) });
-        } catch (error) {
-          console.error("Failed to increment alarmsSet stat:", error);
-        }
-      }
+      // user stats tracking removed
     }
     setEditingAlarm(null);
     setIsFormOpen(false);
@@ -391,13 +379,10 @@ export default function AlarmsFeature() {
             <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <div className="flex flex-col">
                     <CardTitle className="text-lg sm:text-xl truncate flex items-center" title={alarm.label || "Alarm"}>
-                      {alarm.type === 'team' && <Users className="h-4 w-4 mr-2 text-muted-foreground" />}
-                      {alarm.type === 'personal' && <User className="h-4 w-4 mr-2 text-muted-foreground" />}
+                      {/* Team/User icons removed */}
                       {alarm.label || "Alarm"}
                     </CardTitle>
-                    {alarm.type === 'team' && alarm.creatorName && (
-                      <CardDescription className="text-xs text-muted-foreground">Set by {alarm.creatorName}</CardDescription>
-                    )}
+                    {/* creatorName display removed */}
                 </div>
                 {!isRingingCardUI && !(ringingAlarmModal && ringingAlarmModal.id === alarm.id) && (
                 <Switch
@@ -556,9 +541,9 @@ export default function AlarmsFeature() {
 interface AlarmFormDialogProps {
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
-  onSave: (alarmData: Omit<Alarm, 'id' | 'isActive'>) => void;
+  onSave: (alarmData: Omit<Alarm, 'id' | 'isActive'>) => void; // type removed
   alarm: Alarm | null;
-  initialData?: Partial<Omit<Alarm, 'id' | 'isActive' | 'type'>> | null; 
+  initialData?: Partial<Omit<Alarm, 'id' | 'isActive'>> | null; // type removed
 }
 
 function AlarmFormDialog({ isOpen, onOpenChange, onSave, alarm, initialData }: AlarmFormDialogProps) {
@@ -568,9 +553,7 @@ function AlarmFormDialog({ isOpen, onOpenChange, onSave, alarm, initialData }: A
   const [snoozeEnabled, setSnoozeEnabled] = useState(true);
   const [snoozeDuration, setSnoozeDuration] = useState(5);
   const [days, setDays] = useState<number[]>([]); 
-  const [alarmType, setAlarmType] = useState<Alarm['type']>('personal');
-  // Placeholder for actual team data - in a real app this would come from user's teams
-  const [selectedTeamId, setSelectedTeamId] = useState<string | undefined>(undefined);
+  // alarmType and selectedTeamId state removed
 
 
   useEffect(() => {
@@ -582,8 +565,7 @@ function AlarmFormDialog({ isOpen, onOpenChange, onSave, alarm, initialData }: A
         setSnoozeEnabled(alarm.snoozeEnabled);
         setSnoozeDuration(alarm.snoozeDuration);
         setDays(alarm.days || []);
-        setAlarmType(alarm.type || 'personal');
-        setSelectedTeamId(alarm.teamId);
+        // alarmType and selectedTeamId related logic removed
       } else if (initialData) { 
         setTime(initialData.time || '07:00');
         setLabel(initialData.label || '');
@@ -591,18 +573,15 @@ function AlarmFormDialog({ isOpen, onOpenChange, onSave, alarm, initialData }: A
         setSnoozeEnabled(initialData.snoozeEnabled !== undefined ? initialData.snoozeEnabled : true);
         setSnoozeDuration(initialData.snoozeDuration || 5);
         setDays(initialData.days || []);
-        setAlarmType('personal'); // Shortcuts are personal by default
-        setSelectedTeamId(undefined);
+        // alarmType and selectedTeamId related logic removed
       } else { 
-        // Default for new alarm
         setTime('07:00');
         setLabel('');
         setSound(defaultAlarmSound);
         setSnoozeEnabled(true);
         setSnoozeDuration(5);
         setDays([]);
-        setAlarmType('personal');
-        setSelectedTeamId(undefined);
+        // alarmType and selectedTeamId related logic removed
       }
     }
   }, [alarm, isOpen, initialData]);
@@ -616,28 +595,22 @@ function AlarmFormDialog({ isOpen, onOpenChange, onSave, alarm, initialData }: A
       snoozeEnabled, 
       snoozeDuration, 
       days, 
-      type: alarmType, 
-      teamId: alarmType === 'team' ? (selectedTeamId || 'placeholder_team_1') : undefined,
-      // creatorName would be set by backend if user is logged in
+      // type, teamId, creatorName related properties removed
     });
-    onOpenChange(false); // Close dialog on save
+    onOpenChange(false);
   };
 
   const toggleDay = (dayIndex: number) => {
     setDays(prevDays =>
       prevDays.includes(dayIndex)
         ? prevDays.filter(d => d !== dayIndex)
-        : [...prevDays, dayIndex].sort((a,b) => a-b) // Keep sorted
+        : [...prevDays, dayIndex].sort((a,b) => a-b)
     );
   };
 
-  const dayLabels = ['S', 'M', 'T', 'W', 'T', 'F', 'S']; // Sunday to Saturday
+  const dayLabels = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 
-  // Placeholder teams - in a real app, this would be fetched for the logged-in user
-  const userTeams = [
-    { id: 'placeholder_team_1', name: 'My Family' },
-    { id: 'placeholder_team_2', name: 'Work Project X' },
-  ];
+  // userTeams array removed
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
@@ -646,36 +619,7 @@ function AlarmFormDialog({ isOpen, onOpenChange, onSave, alarm, initialData }: A
           <DialogTitle>{alarm ? 'Edit Alarm' : (initialData ? 'Add Preset Alarm' : 'Add Alarm')}</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 pt-4">
-          <div>
-            <Label htmlFor="alarmType">Alarm Type</Label>
-            <Select value={alarmType} onValueChange={(value: Alarm['type']) => setAlarmType(value)}>
-              <SelectTrigger id="alarmType" className="mt-1">
-                <SelectValue placeholder="Select type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="personal">Personal</SelectItem>
-                <SelectItem value="team">Team (Conceptual)</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {alarmType === 'team' && (
-            <div>
-              <Label htmlFor="teamSelect">Select Team (Conceptual)</Label>
-              <Select value={selectedTeamId} onValueChange={setSelectedTeamId}>
-                <SelectTrigger id="teamSelect" className="mt-1">
-                  <SelectValue placeholder="Select a team" />
-                </SelectTrigger>
-                <SelectContent>
-                  {userTeams.map(team => (
-                    <SelectItem key={team.id} value={team.id}>{team.name}</SelectItem>
-                  ))}
-                   <SelectItem value="new_team" disabled>+ Create New Team (Not Implemented)</SelectItem>
-                </SelectContent>
-              </Select>
-               <p className="text-xs text-muted-foreground mt-1">Note: Team functionality requires backend setup.</p>
-            </div>
-          )}
+          {/* Alarm Type and Team Select UI removed */}
 
           <div>
             <Label htmlFor="time">Time</Label>
@@ -777,16 +721,14 @@ function RingingAlarmDialog({ alarm, onDismiss, timeFormat }: RingingAlarmDialog
       >
         <DialogHeader className="bg-destructive text-destructive-foreground p-4 rounded-t-md flex flex-row justify-between items-center">
           <DialogTitle>
-            Alarm {alarm.type === 'team' ? '(Team)' : ''}
+            Alarm {/* type removed from title */}
           </DialogTitle>
         </DialogHeader>
         <div className="p-6 flex flex-col items-center space-y-4">
           <AlarmClock className="h-16 w-16 sm:h-20 sm:w-20 text-destructive animate-pulse" />
           <p className="text-xl sm:text-2xl font-semibold text-center">{alarm.label || "Alarm"}</p>
           <p className="text-4xl sm:text-5xl font-mono">{formatTime(parseTimeString(alarm.time), timeFormat)}</p>
-          {alarm.type === 'team' && alarm.creatorName && (
-             <p className="text-sm text-muted-foreground">Set by: {alarm.creatorName}</p>
-          )}
+          {/* creatorName display removed */}
         </div>
         <DialogFooter className="p-4 border-t sm:justify-center">
           <Button onClick={handleDismiss} className="bg-destructive hover:bg-destructive/90 text-destructive-foreground w-full sm:w-auto px-8 py-3 text-lg">

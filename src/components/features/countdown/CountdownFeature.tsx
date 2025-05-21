@@ -14,10 +14,8 @@ import { PlusCircle, Trash2, Edit3, CalendarClock, Link2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import { shortcutEvents } from '@/lib/countdownData'; 
-import { Separator } from '@radix-ui/react-separator';
-import { useAuth } from '@/hooks/useAuth';
-import { collection, addDoc, query, where, getDocs, doc, updateDoc, deleteDoc } from 'firebase/firestore'; // Import Firestore functions
-import { db } from '@/lib/firebase'; // Import db
+import { Separator } from '@/components/ui/separator';
+// useAuth, Firestore imports removed
 
 const INITIAL_COUNTDOWNS: EventCountdown[] = [];
 
@@ -48,7 +46,7 @@ function calculateTimeRemaining(targetDate: string): TimeRemaining {
 }
 
 export default function CountdownFeature() {
-  const [countdowns, setCountdowns] = useState<EventCountdown[]>(INITIAL_COUNTDOWNS);
+  const [countdowns, setCountdowns] = useLocalStorage<EventCountdown[]>('timeverse-countdowns', INITIAL_COUNTDOWNS); // Key updated
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingCountdown, setEditingCountdown] = useState<EventCountdown | null>(null);
   const { toast } = useToast();
@@ -61,111 +59,27 @@ export default function CountdownFeature() {
     return () => clearInterval(timerId);
   }, []);
 
-  // Effect to load countdowns from Firestore or local storage
-  const { user } = useAuth();
-  useEffect(() => {
-    if (user) {
-      // Load from Firestore for logged-in users
-      const fetchCountdowns = async () => {
-        try {
-          const q = query(collection(db, 'countdowns'), where('userId', '==', user.id));
-          const querySnapshot = await getDocs(q);
-          const firestoreCountdowns: EventCountdown[] = querySnapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data(),
-          })) as EventCountdown[];
-          setCountdowns(firestoreCountdowns);
-        } catch (error) {
-          console.error("Error fetching countdowns from Firestore: ", error);
-          toast({ title: "Error", description: "Failed to load countdowns.", variant: "destructive" });
-        }
-      };      
-      fetchCountdowns();
-    } else {
-      // Load from local storage for guest users
-      const storedCountdowns = localStorage.getItem('countdowns');
-      if (storedCountdowns) {
-        setCountdowns(JSON.parse(storedCountdowns));
-      } else {
-        setCountdowns(INITIAL_COUNTDOWNS);
-      }
-    }
-  }, []);
+ // Removed effect to load from Firestore, only local storage is used now.
 
  const handleSaveCountdown = async (countdownData: Omit<EventCountdown, 'id'>) => {
     if (editingCountdown) {
-      // Logic for updating existing countdown
-      if (user) {
-        // Update in Firestore for logged-in users
-        try {
-          // Ensure increment is imported or defined if used
-          // import { increment } from 'firebase/firestore';
-          // if it's intended for user stats update here too.
-          // Assuming it's used only for adding, no increment here.
-
- const countdownRef = doc(db, 'countdowns', editingCountdown.id);
- await updateDoc(countdownRef, countdownData);
- toast({ title: "Countdown Updated", description: `Countdown "${countdownData.name}" has been updated in Firestore.` });
- } catch (error) {
- console.error("Error updating countdown in Firestore: ", error);
- toast({ title: "Error", description: "Failed to update countdown.", variant: "destructive" });
- }
-      } else {
- // Existing local storage logic for editing (for guest users)
- setCountdowns(countdowns.map(c => c.id === editingCountdown.id ? { ...editingCountdown, ...countdownData } : c));
+      setCountdowns(countdowns.map(c => c.id === editingCountdown.id ? { ...editingCountdown, ...countdownData } : c));
       toast({ title: "Countdown Updated", description: `Countdown "${countdownData.name}" has been updated.` });
-      }
     } else {
-      // Logic for adding new countdown
-      if (user) {
-        // Save to Firestore for logged-in users
-        try {          
-          const newCountdownRef = await addDoc(collection(db, 'countdowns'), { ...countdownData, userId: user.id });
-          // Increment user stats
-          const userStatsRef = doc(db, 'userStats', user.id);
-          await updateDoc(userStatsRef, {
-            countdownsCreated: increment(1)
-          });
-
-          toast({ title: "Countdown Added", description: `Countdown "${countdownData.name}" has been set.` });
-        } catch (error) {
-          console.error("Error adding countdown to Firestore: ", error);
-          toast({ title: "Error", description: "Failed to add countdown.", variant: "destructive" });
-        }
-      } else {
-        // Existing local storage logic for adding (for guest users)
-        const newCountdown: EventCountdown = { ...countdownData, id: Date.now().toString() };
-        setCountdowns([...countdowns, newCountdown]);
-        toast({ title: "Countdown Added", description: `Countdown "${countdownData.name}" has been set.` });
-      }
-
+      const newCountdown: EventCountdown = { ...countdownData, id: Date.now().toString() };
+      setCountdowns([...countdowns, newCountdown]);
+      toast({ title: "Countdown Added", description: `Countdown "${countdownData.name}" has been set.` });
     }
     setEditingCountdown(null);
     setIsFormOpen(false);
   };
 
   const handleDeleteCountdown = (id: string) => {
-    const { user } = useAuth(); // Get the current user
-
-    if (user) {
-      // User is logged in, delete from Firestore
-      try {
-        deleteDoc(doc(db, 'countdowns', id));
-        toast({ title: "Countdown Deleted", description: "Countdown deleted.", variant: "destructive" });
-        // After successful deletion from Firestore, update local state to reflect the change immediately
-        setCountdowns(countdowns.filter(c => c.id !== id));
-      } catch (error) {
-        console.error("Error deleting countdown from Firestore:", error);
-        toast({ title: "Error", description: "Failed to delete countdown.", variant: "destructive" });
-      }
-    } else {
-      // No user logged in, delete from local storage
-      const countdownToDelete = countdowns.find(c => c.id === id);
-      if (countdownToDelete) {
-        toast({ title: "Countdown Deleted", description: `Countdown "${countdownToDelete.name}" deleted.`, variant: "destructive" });
-      }
-      setCountdowns(countdowns.filter(c => c.id !== id));
+    const countdownToDelete = countdowns.find(c => c.id === id);
+    if (countdownToDelete) {
+      toast({ title: "Countdown Deleted", description: `Countdown "${countdownToDelete.name}" deleted.`, variant: "destructive" });
     }
+    setCountdowns(countdowns.filter(c => c.id !== id));
   };
   
   const openEditForm = (countdown: EventCountdown) => {
@@ -250,7 +164,9 @@ export default function CountdownFeature() {
   };
 
   const renderCustomCountdownsContainer = () => {
-    // The !mounted check is handled by the main component return
+    if (!mounted) {
+        return <p className="text-muted-foreground py-10 text-center">Loading countdowns...</p>;
+    }
     if (countdowns.length === 0) {
       return (
         <p className="text-center text-muted-foreground py-10">
@@ -306,7 +222,7 @@ export default function CountdownFeature() {
             <Button key={event.id} variant="outline" asChild className={`h-auto py-3 flex-col items-center justify-center text-center ${
               event.color === 'blue' ? 'border-blue-500' :
               event.color === 'green' ? 'border-green-500' :
-              event.color === 'purple' ? 'border-purple-500' : 'border-gray-200' // Default or other colors
+              event.color === 'purple' ? 'border-purple-500' : 'border-gray-200'
             }`}>
               <Link href={`/countdown/${event.id}`}>
                 {event.defaultEmoji && <span className="text-2xl mb-1">{event.defaultEmoji}</span>}
@@ -386,7 +302,7 @@ function CountdownFormDialog({ isOpen, onOpenChange, onSave, countdown }: Countd
         return;
     }
 
-    onSave({ name, date: targetDate.toISOString(), emoji });
+    onSave({ name, date: targetDate.toISOString(), emoji }); // userId removed
     onOpenChange(false); 
   };
 
@@ -421,5 +337,3 @@ function CountdownFormDialog({ isOpen, onOpenChange, onSave, countdown }: Countd
     </Dialog>
   );
 }
-
-    
