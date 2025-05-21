@@ -5,9 +5,8 @@ import { getFirestore, type Firestore } from 'firebase/firestore';
 // Auth is no longer imported or initialized here
 
 // Your web app's Firebase configuration - FROM USER
-// IMPORTANT: For production, use environment variables. For this session, using hardcoded values.
 const firebaseConfig = {
-  apiKey: "process.env.NEXT_PUBLIC_FIREBASE_API_KEY;", // Replace with your actual API key
+  apiKey: "AIzaSyBplfUzL2yGLMXOSxvyB3eivGj21mWtkC4", // Replace with your actual API key
   authDomain: "timeverse-msmki.firebaseapp.com",   // Replace with your actual auth domain
   projectId: "timeverse-msmki",                   // Replace with your actual project ID
   storageBucket: "timeverse-msmki.appspot.com", // Corrected: usually .appspot.com for storageBucket
@@ -24,13 +23,13 @@ let db: Firestore;
 // Log environment variables (server-side)
 if (typeof window === 'undefined') {
   console.log("---------------------------------------------------------------------");
-  console.log("SERVER-SIDE Firebase Environment Variable Check (Hardcoded for this session):");
-  console.log(`NEXT_PUBLIC_FIREBASE_API_KEY: ${firebaseConfig.apiKey ? `SET (Ends with ${firebaseConfig.apiKey.slice(-5)})` : "MISSING or EMPTY"}`);
-  console.log(`NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: ${firebaseConfig.authDomain || "MISSING or EMPTY"}`);
-  console.log(`NEXT_PUBLIC_FIREBASE_PROJECT_ID: ${firebaseConfig.projectId || "MISSING or EMPTY"}`);
-  console.log(`NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: ${firebaseConfig.storageBucket || "MISSING or EMPTY"}`);
-  console.log(`NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: ${firebaseConfig.messagingSenderId || "MISSING or EMPTY"}`);
-  console.log(`NEXT_PUBLIC_FIREBASE_APP_ID: ${firebaseConfig.appId || "MISSING or EMPTY"}`);
+  console.log("SERVER-SIDE Firebase Environment Variable Check:");
+  console.log(`NEXT_PUBLIC_FIREBASE_API_KEY: ${process.env.NEXT_PUBLIC_FIREBASE_API_KEY ? "SET" : "MISSING or EMPTY"}`);
+  console.log(`NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: ${process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN || "MISSING or EMPTY"}`);
+  console.log(`NEXT_PUBLIC_FIREBASE_PROJECT_ID: ${process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || "MISSING or EMPTY"}`);
+  console.log(`NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: ${process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || "MISSING or EMPTY"}`);
+  console.log(`NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: ${process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || "MISSING or EMPTY"}`);
+  console.log(`NEXT_PUBLIC_FIREBASE_APP_ID: ${process.env.NEXT_PUBLIC_FIREBASE_APP_ID || "MISSING or EMPTY"}`);
   console.log("---------------------------------------------------------------------");
 }
 
