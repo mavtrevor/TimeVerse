@@ -1,3 +1,4 @@
+
 // src/lib/firebase.ts
 import { initializeApp, getApps, getApp, type FirebaseApp } from 'firebase/app';
 import { getFirestore, type Firestore } from 'firebase/firestore';
@@ -13,6 +14,10 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
   measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID, // Optional
 };
+
+// NOTE: The explicit check for firebaseConfig.apiKey has been removed.
+// If Firebase still fails to initialize, ensure your .env.local file is
+// correctly set up at the project root and your Next.js dev server is restarted.
 
 // Initialize Firebase
 let app: FirebaseApp;
