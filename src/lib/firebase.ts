@@ -1,3 +1,4 @@
+
 // src/lib/firebase.ts
 import { initializeApp, getApps, getApp, type FirebaseApp } from 'firebase/app';
 import { getFirestore, type Firestore } from 'firebase/firestore';
@@ -29,7 +30,6 @@ if (typeof window === 'undefined') {
       !process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN ||
       !process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID) {
     console.warn('CRITICAL SERVER-SIDE WARNING: One or more required Firebase environment variables (API Key, Auth Domain, Project ID) are missing or empty. Firebase services will likely fail. Please check your .env.local file (ensure it is in the project root) and RESTART your Next.js development server.');
-    // We are not throwing an error here to let Firebase SDK attempt initialization and provide its own error.
   }
 }
 
@@ -47,41 +47,41 @@ const firebaseConfig = {
 // Log the config being used on the client side for debugging
 if (typeof window !== 'undefined') {
   console.log('Firebase configuration being used on CLIENT:', firebaseConfig);
-  if (!firebaseConfig.apiKey) {
-    console.error("CLIENT-SIDE CHECK FAILED: NEXT_PUBLIC_FIREBASE_API_KEY is missing or empty in the client-side bundle. Ensure it's correctly defined in .env.local and the Next.js server was restarted.");
-  }
-  if (!firebaseConfig.authDomain) {
-    console.error("CLIENT-SIDE CHECK FAILED: NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN is missing or empty in the client-side bundle.");
-  }
-  if (!firebaseConfig.projectId) {
-    console.error("CLIENT-SIDE CHECK FAILED: NEXT_PUBLIC_FIREBASE_PROJECT_ID is missing or empty in the client-side bundle.");
-  }
+  // Removed explicit console.error checks here. Firebase SDK will throw its own errors if config is invalid.
 }
 
 // Initialize Firebase
 let app: FirebaseApp;
+let db: Firestore;
+let auth: Auth;
+
 // Check if all critical config values are present before initializing
+// This check primarily affects server-side. Client-side will attempt initialization regardless.
 if (firebaseConfig.apiKey && firebaseConfig.authDomain && firebaseConfig.projectId) {
   if (!getApps().length) {
-    app = initializeApp(firebaseConfig);
+    try {
+      app = initializeApp(firebaseConfig);
+      db = getFirestore(app);
+      auth = getAuth(app);
+    } catch (error) {
+      console.error("Firebase initialization error:", error);
+      // Assign non-functional placeholders if initialization fails
+      app = {} as FirebaseApp;
+      db = {} as Firestore;
+      auth = {} as Auth;
+    }
   } else {
     app = getApp();
+    db = getFirestore(app); // Ensure db and auth are also re-assigned if app already exists
+    auth = getAuth(app);
   }
 } else {
-  // If critical config is missing, create a dummy app object or handle error
-  // This prevents the app from crashing if config is totally absent,
-  // but Firebase services will not work.
-  console.error("CRITICAL ERROR: Firebase cannot be initialized due to missing configuration. App functionality will be severely limited.");
-  // Assign a non-functional placeholder to app to prevent further crashes down the line
-  // This is a fallback, the root cause (missing env vars) must be fixed.
-  app = {} as FirebaseApp; // Or throw an error here if preferred to halt execution
+  console.warn("Firebase configuration incomplete. Firebase services (Auth, Firestore) might not be available or work correctly. Please ensure .env.local is properly set up and the server restarted.");
+  // Assign non-functional placeholders
+  app = {} as FirebaseApp;
+  db = {} as Firestore;
+  auth = {} as Auth;
 }
-
-// Initialize Firestore - only if app was initialized
-const db: Firestore = app && app.name ? getFirestore(app) : ({} as Firestore);
-
-// Initialize Firebase Authentication - only if app was initialized
-const auth: Auth = app && app.name ? getAuth(app) : ({} as Auth);
 
 // Export the initialized app, Firestore instance, and Auth instance
 export { app, db, auth };
