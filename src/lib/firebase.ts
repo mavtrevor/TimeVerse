@@ -7,7 +7,7 @@ import { getFirestore, type Firestore } from 'firebase/firestore';
 // Your web app's Firebase configuration - FROM USER
 // IMPORTANT: For production, use environment variables. For this session, using hardcoded values.
 const firebaseConfig = {
-  apiKey: "AIzaSyBplfUzL2yGLMXOSxvyB3eivGj21mWtkC4", // Replace with your actual API key
+  apiKey: "process.env.NEXT_PUBLIC_FIREBASE_API_KEY;", // Replace with your actual API key
   authDomain: "timeverse-msmki.firebaseapp.com",   // Replace with your actual auth domain
   projectId: "timeverse-msmki",                   // Replace with your actual project ID
   storageBucket: "timeverse-msmki.appspot.com", // Corrected: usually .appspot.com for storageBucket
