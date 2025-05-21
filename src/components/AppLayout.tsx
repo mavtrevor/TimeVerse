@@ -10,7 +10,7 @@ import {
 } from '@/components/ui/sidebar'; 
 import AppHeader from '@/components/AppHeader';
 import { Logo } from '@/components/icons/Logo';
-import { navItemsList, settingsItem, getFeatureComponent, getFeatureLabel, getActiveFeatureKeyFromPathname } from '@/lib/navConfig';
+import { navItemsList, getFeatureComponent, getFeatureLabel, getActiveFeatureKeyFromPathname } from '@/lib/navConfig';
 import type { FeatureKey } from '@/types';
 import { useSettings } from '@/hooks/useSettings';
 import { Moon, Sun } from 'lucide-react';
@@ -25,7 +25,7 @@ export default function AppLayout({ children }: { children?: React.ReactNode }) 
   }, []);
 
   let displayTheme = theme;
-  if (mounted && theme === 'system') {
+  if (mounted && theme === 'system' && typeof window !== 'undefined') {
     displayTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
   } else if (!mounted && theme === 'system') {
     displayTheme = 'light'; // Consistent SSR default

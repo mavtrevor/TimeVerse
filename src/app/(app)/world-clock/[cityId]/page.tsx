@@ -20,12 +20,15 @@ export default function CityClockPage() {
   const settings = useSettings();
   const { timeFormat, language } = settings;
   const [clientNow, setClientNow] = useState<Date | null>(null);
+  const [mounted, setMounted] = useState(false);
 
   const cityDetails: CityDetail | undefined = useMemo(() => {
-    if (!cityIdParam) return undefined;
-    const decodedCityIana = decodeURIComponent(cityIdParam as string);
+    if (!cityIdParam || typeof cityIdParam !== 'string') return undefined;
+    const decodedCityIana = decodeURIComponent(cityIdParam);
     let detail = popularCityDetails.find(c => c.iana === decodedCityIana);
-    if (!detail && typeof window !== 'undefined' && decodedCityIana === Intl.DateTimeFormat().resolvedOptions().timeZone) {
+    
+    // Check for local timezone only after mount to ensure window.Intl is available
+    if (mounted && !detail && typeof window !== 'undefined' && decodedCityIana === Intl.DateTimeFormat().resolvedOptions().timeZone) {
         const localName = popularCityDetails.find(c => c.iana === decodedCityIana)?.name || 'Local Time';
         detail = {
             iana: decodedCityIana,
@@ -35,23 +38,34 @@ export default function CityClockPage() {
         };
     }
     return detail;
-  }, [cityIdParam]);
+  }, [cityIdParam, mounted]);
 
   useEffect(() => {
-    setClientNow(new Date());
+    setMounted(true);
     const timerId = setInterval(() => setClientNow(new Date()), 1000);
     return () => clearInterval(timerId);
   }, []);
 
+  useEffect(() => {
+    // Set initial clientNow after mount to ensure consistency
+    if (mounted && !clientNow) {
+        setClientNow(new Date());
+    }
+  }, [mounted, clientNow]);
+
+
+  if (!mounted) {
+    return <div className="p-4 md:p-6 text-center">Loading city details...</div>;
+  }
+
   if (!cityDetails || !clientNow) {
-    if (!cityDetails && cityIdParam) {
-        console.warn(`City details not found for IANA: ${decodeURIComponent(cityIdParam as string)}`)
-        if (typeof window !== 'undefined' && !cityDetails) {
+    if (!cityDetails && cityIdParam && typeof cityIdParam === 'string') { // Check if cityIdParam is a string
+        console.warn(`City details not found for IANA: ${decodeURIComponent(cityIdParam)}`)
+        if (typeof window !== 'undefined' && !cityDetails) { // Already guarded by mounted, but good practice
              notFound(); 
         }
-        return <div className="p-4 md:p-6 text-center">Loading city details or city not found...</div>;
     }
-    return <div className="p-4 md:p-6 text-center">Loading...</div>;
+    return <div className="p-4 md:p-6 text-center">Loading city details or city not found...</div>;
   }
 
   const cityName = cityDetails.displayName || cityDetails.name;
@@ -126,5 +140,3 @@ export default function CityClockPage() {
     </div>
   );
 }
-
-
