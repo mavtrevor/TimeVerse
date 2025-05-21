@@ -1,6 +1,7 @@
 
 "use client";
 
+import dynamic from 'next/dynamic';
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -10,7 +11,7 @@ import {
 } from '@/components/ui/sidebar';
 import AppHeader from '@/components/AppHeader';
 import { Logo } from '@/components/icons/Logo';
-import { navItemsList, settingsItem } from '@/lib/navConfig';
+import { navItemsList } from '@/lib/navConfig';
 import type { FeatureKey } from '@/types';
 import { useSettings } from '@/hooks/useSettings';
 import { Moon, Sun } from 'lucide-react';
@@ -60,7 +61,7 @@ export default function AppShellLayout({ children }: { children: React.ReactNode
 
   let currentFeatureLabel = "TimeVerse"; // Default
   if (activeKey) {
-    const activeItem = [...navItemsList, settingsItem].find(item => item.id === activeKey);
+    const activeItem = [...navItemsList].find(item => item.id === activeKey);
     if (activeItem) {
       currentFeatureLabel = activeItem.label;
     }
@@ -96,43 +97,11 @@ export default function AppShellLayout({ children }: { children: React.ReactNode
           </SidebarMenu>
         </SidebarContent>
         <SidebarFooter className="p-2 mt-auto border-t">
-          <SidebarMenu>
-            <SidebarMenuItem>
-              <Link href={settingsItem.href} passHref legacyBehavior>
-                <SidebarMenuButton
-                  isActive={activeKey === settingsItem.id}
-                  tooltip={settingsItem.label}
-                  className="justify-start"
-                  as="a"
-                >
-                  <settingsItem.icon className="h-5 w-5" />
-                  <span className="group-data-[collapsible=icon]:hidden">{settingsItem.label}</span>
-                </SidebarMenuButton>
-              </Link>
-            </SidebarMenuItem>
-            <SidebarMenuItem>
-              {mounted ? (
-                  <SidebarMenuButton
-                      onClick={toggleThemeInLayout}
-                      tooltip={displayTheme === 'dark' ? "Switch to Light Mode" : "Switch to Dark Mode"}
-                      className="justify-start"
-                  >
-                      {displayTheme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-                      <span className="group-data-[collapsible=icon]:hidden">
-                      {displayTheme === 'dark' ? "Light Mode" : "Dark Mode"}
-                      </span>
-                  </SidebarMenuButton>
-              ) : ( 
-                <SidebarMenuButton tooltip="Toggle theme" className="justify-start" disabled> 
-                  <Moon className="h-5 w-5" /> 
-                  <span className="group-data-[collapsible=icon]:hidden">Dark Mode</span> 
-                </SidebarMenuButton> 
-              )}
-            </SidebarMenuItem>
+          <SidebarMenu> {/* SidebarFooter can contain other items if needed later */}
           </SidebarMenu>
         </SidebarFooter>
       </Sidebar>
-      <SidebarInset className="flex flex-col">
+    <AuthProvider> {/* Wrap main content with AuthProvider */}
         {/* AppHeader's onNavigate is now for specific actions within header, not main feature nav */}
         <AppHeader currentFeatureName={currentFeatureLabel} onNavigate={(featureKey) => {
             // If 'settings' is clicked in AppHeader, it should navigate.
@@ -141,7 +110,7 @@ export default function AppShellLayout({ children }: { children: React.ReactNode
         <main className="flex-1 overflow-auto">
           {children}
         </main>
-      </SidebarInset>
+    </AuthProvider>
     </SidebarProvider>
   );
 }

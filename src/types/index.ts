@@ -25,7 +25,7 @@ export interface Timer {
 
 export interface WorldClockCity {
   id: string; // User-defined ID or 'local'
-  name: string; // User-defined name or auto-detected for local
+  name: string;
   timezone: string; // e.g., "America/New_York"
 }
 
@@ -70,6 +70,7 @@ export interface EventCountdown {
   name: string;
   date: string; // ISO string for date and time
   emoji?: string;
+  userId?: string;
 }
 
 export interface ShortcutCountdownEvent {
@@ -81,9 +82,18 @@ export interface ShortcutCountdownEvent {
   description?: string; 
 }
 
+export type RecurrenceType = 'none' | 'daily' | 'weekly';
+export type TaskDifficulty = 'easy' | 'medium' | 'hard'; // New type for task difficulty
+
 export interface ScheduleItem {
   id: string;
   text: string;
   completed: boolean;
-  date: string; // YYYY-MM-DD format
+  date: string; // YYYY-MM-DD format (This will be the start date for recurring tasks)
+  time?: string; // Optional time in HH:mm format
+  notes?: string; // Optional notes/details for the task
+  recurrenceType?: RecurrenceType;
+  recurrenceDays?: number[]; // For weekly recurrence (0 = Sunday, 6 = Saturday)
+  recurrenceEndDate?: string; // YYYY-MM-DD format (Optional end date for recurrence)
+  difficulty?: TaskDifficulty; // Optional task difficulty
 }

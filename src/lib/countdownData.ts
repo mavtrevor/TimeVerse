@@ -56,6 +56,7 @@ export const shortcutEvents: ShortcutCountdownEvent[] = [
     defaultEmoji: '🌙',
     targetDateLogic: () => endOfDay(new Date()),
     description: "Countdown to the end of today."
+ , color: 'blue'
   },
   {
     id: 'thanksgiving',
@@ -64,6 +65,7 @@ export const shortcutEvents: ShortcutCountdownEvent[] = [
     defaultEmoji: '🦃',
     targetDateLogic: getNextThanksgivingUS,
     description: "Countdown to the next Thanksgiving (US)."
+ , color: 'green'
   },
   {
     id: 'christmas',
@@ -72,6 +74,7 @@ export const shortcutEvents: ShortcutCountdownEvent[] = [
     defaultEmoji: '🎄',
     targetDateLogic: () => getNextOccurrence(12, 25),
     description: "Countdown to Christmas Day."
+ , color: 'red'
   },
   {
     id: 'new-year',
@@ -83,6 +86,7 @@ export const shortcutEvents: ShortcutCountdownEvent[] = [
         return set(now, { year: getYear(now) + 1, month: 0, date: 1, hours: 0, minutes: 0, seconds: 0, milliseconds: 0 });
     },
     description: "Countdown to New Year's Day."
+ , color: 'purple'
   },
   {
     id: 'valentines-day',
@@ -91,6 +95,7 @@ export const shortcutEvents: ShortcutCountdownEvent[] = [
     defaultEmoji: '❤️',
     targetDateLogic: () => getNextOccurrence(2, 14),
     description: "Countdown to Valentine's Day."
+ , color: 'pink'
   },
   {
     id: 'easter',
@@ -99,6 +104,7 @@ export const shortcutEvents: ShortcutCountdownEvent[] = [
     defaultEmoji: '🐣',
     targetDateLogic: () => getNextEasterSunday(2025), // Fixed to 2025 for simplicity
     description: "Countdown to Easter Sunday (approximate for future years beyond 2025/26 without a proper algorithm)."
+ , color: 'yellow'
   },
   {
     id: 'eid-al-fitr',

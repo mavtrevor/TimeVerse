@@ -1,6 +1,7 @@
 
 "use client";
 
+import { useAuth } from '@/hooks/useAuth';
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import type { Alarm } from '@/types';
 import useLocalStorage from '@/hooks/useLocalStorage';
@@ -18,6 +19,7 @@ import { useToast } from '@/hooks/use-toast';
 import type { TimeFormat } from '@/types';
 import { useIsMobile } from '@/hooks/use-mobile';
 
+import { db } from '@/lib/firebase';
 const defaultAlarmSound = "default_alarm";
 const alarmSounds = [
   { id: "default_alarm", name: "Default Alarm" },
@@ -154,6 +156,7 @@ export default function AlarmsFeature() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [ringingAlarmId, setRingingAlarmId] = useState<string | null>(null);
   const [ringingAlarmModal, setRingingAlarmModal] = useState<Alarm | null>(null);
+  const { user } = useAuth();
   const [shortcutInitialData, setShortcutInitialData] = useState<Partial<Omit<Alarm, 'id' | 'isActive' | 'type'>> | null>(null);
   const [mounted, setMounted] = useState(false);
   const wakeLockRef = useRef<WakeLockSentinel | null>(null);
@@ -269,7 +272,7 @@ export default function AlarmsFeature() {
     });
   }, [currentTime, alarms, timeFormat, toast, ringingAlarmId, mounted, ringingAlarmModal]);
 
-
+  
   const handleSaveAlarm = (alarmData: Omit<Alarm, 'id' | 'isActive'>) => {
     // For conceptual team alarms, set a placeholder creatorName if it's a team alarm
     const fullAlarmData = {
@@ -284,6 +287,15 @@ export default function AlarmsFeature() {
       const newAlarm: Alarm = { ...fullAlarmData, id: Date.now().toString(), isActive: true };
       setAlarms([...alarms, newAlarm]);
       toast({ title: "Alarm Added", description: `Alarm "${fullAlarmData.label || 'Alarm'}" has been set.` });
+
+      if (user) {
+        // Increment alarmsSet stat for the user
+        try {
+          updateDoc(doc(db, 'userStats', user.id), { alarmsSet: increment(1) });
+        } catch (error) {
+          console.error("Failed to increment alarmsSet stat:", error);
+        }
+      }
     }
     setEditingAlarm(null);
     setIsFormOpen(false);

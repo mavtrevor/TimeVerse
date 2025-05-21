@@ -1,9 +1,21 @@
-
 "use client";
 
+import { v4 as uuidv4 } from 'uuid';
 import { useState, useEffect, useCallback } from 'react';
 
 type SetValue<T> = (value: T | ((val: T) => T)) => void;
+
+function generateAnonymousId(): string {
+ return uuidv4();
+}
+
+function getAnonymousId(): string {
+ const id = localStorage.getItem('anonymousUserId');
+ if (id) return id;
+ const newId = generateAnonymousId();
+ localStorage.setItem('anonymousUserId', newId);
+ return newId;
+}
 
 function useLocalStorage<T>(key: string, initialValue: T): [T, SetValue<T>] {
   // Initialize state with initialValue to ensure server and client match on first render.
@@ -96,3 +108,6 @@ function useLocalStorage<T>(key: string, initialValue: T): [T, SetValue<T>] {
 }
 
 export default useLocalStorage;
+
+// ** Add this line to export getAnonymousId as a named export **
+export { getAnonymousId };
