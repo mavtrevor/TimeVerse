@@ -52,7 +52,7 @@ export default function AppLayout({ children }: { children?: React.ReactNode }) 
         <SidebarHeader className="p-4 items-center justify-between">
           <Link href="/" className="flex items-center gap-2 font-semibold text-lg">
             <div className="group-data-[collapsible=icon]:hidden">
-              <Logo className="h-10" /> {/* Adjust height as needed */}
+              <Logo className="h-12" /> {/* Increased height */}
             </div>
             <div className="hidden group-data-[collapsible=icon]:block">
               <CollapsedLogoIcon />

@@ -9,8 +9,7 @@ export default function TermsPage() {
     <div className="flex flex-col min-h-screen bg-background text-foreground">
       <header className="sticky top-0 z-40 flex h-16 items-center justify-between border-b bg-background px-4 sm:px-6">
         <Link href="/" className="flex items-center gap-2 font-semibold text-lg text-primary">
-            <Logo className="h-10" /> {/* Use the new image logo, adjust height */}
-            {/* The text "TimeVerse ONLINE CLOCK SUITE" is now part of the Logo image */}
+            <Logo className="h-12" /> {/* Increased height */}
         </Link>
         <Button variant="outline" asChild>
           <Link href="/">
