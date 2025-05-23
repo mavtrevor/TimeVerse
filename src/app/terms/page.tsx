@@ -32,10 +32,9 @@ export default function TermsPage() {
             <span className="hidden sm:inline">|</span>
             <Link href="/privacy" className="hover:text-foreground">Privacy</Link>
             <span className="hidden sm:inline">|</span>
-            <span>© 2025 TimeVerse – The Ultimate Online Clock Suite</span>
+            <span>© 2025 TimeVerse</span>
           </div>
       </footer>
     </div>
   );
 }
-

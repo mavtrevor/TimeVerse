@@ -53,7 +53,6 @@ export default function AppLayout({ children }: { children?: React.ReactNode }) 
             <Logo />
             <span className="group-data-[collapsible=icon]:hidden">
               TimeVerse
-              <span className="hidden sm:inline"> – The Ultimate Online Clock Suite</span>
             </span>
           </Link>
         </SidebarHeader>
@@ -77,6 +76,25 @@ export default function AppLayout({ children }: { children?: React.ReactNode }) 
           </SidebarMenu>
         </SidebarContent>
         <SidebarFooter className="p-2 mt-auto border-t">
+           {/* Theme toggle button - consistent with AppHeader behavior */}
+            {mounted ? (
+                <SidebarMenuButton
+                    onClick={toggleThemeInLayout}
+                    tooltip={displayTheme === 'dark' ? 'Switch to Light Theme' : 'Switch to Dark Theme'}
+                    className="justify-start w-full"
+                    aria-label="Toggle theme"
+                >
+                    {displayTheme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+                    <span className="group-data-[collapsible=icon]:hidden">
+                       {displayTheme === 'dark' ? 'Light Mode' : 'Dark Mode'}
+                    </span>
+                </SidebarMenuButton>
+            ) : (
+                <SidebarMenuButton className="justify-start w-full" disabled>
+                    <Moon className="h-5 w-5" />
+                     <span className="group-data-[collapsible=icon]:hidden">Toggle Theme</span>
+                </SidebarMenuButton>
+            )}
         </SidebarFooter>
       </Sidebar>
       <SidebarInset className="flex flex-col">
@@ -92,7 +110,7 @@ export default function AppLayout({ children }: { children?: React.ReactNode }) 
             <span className="hidden sm:inline">|</span>
             <Link href="/privacy" className="hover:text-foreground">Privacy</Link>
             <span className="hidden sm:inline">|</span>
-            <span>© 2025 TimeVerse – The Ultimate Online Clock Suite</span>
+            <span>© 2025 TimeVerse</span>
           </div>
         </footer>
       </SidebarInset>

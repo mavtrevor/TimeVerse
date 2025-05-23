@@ -15,7 +15,7 @@ import { navItemsList } from '@/lib/navConfig';
 import type { FeatureKey } from '@/types';
 import { useSettings } from '@/hooks/useSettings';
 import { Moon, Sun } from 'lucide-react';
-// AuthProvider import removed
+// AuthProvider import removed as authentication is no longer part of the app
 
 export default function AppShellLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -47,21 +47,36 @@ export default function AppShellLayout({ children }: { children: React.ReactNode
     const segments = pathname.split('/').filter(Boolean);
     if (pathname === '/') return 'alarms'; // Root '/' is alarms
 
-    const mainSegment = segments[0] as FeatureKey;
+    // Handle nested (app) routes
+    const appSegmentIndex = segments.indexOf('(app)');
+    const relevantSegments = appSegmentIndex !== -1 ? segments.slice(appSegmentIndex + 1) : segments;
     
-    if (mainSegment === 'world-clock' && segments.length > 0) return 'worldclock';
+    if (relevantSegments.length === 0 && pathname.startsWith('/app')) return 'alarms'; // Default for /app or similar
+    if (relevantSegments.length === 0 && pathname === '/') return 'alarms';
+
+
+    const mainSegment = relevantSegments[0] as FeatureKey;
+    
+    if (mainSegment === 'world-clock' && relevantSegments.length > 0) return 'worldclock';
     if (navItemsList.some(item => item.id === mainSegment)) return mainSegment;
-    if (mainSegment === 'settings') return 'settings';
+    if (mainSegment === 'settings') return 'settings'; // Assuming settings is a direct child of (app)
     
+    // Fallback for top-level pages that might not be in (app) but are in navItemsList
+    const topLevelSegment = segments[0] as FeatureKey;
+    if (navItemsList.some(item => item.id === topLevelSegment)) return topLevelSegment;
+
+
     return null;
   };
   const activeKey = getActiveFeatureKey();
 
-  let currentFeatureLabel = "TimeVerse – The Ultimate Online Clock Suite"; // Default
+  let currentFeatureLabel = "TimeVerse"; // Default
   if (activeKey) {
     const activeItem = [...navItemsList].find(item => item.id === activeKey);
     if (activeItem) {
       currentFeatureLabel = activeItem.label;
+    } else if (activeKey === 'settings'){
+        currentFeatureLabel = "Settings";
     }
   }
 
@@ -74,7 +89,6 @@ export default function AppShellLayout({ children }: { children: React.ReactNode
             <Logo />
             <span className="group-data-[collapsible=icon]:hidden">
               TimeVerse
-              <span className="hidden sm:inline"> – The Ultimate Online Clock Suite</span>
             </span>
           </Link>
         </SidebarHeader>
@@ -102,7 +116,6 @@ export default function AppShellLayout({ children }: { children: React.ReactNode
           </SidebarMenu>
         </SidebarFooter>
       </Sidebar>
-    {/* AuthProvider wrapper removed */}
       <SidebarInset className="flex flex-col">
         <AppHeader currentFeatureName={currentFeatureLabel} onNavigate={(featureKey) => {
         }} />
@@ -117,11 +130,10 @@ export default function AppShellLayout({ children }: { children: React.ReactNode
             <span className="hidden sm:inline">|</span>
             <Link href="/privacy" className="hover:text-foreground">Privacy</Link>
             <span className="hidden sm:inline">|</span>
-            <span>© 2025 TimeVerse – The Ultimate Online Clock Suite</span>
+            <span>© 2025 TimeVerse</span>
           </div>
         </footer>
       </SidebarInset>
-    {/* AuthProvider wrapper removed */}
     </SidebarProvider>
   );
 }
