@@ -11,7 +11,7 @@
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 
-export const ContactFormInputSchema = z.object({
+const ContactFormInputSchema = z.object({
   name: z.string().min(2).max(100).describe("Sender's full name."),
   email: z.string().email().describe("Sender's email address."),
   subject: z.string().min(5).max(150).describe("Subject of the message."),
