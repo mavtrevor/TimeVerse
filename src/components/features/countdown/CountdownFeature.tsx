@@ -15,7 +15,6 @@ import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import { shortcutEvents } from '@/lib/countdownData'; 
 import { Separator } from '@/components/ui/separator';
-// useAuth, Firestore imports removed
 
 const INITIAL_COUNTDOWNS: EventCountdown[] = [];
 
@@ -46,7 +45,7 @@ function calculateTimeRemaining(targetDate: string): TimeRemaining {
 }
 
 export default function CountdownFeature() {
-  const [countdowns, setCountdowns] = useLocalStorage<EventCountdown[]>('timeverse-countdowns', INITIAL_COUNTDOWNS); // Key updated
+  const [countdowns, setCountdowns] = useLocalStorage<EventCountdown[]>('timeverse-countdowns', INITIAL_COUNTDOWNS); 
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingCountdown, setEditingCountdown] = useState<EventCountdown | null>(null);
   const { toast } = useToast();
@@ -59,7 +58,6 @@ export default function CountdownFeature() {
     return () => clearInterval(timerId);
   }, []);
 
- // Removed effect to load from Firestore, only local storage is used now.
 
  const handleSaveCountdown = async (countdownData: Omit<EventCountdown, 'id'>) => {
     if (editingCountdown) {
@@ -131,21 +129,21 @@ export default function CountdownFeature() {
                 {isFinished ? (
                   <div className="text-destructive text-lg sm:text-xl md:text-2xl font-bold">EVENT REACHED!</div>
                 ) : (
-                  <div className="grid grid-cols-4 gap-x-1 sm:gap-x-2 text-center w-full max-w-xs mx-auto">
+                  <div className="grid grid-cols-4 gap-x-2 sm:gap-x-3 text-center w-full mx-auto">
                     <div>
-                      <div className="text-xl sm:text-2xl md:text-3xl font-bold text-primary">{String(remaining.days).padStart(2, '0')}</div>
+                      <div className="text-base sm:text-lg md:text-xl font-bold text-primary">{String(remaining.days).padStart(2, '0')}</div>
                       <div className="text-xs text-muted-foreground">DAYS</div>
                     </div>
                     <div>
-                      <div className="text-xl sm:text-2xl md:text-3xl font-bold text-primary">{String(remaining.hours).padStart(2, '0')}</div>
+                      <div className="text-base sm:text-lg md:text-xl font-bold text-primary">{String(remaining.hours).padStart(2, '0')}</div>
                       <div className="text-xs text-muted-foreground">HOURS</div>
                     </div>
                     <div>
-                      <div className="text-xl sm:text-2xl md:text-3xl font-bold text-primary">{String(remaining.minutes).padStart(2, '0')}</div>
+                      <div className="text-base sm:text-lg md:text-xl font-bold text-primary">{String(remaining.minutes).padStart(2, '0')}</div>
                       <div className="text-xs text-muted-foreground">MINS</div>
                     </div>
                     <div>
-                      <div className="text-xl sm:text-2xl md:text-3xl font-bold text-primary">{String(remaining.seconds).padStart(2, '0')}</div>
+                      <div className="text-base sm:text-lg md:text-xl font-bold text-primary">{String(remaining.seconds).padStart(2, '0')}</div>
                       <div className="text-xs text-muted-foreground">SECS</div>
                     </div>
                   </div>
@@ -165,16 +163,35 @@ export default function CountdownFeature() {
 
   const renderCustomCountdownsContainer = () => {
     if (!mounted) {
-        return <p className="text-muted-foreground py-10 text-center">Loading countdowns...</p>;
+        return (
+            <Card className="shadow-lg">
+                <CardContent className="pt-6">
+                    <p className="text-muted-foreground py-10 text-center">Loading countdowns...</p>
+                </CardContent>
+            </Card>
+        );
     }
-    if (countdowns.length === 0) {
-      return (
-        <p className="text-center text-muted-foreground py-10">
-          You have no custom countdowns set. Click "Add Custom Countdown" to create one.
-        </p>
-      );
-    }
-    return renderCountdownList();
+    return (
+        <Card className="shadow-lg">
+            <CardHeader>
+                <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+                    <h2 className="text-xl sm:text-2xl font-semibold">Your Custom Countdowns</h2>
+                    <Button onClick={openAddForm} className="w-full sm:w-auto">
+                        <PlusCircle className="mr-2 h-4 w-4" /> Add Custom Countdown
+                    </Button>
+                </div>
+            </CardHeader>
+            <CardContent className="pt-2">
+                {countdowns.length === 0 ? (
+                    <p className="text-center text-muted-foreground py-10">
+                        You have no custom countdowns set. Click "Add Custom Countdown" to create one.
+                    </p>
+                ) : (
+                    renderCountdownList()
+                )}
+            </CardContent>
+        </Card>
+    );
   };
 
   if (!mounted) {
@@ -187,12 +204,8 @@ export default function CountdownFeature() {
 
   return (
     <div className="p-4 md:p-6 space-y-8">
-      <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-        <h2 className="text-xl sm:text-2xl font-semibold">Your Custom Countdowns</h2>
-        <Button onClick={openAddForm} className="w-full sm:w-auto">
-          <PlusCircle className="mr-2 h-4 w-4" /> Add Custom Countdown
-        </Button>
-      </div>
+      
+      {renderCustomCountdownsContainer()}
       
       <CountdownFormDialog
         isOpen={isFormOpen}
@@ -204,12 +217,6 @@ export default function CountdownFeature() {
         countdown={editingCountdown}
       />
       
-      <Card className="shadow-lg mt-0">
-        <CardContent className="pt-6">
-          {renderCustomCountdownsContainer()}
-        </CardContent>
-      </Card>
-
       <Separator />
 
       <Card className="shadow-lg">
@@ -220,9 +227,13 @@ export default function CountdownFeature() {
         <CardContent className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
           {shortcutEvents.map(event => (
             <Button key={event.id} variant="outline" asChild className={`h-auto py-3 flex-col items-center justify-center text-center ${
-              event.color === 'blue' ? 'border-blue-500' :
-              event.color === 'green' ? 'border-green-500' :
-              event.color === 'purple' ? 'border-purple-500' : 'border-gray-200'
+              event.color === 'blue' ? 'border-blue-500 hover:bg-blue-500/10' :
+              event.color === 'green' ? 'border-green-500 hover:bg-green-500/10' :
+              event.color === 'purple' ? 'border-purple-500 hover:bg-purple-500/10' : 
+              event.color === 'pink' ? 'border-pink-500 hover:bg-pink-500/10' : 
+              event.color === 'yellow' ? 'border-yellow-500 hover:bg-yellow-500/10' : 
+              event.color === 'red' ? 'border-red-500 hover:bg-red-500/10' : 
+              'border-gray-300 dark:border-gray-700 hover:bg-muted/50'
             }`}>
               <Link href={`/countdown/${event.id}`}>
                 {event.defaultEmoji && <span className="text-2xl mb-1">{event.defaultEmoji}</span>}
@@ -302,7 +313,7 @@ function CountdownFormDialog({ isOpen, onOpenChange, onSave, countdown }: Countd
         return;
     }
 
-    onSave({ name, date: targetDate.toISOString(), emoji }); // userId removed
+    onSave({ name, date: targetDate.toISOString(), emoji }); 
     onOpenChange(false); 
   };
 
@@ -337,3 +348,4 @@ function CountdownFormDialog({ isOpen, onOpenChange, onSave, countdown }: Countd
     </Dialog>
   );
 }
+
