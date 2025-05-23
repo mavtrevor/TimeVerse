@@ -10,6 +10,7 @@ import {
 } from '@/components/ui/sidebar'; 
 import AppHeader from '@/components/AppHeader';
 import { Logo } from '@/components/icons/Logo';
+import { CollapsedLogoIcon } from '@/components/icons/CollapsedLogoIcon'; // Import CollapsedLogoIcon
 import { navItemsList, getFeatureComponent, getFeatureLabel, getActiveFeatureKeyFromPathname } from '@/lib/navConfig';
 import type { FeatureKey } from '@/types';
 import { useSettings } from '@/hooks/useSettings';
@@ -50,10 +51,12 @@ export default function AppLayout({ children }: { children?: React.ReactNode }) 
       <Sidebar collapsible="icon">
         <SidebarHeader className="p-4 items-center justify-between">
           <Link href="/" className="flex items-center gap-2 font-semibold text-lg">
-            <Logo />
-            <span className="group-data-[collapsible=icon]:hidden">
-              TimeVerse
-            </span>
+            <div className="group-data-[collapsible=icon]:hidden">
+              <Logo className="h-10" /> {/* Adjust height as needed */}
+            </div>
+            <div className="hidden group-data-[collapsible=icon]:block">
+              <CollapsedLogoIcon />
+            </div>
           </Link>
         </SidebarHeader>
         <SidebarContent className="p-2">

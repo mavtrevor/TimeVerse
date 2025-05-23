@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/sidebar';
 import AppHeader from '@/components/AppHeader';
 import { Logo } from '@/components/icons/Logo';
+import { CollapsedLogoIcon } from '@/components/icons/CollapsedLogoIcon'; // Import CollapsedLogoIcon
 import { navItemsList } from '@/lib/navConfig';
 import type { FeatureKey } from '@/types';
 import { useSettings } from '@/hooks/useSettings';
@@ -27,7 +28,7 @@ export default function AppShellLayout({ children }: { children: React.ReactNode
   }, []);
 
   let displayTheme = theme;
-  if (mounted && theme === 'system') {
+  if (mounted && theme === 'system' && typeof window !== 'undefined') {
     displayTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
   } else if (!mounted && theme === 'system') {
     displayTheme = 'light'; // Consistent SSR default
@@ -86,10 +87,12 @@ export default function AppShellLayout({ children }: { children: React.ReactNode
       <Sidebar collapsible="icon">
         <SidebarHeader className="p-4 items-center justify-between">
           <Link href="/" className="flex items-center gap-2 font-semibold text-lg">
-            <Logo />
-            <span className="group-data-[collapsible=icon]:hidden">
-              TimeVerse
-            </span>
+            <div className="group-data-[collapsible=icon]:hidden">
+              <Logo className="h-10" /> {/* Adjust height as needed */}
+            </div>
+            <div className="hidden group-data-[collapsible=icon]:block">
+              <CollapsedLogoIcon />
+            </div>
           </Link>
         </SidebarHeader>
         <SidebarContent className="p-2">
@@ -116,8 +119,12 @@ export default function AppShellLayout({ children }: { children: React.ReactNode
           </SidebarMenu>
         </SidebarFooter>
       </Sidebar>
-      <SidebarInset className="flex flex-col">
+       {/* Wrap main content with AuthProvider removed */}
+        {/* AppHeader's onNavigate is now for specific actions within header, not main feature nav */}
+        <SidebarInset className="flex flex-col">
         <AppHeader currentFeatureName={currentFeatureLabel} onNavigate={(featureKey) => {
+            // If 'settings' is clicked in AppHeader, it should navigate.
+            // This onNavigate might still be useful for other header actions in the future.
         }} />
         <main className="flex-1 overflow-auto">
           {children}

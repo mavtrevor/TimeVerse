@@ -1,24 +1,27 @@
+// src/components/icons/Logo.tsx
+import Image from 'next/image';
+import type { ImageProps } from 'next/image';
 
-import type { SVGProps } from "react";
+// Define a type for the props, extending NextImageProps if needed for specific defaultRemoved
+type LogoProps = Omit<ImageProps, 'src' | 'alt' | 'width' | 'height'> & {
+  className?: string;
+};
 
-export function Logo(props: SVGProps<SVGSVGElement>) {
+export function Logo({ className, ...props }: LogoProps) {
   return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 100 100"
-      aria-label="TimeVerse Logo"
-      className="h-8 w-8"
-      {...props}
-    >
-      <circle cx="50" cy="50" r="45" fill="hsl(var(--primary))" />
-      <path
-        d="M50 15 V50 H75"
-        stroke="hsl(var(--primary-foreground))"
-        strokeWidth="6"
-        strokeLinecap="round"
-        fill="none"
+    <div className={cn("relative", className)} style={{ width: props.width || 160, height: props.height || 42 }}>
+      <Image
+        src="/timeverse-logo-full.png" // Path to your new logo in the public folder
+        alt="TimeVerse Logo"
+        fill // Use fill to make the image responsive within the parent div
+        style={{ objectFit: 'contain' }} // Ensures the image scales correctly without cropping
+        priority // Preload logo if it's LCP
+        {...props}
       />
-      <circle cx="50" cy="50" r="5" fill="hsl(var(--primary-foreground))" />
-    </svg>
+    </div>
   );
 }
+
+// Helper function (if not already available globally)
+// You can keep this here or move it to a utils file if you have one
+const cn = (...classes: (string | undefined | null | false)[]) => classes.filter(Boolean).join(' ');

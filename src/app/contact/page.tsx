@@ -9,11 +9,8 @@ export default function ContactPage() {
     <div className="flex flex-col min-h-screen bg-background text-foreground">
       <header className="sticky top-0 z-40 flex h-16 items-center justify-between border-b bg-background px-4 sm:px-6">
         <Link href="/" className="flex items-center gap-2 font-semibold text-lg text-primary">
-            <Logo />
-            <span>
-              TimeVerse
-              <span className="hidden sm:inline"> – The Ultimate Online Clock Suite</span>
-            </span>
+            <Logo className="h-10" /> {/* Use the new image logo, adjust height */}
+            {/* The text "TimeVerse ONLINE CLOCK SUITE" is now part of the Logo image */}
         </Link>
         <Button variant="outline" asChild>
           <Link href="/">
