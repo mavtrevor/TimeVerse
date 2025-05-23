@@ -28,14 +28,10 @@ const formSchema = z.object({
   message: z.string().min(10, { message: "Message must be at least 10 characters." }).max(2000, { message: "Message must not exceed 2000 characters."}),
 });
 
-// Use ContactFormInput from the flow to ensure consistency
-// type ContactFormValues = z.infer<typeof formSchema>; // This is still fine for client-side validation
-// but we'll pass ContactFormInput to the flow
-
 export default function ContactFeature() {
   const { toast } = useToast();
-  const form = useForm<ContactFormInput>({ // Use ContactFormInput here
-    resolver: zodResolver(formSchema), // formSchema is still good for client-side validation messages
+  const form = useForm<ContactFormInput>({
+    resolver: zodResolver(formSchema),
     defaultValues: {
       name: '',
       email: '',
@@ -47,24 +43,30 @@ export default function ContactFeature() {
   const [isSubmitting, setIsSubmitting] = React.useState(false);
 
   async function onSubmit(values: ContactFormInput) {
+    console.log('[ContactForm] onSubmit triggered with values:', values);
     setIsSubmitting(true);
     try {
+      console.log('[ContactForm] Calling sendContactMessage flow...');
       const result = await sendContactMessage(values);
+      console.log('[ContactForm] Flow call completed. Result:', result);
+
       if (result.status === 'Success') {
         toast({
           title: "Message Sent!",
           description: result.message,
         });
         form.reset();
+        console.log('[ContactForm] Form reset successfully.');
       } else {
         toast({
           title: "Submission Error",
           description: result.message || "Could not send the message. Please try again.",
           variant: "destructive",
         });
+        console.warn('[ContactForm] Submission error from flow:', result);
       }
     } catch (error) {
-      console.error('Contact form submission error:', error);
+      console.error('[ContactForm] Catch block: Error during contact form submission:', error);
       toast({
         title: "Submission Failed",
         description: "An unexpected error occurred. Please try again later.",
@@ -72,6 +74,7 @@ export default function ContactFeature() {
       });
     } finally {
       setIsSubmitting(false);
+      console.log('[ContactForm] Finally block: isSubmitting set to false.');
     }
   }
 
